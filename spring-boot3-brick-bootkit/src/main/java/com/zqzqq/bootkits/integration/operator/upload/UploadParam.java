@@ -26,7 +26,7 @@ import java.io.InputStream;
  * @author starBlues
  * @version 3.0.0
  */
-public abstract class UploadParam {
+public class UploadParam {
 
     /**
      * 上传后是否启动插件，默认启动

@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -104,10 +103,10 @@ public class Handler extends URLStreamHandler {
             return (connection != null) ? connection : openFallbackHandlerConnection(url);
         } catch (Exception ex) {
             if (reason instanceof IOException) {
-                log(false, "Unable to open fallback handler", ex);
+                log(false, ex);
                 throw (IOException) reason;
             }
-            log(true, "Unable to open fallback handler", ex);
+            log(true, ex);
             if (reason instanceof RuntimeException) {
                 throw (RuntimeException) reason;
             }
@@ -200,13 +199,13 @@ public class Handler extends URLStreamHandler {
         throw new IllegalStateException("Unable to find fallback handler");
     }
 
-    private void log(boolean warning, String message, Exception cause) {
+    private void log(boolean warning, Exception cause) {
         try {
-            Level level = warning ? Level.WARNING : Level.FINEST;
-            Logger.getLogger(getClass().getName()).log(level, message, cause);
+            System.Logger.Level level = warning ? System.Logger.Level.WARNING : System.Logger.Level.DEBUG;
+            System.getLogger(getClass().getName()).log(level, "Unable to open fallback handler", cause);
         } catch (Exception ex) {
             if (warning) {
-                log.warn("WARNING: {}", message);
+                Handler.log.warn("WARNING: Unable to open fallback handler");
             }
         }
     }

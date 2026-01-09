@@ -26,7 +26,7 @@ import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
  * @since 3.0.0
  * @version 3.0.0
  */
-public abstract class MsgUtils {
+public final class MsgUtils {
 
     private MsgUtils(){}
 
