@@ -16,6 +16,8 @@
 
 package com.zqzqq.bootkits.core.scanner;
 
+import com.zqzqq.bootkits.common.Constants;
+import com.zqzqq.bootkits.utils.FilesUtils;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 
 import java.io.File;
@@ -34,8 +36,21 @@ public class BasePluginScanner implements PluginScanner{
 
     private PathResolve pathResolve;
 
+    /**
+     * 根目录路径（jar 所在目录），用于解析 ~ 相对路径
+     */
+    private String rootPath;
+
     public void setPathResolve(PathResolve pathResolve) {
         this.pathResolve = pathResolve;
+    }
+
+    /**
+     * 设置根目录路径（jar 所在目录）
+     * @param rootPath jar 所在目录
+     */
+    public void setRootPath(String rootPath) {
+        this.rootPath = rootPath;
     }
 
     @Override
@@ -51,7 +66,7 @@ public class BasePluginScanner implements PluginScanner{
             if(ObjectUtils.isEmpty(dir)){
                 continue;
             }
-            File file = new File(dir);
+            File file = resolvePathToFile(dir);
 
             if(!file.exists()){
                 continue;
@@ -59,6 +74,24 @@ public class BasePluginScanner implements PluginScanner{
             resolve(file, pluginPaths);
         }
         return pluginPaths;
+    }
+
+    /**
+     * 解析路径为 File 对象
+     * 处理 ~ 相对路径，将其解析为 jar 所在目录
+     * @param dir 路径字符串
+     * @return File 对象
+     */
+    protected File resolvePathToFile(String dir) {
+        if (FilesUtils.isRelativePath(dir) && rootPath != null) {
+            String resolveRelativePath = dir.replaceFirst(Constants.RELATIVE_SIGN, "");
+            String joiningPath = FilesUtils.joiningFilePath(rootPath, resolveRelativePath);
+            File file = FilesUtils.getExistFile(joiningPath);
+            if (file != null) {
+                return file;
+            }
+        }
+        return new File(dir);
     }
 
 

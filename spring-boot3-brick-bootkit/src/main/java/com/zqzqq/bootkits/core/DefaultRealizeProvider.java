@@ -56,6 +56,8 @@ public class DefaultRealizeProvider implements RealizeProvider {
     @Override
     public void init() {
         BasePluginScanner basePluginScanner = new BasePluginScanner();
+        // 设置根目录路径（jar 所在目录），用于解析 ~ 相对路径
+        basePluginScanner.setRootPath(getRootPath());
         if(configuration.environment() == RuntimeMode.DEV){
             basePluginScanner.setPathResolve(new DevPathResolve());
         } else {
@@ -65,6 +67,38 @@ public class DefaultRealizeProvider implements RealizeProvider {
         setPluginBasicChecker(new ComposePluginBasicChecker(applicationContext));
         setPluginDescriptorLoader(new ComposeDescriptorLoader(applicationContext, pluginBasicChecker));
         setVersionInspector(new SemverVersionInspector());
+    }
+
+    /**
+     * 获取 jar 所在目录
+     * @return jar 所在目录绝对路径
+     */
+    protected String getRootPath() {
+        try {
+            java.security.ProtectionDomain protectionDomain = getClass().getProtectionDomain();
+            if (protectionDomain != null) {
+                java.security.CodeSource codeSource = protectionDomain.getCodeSource();
+                if (codeSource != null) {
+                    java.net.URI location = codeSource.getLocation().toURI();
+                    if (location != null) {
+                        String path = location.getSchemeSpecificPart();
+                        if (path != null) {
+                            java.io.File root = new java.io.File(path);
+                            if (root.exists()) {
+                                if (root.isFile()) {
+                                    return root.getParent();
+                                } else {
+                                    return root.getAbsolutePath();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 获取失败时返回当前工作目录
+        }
+        return System.getProperty("user.dir");
     }
 
     public void setPluginScanner(PluginScanner pluginScanner) {
