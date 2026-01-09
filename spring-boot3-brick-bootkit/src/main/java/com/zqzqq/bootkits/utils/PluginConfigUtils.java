@@ -27,7 +27,7 @@ import com.zqzqq.bootkits.integration.IntegrationConfiguration;
  */
 public class PluginConfigUtils {
 
-    private static final String DO = "-";
+    private static final String CONFIG_NAME_SEPARATOR = "-";
 
     private PluginConfigUtils(){}
 
@@ -83,8 +83,8 @@ public class PluginConfigUtils {
         if(suffix == null){
             suffix = "";
         }
-        if(ObjectUtils.isEmpty(suffix) && !suffix.startsWith(DO)){
-            suffix = DO + suffix;
+        if(ObjectUtils.isEmpty(suffix) && !suffix.startsWith(CONFIG_NAME_SEPARATOR)){
+            suffix = CONFIG_NAME_SEPARATOR + suffix;
         }
         return fileNamePrefix + suffix + fileNamePrefixSuffix;
     }

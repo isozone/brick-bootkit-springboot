@@ -72,7 +72,7 @@ import java.util.zip.ZipFile;
  */
 public final class PluginFileUtils {
 
-    private static final String FILE_POINT = ".";
+    private static final String FILE_EXTENSION_SEPARATOR = ".";
     private static final Logger log = LoggerFactory.getLogger(PluginFileUtils.class);
 
     private PluginFileUtils(){}
@@ -177,7 +177,7 @@ public final class PluginFileUtils {
         if(includeSuffix){
             return fileName;
         }
-        int i = fileName.lastIndexOf(FILE_POINT);
+        int i = fileName.lastIndexOf(FILE_EXTENSION_SEPARATOR);
         if(i > 0){
             return fileName.substring(0, i);
         } else {
