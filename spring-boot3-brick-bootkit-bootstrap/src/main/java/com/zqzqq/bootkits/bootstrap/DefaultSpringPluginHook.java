@@ -30,6 +30,8 @@ import com.zqzqq.bootkits.spring.ApplicationContextProxy;
 import com.zqzqq.bootkits.spring.SpringPluginHook;
 import com.zqzqq.bootkits.spring.WebConfig;
 import com.zqzqq.bootkits.spring.web.thymeleaf.ThymeleafConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 
@@ -37,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 榛樿鐨勬彃浠堕挬瀛愬櫒
+ * 默认的插件钩子器
  *
  * @author starBlues
  * @since 3.0.0
@@ -45,6 +47,7 @@ import java.util.Map;
  */
 public class DefaultSpringPluginHook implements SpringPluginHook {
 
+    private static final Logger log = LoggerFactory.getLogger(DefaultSpringPluginHook.class);
     protected final SpringPluginProcessor pluginProcessor;
     protected final ProcessorContext processorContext;
     private final StopValidator stopValidator;
@@ -88,7 +91,7 @@ public class DefaultSpringPluginHook implements SpringPluginHook {
             processorContext.clearRegistryInfo();
             DestroyUtils.destroyAll(null, SpringFactoriesLoader.class, "cache", Map.class);
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Failed to close plugin hook", e);
         } finally {
             SpringPluginBootstrapBinder.remove();
         }
@@ -119,10 +122,9 @@ public class DefaultSpringPluginHook implements SpringPluginHook {
             try {
                 pluginCloseListener.close(applicationContext, processorContext.getPluginInfo(), closeType);
             } catch (Exception e){
-                e.printStackTrace();
+                log.error("Plugin close listener error for: {}", processorContext.getPluginInfo().getPluginId(), e);
             }
         }
     }
 
 }
-

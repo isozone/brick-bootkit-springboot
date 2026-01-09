@@ -1,5 +1,8 @@
 package com.zqzqq.bootkits.core.lifecycle;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -7,14 +10,15 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 插件鐢熷懡鍛ㄦ湡绠＄悊鍣?
+ * 插件生命周期管理器
  */
 public class PluginLifecycleManager {
+    private static final Logger log = LoggerFactory.getLogger(PluginLifecycleManager.class);
     private final Map<String, PluginLifecycleState> pluginStates = new HashMap<>();
     private final List<PluginLifecycleListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
-     * 注册监听鍣?
+     * 注册监听器
      */
     public void addListener(PluginLifecycleListener listener) {
         listeners.add(listener);
@@ -22,7 +26,7 @@ public class PluginLifecycleManager {
     }
 
     /**
-     * 鏇存柊插件状态
+     * 更新插件状态
      */
     public void updateState(String pluginId, PluginLifecycleState newState) {
         PluginLifecycleState oldState = pluginStates.getOrDefault(
@@ -33,12 +37,12 @@ public class PluginLifecycleManager {
         PluginLifecycleEvent event = new PluginLifecycleEvent(
             pluginId, oldState, newState);
         
-        // 閫氱煡所有夌洃鍚櫒
+        // 通知所有监听器
         listeners.forEach(listener -> {
             try {
                 listener.onEvent(event);
             } catch (Exception e) {
-                System.err.println("Lifecycle listener error: " + e.getMessage());
+                log.error("Lifecycle listener error for plugin: {}", pluginId, e);
             }
         });
     }
@@ -58,6 +62,6 @@ public class PluginLifecycleManager {
     public void shutdown() {
         pluginStates.clear();
         listeners.clear();
-        System.out.println("Plugin lifecycle manager shutdown completed");
+        log.info("Plugin lifecycle manager shutdown completed");
     }
 }

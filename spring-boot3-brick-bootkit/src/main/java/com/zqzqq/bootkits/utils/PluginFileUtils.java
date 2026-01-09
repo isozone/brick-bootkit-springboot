@@ -17,27 +17,53 @@
 package com.zqzqq.bootkits.utils;
 
 
+
 import com.zqzqq.bootkits.common.ManifestKey;
+
 import com.zqzqq.bootkits.common.PackageStructure;
+
 import com.zqzqq.bootkits.common.PackageType;
+
 import org.apache.commons.io.FileUtils;
+
 import org.apache.commons.io.IOUtils;
 
+import org.slf4j.Logger;
+
+import org.slf4j.LoggerFactory;
+
+
+
 import java.io.*;
+
 import java.math.BigInteger;
+
 import java.nio.MappedByteBuffer;
+
 import java.nio.channels.FileChannel;
+
 import java.nio.charset.Charset;
+
 import java.nio.file.Files;
+
 import java.nio.file.Path;
+
 import java.nio.file.Paths;
+
 import java.security.MessageDigest;
+
 import java.util.Enumeration;
+
 import java.util.List;
+
 import java.util.Objects;
+
 import java.util.jar.Attributes;
+
 import java.util.jar.Manifest;
+
 import java.util.zip.ZipEntry;
+
 import java.util.zip.ZipFile;
 
 /**
@@ -50,6 +76,7 @@ import java.util.zip.ZipFile;
 public final class PluginFileUtils {
 
     private static final String FILE_POINT = ".";
+    private static final Logger log = LoggerFactory.getLogger(PluginFileUtils.class);
 
     private PluginFileUtils(){}
 
@@ -93,12 +120,12 @@ public final class PluginFileUtils {
                                 try {
                                     Files.deleteIfExists(subPath);
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    log.error("Failed to delete empty file: {}", subPath, e);
                                 }
                             }
                         });
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Failed to list files in path: {}", path, e);
             }
         }
     }

@@ -21,6 +21,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -37,6 +39,7 @@ import java.util.jar.JarFile;
  */
 public class CommonUtils {
 
+    private static final Logger log = LoggerFactory.getLogger(CommonUtils.class);
     public final static String PLUGIN_FRAMEWORK_GROUP_ID = "com.zqzqq.bootkits";
     public final static String PLUGIN_FRAMEWORK_ARTIFACT_ID = "spring-boot3-brick-bootkit";
 
@@ -66,6 +69,7 @@ public class CommonUtils {
         try {
             return new JarFile(file);
         } catch (Exception e){
+            log.warn("Failed to get source jar file for: {}", mavenProject.getName(), e);
             return null;
         }
     }
@@ -88,7 +92,7 @@ public class CommonUtils {
                 FileUtils.deleteDirectory(rootFile);
             }
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Failed to delete file: {}", rootFile.getPath(), e);
             throw new MojoFailureException("Delete file '" + rootFile.getPath() + "' failure. " + e.getMessage());
         }
     }

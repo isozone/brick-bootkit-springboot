@@ -21,6 +21,8 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
 import com.zqzqq.bootkits.loader.classloader.resource.storage.EmptyResourceStorage;
 import com.zqzqq.bootkits.loader.classloader.resource.storage.ResourceStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,7 +35,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * 閫氱敤鐨刄rl ClassLoader
+ * 通用的Url ClassLoader
  *
  * @author starBlues
  * @since 3.0.4
@@ -41,6 +43,7 @@ import java.util.List;
  */
 public class GeneralUrlClassLoader extends URLClassLoader implements ResourceLoaderFactory {
 
+    private static final Logger log = LoggerFactory.getLogger(GeneralUrlClassLoader.class);
     private final String name;
     private final ResourceLoaderFactory classLoaderTranslator;
 
@@ -52,12 +55,12 @@ public class GeneralUrlClassLoader extends URLClassLoader implements ResourceLoa
                 for (URL url : sourceLoader.getURLs()) {
                     if (url != null) {
                         this.addResource(url);
-                        System.out.println("Merged resource: " + url);
+                        log.debug("Merged resource: {}", url);
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("Resource merge warning: " + e.getMessage());
+            log.warn("Resource merge warning: {}", e.getMessage(), e);
         }
     }
 
@@ -124,4 +127,3 @@ public class GeneralUrlClassLoader extends URLClassLoader implements ResourceLoa
         return classLoaderTranslator.getUrls();
     }
 }
-

@@ -22,6 +22,8 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFacto
 import com.zqzqq.bootkits.loader.utils.Assert;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
 import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +37,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 鍩烘湰锟?ClassLoader
+ * 通用ClassLoader
  *
  * @author starBlues
  * @since 3.0.0
@@ -43,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GenericClassLoader extends URLClassLoader implements ResourceLoaderFactory{
 
+    private static final Logger log = LoggerFactory.getLogger(GenericClassLoader.class);
     private final String name;
     private final ClassLoader parent;
 
@@ -191,37 +194,37 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     @Override
     public void close() throws IOException {
         try {
-            // 清理绫荤紦瀛橈紝闃叉内容瓨娉勬紡
+            // 清理类缓存，防止内容驻留
             pluginClassCache.clear();
             
-            // 关闭资源加载宸ュ巶
+            // 关闭资源加载工厂
             if (resourceLoaderFactory != null) {
                 try {
                     resourceLoaderFactory.close();
                 } catch (Exception e) {
-                    // 忽略异常锛岀‘淇濈户缁叧闂叾浠栬祫锟?
+                    log.warn("Failed to close resource loader factory", e);
                 }
             }
             
-            // 调用鐖剁被关闭方法
+            // 调用父类关闭方法
             super.close();
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IOException("关闭绫诲姞杞藉櫒异常", e);
+            throw new IOException("关闭类加载器异常", e);
         }
     }
 
     @Override
     public void release() {
         try {
-            // 清理绫荤紦锟?
+            // 清理类缓存
             pluginClassCache.clear();
             
-            // 释放资源加载宸ュ巶
+            // 释放资源加载工厂
             ResourceUtils.release(resourceLoaderFactory);
         } catch (Exception e) {
-            // 忽略异常锛岀‘淇濊祫婧愬敖鍙兘琚噴锟?
+            log.warn("Failed to release resources", e);
         }
     }
 
@@ -344,7 +347,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
         try {
             return IOUtils.read(inputStream);
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Failed to read class bytes for: {}", formatClassName, e);
             return null;
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -363,4 +366,3 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     }
 
 }
-

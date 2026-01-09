@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.scripts.core.impl;
 
 import com.zqzqq.bootkits.scripts.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
  */
 public class ScriptRepositoryImpl implements ScriptRepository {
     
+    private static final Logger log = LoggerFactory.getLogger(ScriptRepositoryImpl.class);
     private final Map<String, ScriptInfo> scripts = new ConcurrentHashMap<>();
     private final Map<String, List<ScriptVersion>> versionHistory = new ConcurrentHashMap<>();
     private final Map<String, List<ScriptDependency>> dependencies = new ConcurrentHashMap<>();
@@ -85,7 +88,7 @@ public class ScriptRepositoryImpl implements ScriptRepository {
                     }
                 } catch (IOException e) {
                     // 记录错误但继续加载其他文件
-                    System.err.println("加载脚本文件失败: " + path + ", 错误: " + e.getMessage());
+                    log.error("加载脚本文件失败: {}, 错误: {}", path, e.getMessage(), e);
                 }
             });
     }
@@ -378,6 +381,7 @@ public class ScriptRepositoryImpl implements ScriptRepository {
             boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.warn("System dependency check failed for: {}", dep.getName(), e);
             return false;
         }
     }
@@ -392,6 +396,7 @@ public class ScriptRepositoryImpl implements ScriptRepository {
             boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.warn("Module dependency check failed for: {}", dep.getName(), e);
             return false;
         }
     }
@@ -407,7 +412,7 @@ public class ScriptRepositoryImpl implements ScriptRepository {
                 return parts[0] + "." + parts[1] + "." + patch;
             }
         } catch (Exception e) {
-            // 忽略解析错误
+            log.warn("Failed to parse version: {}", currentVersion, e);
         }
         return "1.0.1"; // 默认新版本
     }

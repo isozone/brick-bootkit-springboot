@@ -21,6 +21,8 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResource;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
 import com.zqzqq.bootkits.loader.utils.ObjectUtils;
 import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +30,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * 插件的资源婧愬瓨鍌?
+ * 插件的资源存储类
  *
  * @author starBlues
  * @since 3.0.0
@@ -36,6 +38,7 @@ import java.util.*;
  */
 public abstract class AbstractResourceStorage implements ResourceStorage {
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractResourceStorage.class);
     private final Set<URL> baseUrls = new HashSet<>();
     private final ArrayDeque<URL> hotUrls = new ArrayDeque<>();
     private final List<InputStream> inputStreams = new ArrayList<>();
@@ -81,8 +84,8 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
     protected abstract void addResource(Resource resource) throws Exception;
 
     /**
-     * 鏍煎紡鍖栬祫婧愬悕绉?
-     * @param name 资源鍚嶇О
+     * 格式化资源名称
+     * @param name 资源名称
      * @return String
      */
     protected final String formatResourceName(String name) {
@@ -98,7 +101,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
             inputStreams.add(inputStream);
             return inputStream;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed to open stream for resource: {}", resource.getName(), e);
             return null;
         }
     }
@@ -135,7 +138,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         Set<URL> searchUrl = new HashSet<>();
         URL matchBaseUrl = null;
         URL matchExistUrl = null;
-        // TODO 杩橀渶优化
+        // TODO 还需要优化
         while (true){
             URL baseUrl = hotUrls.pollFirst();
             if(baseUrl == null){
@@ -172,6 +175,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
                 addResource(resource);
                 return resource;
             } catch (Exception e) {
+                log.warn("Failed to add resource to storage: {}", name, e);
                 return null;
             }
         }
@@ -245,7 +249,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         try {
             addResource(resource);
         } catch (Exception e){
-            // 忽略异常
+            log.warn("Failed to add resource wrapper: {}", resource.getName(), e);
         }
     }
 }

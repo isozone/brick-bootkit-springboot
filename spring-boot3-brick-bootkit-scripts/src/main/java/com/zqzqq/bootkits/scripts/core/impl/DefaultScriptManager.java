@@ -3,6 +3,8 @@ package com.zqzqq.bootkits.scripts.core.impl;
 import com.zqzqq.bootkits.scripts.core.*;
 import com.zqzqq.bootkits.scripts.executor.*;
 import com.zqzqq.bootkits.scripts.utils.OSDetectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -17,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultScriptManager implements ScriptManager {
     
+    private static final Logger log = LoggerFactory.getLogger(DefaultScriptManager.class);
     private final Map<String, ScriptExecutor> executorMap = new ConcurrentHashMap<>();
     private final List<String> scriptPaths = new ArrayList<>();
     private boolean initialized = false;
@@ -226,7 +229,7 @@ public class DefaultScriptManager implements ScriptManager {
                     }
                 }
             } catch (Exception e) {
-                // 忽略读取错误
+                log.warn("Failed to read script file header: {}", scriptPath, e);
             }
         }
         
@@ -407,7 +410,7 @@ public class DefaultScriptManager implements ScriptManager {
             }
         } catch (Exception e) {
             // 忽略配置文件加载错误，使用默认路径
-            System.out.println("无法加载配置文件，使用默认路径: " + e.getMessage());
+            log.warn("无法加载配置文件，使用默认路径: {}", e.getMessage());
         }
     }
     
@@ -506,6 +509,7 @@ public class DefaultScriptManager implements ScriptManager {
             
             return tempFile;
         } catch (Exception e) {
+            log.error("Failed to create temp script file", e);
             return null;
         }
     }
@@ -529,6 +533,7 @@ public class DefaultScriptManager implements ScriptManager {
                 return new String(java.nio.file.Files.readAllBytes(file.toPath()), "UTF-8");
             }
         } catch (Exception e) {
+            log.warn("Failed to read file header: {}", file.getName(), e);
             return null;
         }
     }

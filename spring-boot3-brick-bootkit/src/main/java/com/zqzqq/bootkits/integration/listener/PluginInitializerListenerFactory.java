@@ -17,26 +17,29 @@
 package com.zqzqq.bootkits.integration.listener;
 
 import com.zqzqq.bootkits.utils.SpringBeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 插件鍒濆鍖栫洃鍚€呭伐鍘?
+ * 插件初始化监听器工厂
  *
  * @author starBlues
  * @version 3.0.0
  */
 public class PluginInitializerListenerFactory implements PluginInitializerListener {
 
+    private static final Logger log = LoggerFactory.getLogger(PluginInitializerListenerFactory.class);
     private final List<PluginInitializerListener> pluginInitializerListeners = new ArrayList<>();
 
     public final ApplicationContext applicationContext;
 
     public PluginInitializerListenerFactory(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        // 添加榛樿鐨勫垵濮嬪寲监听鑰?
+        // 添加默认的初始化监听器
         pluginInitializerListeners.add(new DefaultInitializerListener(applicationContext));
         addExtendPluginListener(applicationContext);
     }
@@ -54,7 +57,7 @@ public class PluginInitializerListenerFactory implements PluginInitializerListen
                 pluginInitializerListener.before();
             }
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Plugin initializer before() error", e);
         }
     }
 
@@ -65,7 +68,7 @@ public class PluginInitializerListenerFactory implements PluginInitializerListen
                 pluginInitializerListener.complete();
             }
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Plugin initializer complete() error", e);
         }
     }
 
@@ -76,12 +79,12 @@ public class PluginInitializerListenerFactory implements PluginInitializerListen
                 pluginInitializerListener.failure(throwable);
             }
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("Plugin initializer failure() error", e);
         }
     }
 
     /**
-     * 添加监听鑰?
+     * 添加监听器
      * @param pluginInitializerListener pluginInitializerListener
      */
     public void addListener(PluginInitializerListener pluginInitializerListener){
@@ -91,4 +94,3 @@ public class PluginInitializerListenerFactory implements PluginInitializerListen
     }
 
 }
-

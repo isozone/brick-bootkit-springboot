@@ -19,13 +19,15 @@ package com.zqzqq.bootkits.loader.launcher.coexist;
 import com.zqzqq.bootkits.loader.classloader.GeneralUrlClassLoader;
 import com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLClassLoader;
 
 
 /**
- * coexist 妯″紡 launcher
+ * coexist 模式 launcher
  *
  * @author starBlues
  * @since 3.0.4
@@ -33,6 +35,7 @@ import java.net.URLClassLoader;
  */
 public class CoexistBaseLauncher extends AbstractMainLauncher {
 
+    private static final Logger log = LoggerFactory.getLogger(CoexistBaseLauncher.class);
     private final MethodRunner methodRunner;
 
     public CoexistBaseLauncher(MethodRunner methodRunner) {
@@ -41,7 +44,7 @@ public class CoexistBaseLauncher extends AbstractMainLauncher {
 
     @Override
     protected ClassLoader createClassLoader(String... args) throws Exception {
-        // 浣跨敤褰撳墠线程鐨勪笂涓嬫枃绫诲姞杞藉櫒浣滀负鐖剁被加载鍣紝增强涓嶴pring Boot 3.5.x鐨勫吋瀹癸拷?
+        // 使用当前线程的上下文类加载器作为父类加载器，增强与Spring Boot 3.5.x的兼容性
         ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
         if (parentClassLoader == null) {
             parentClassLoader = this.getClass().getClassLoader();
@@ -63,17 +66,17 @@ public class CoexistBaseLauncher extends AbstractMainLauncher {
         try {
             URL url = getClass().getProtectionDomain().getCodeSource().getLocation();
             if (url != null) {
-                // 方法1锛氫娇鐢ㄦ爣鍑哢RLClassLoader鏋勯€犳柊实例
+                // 方法1：使用标称URLClassLoader创建新实例
                 URLClassLoader tempLoader = new URLClassLoader(new URL[]{url}, classLoader.getParent());
                 
-                // 方法2锛氳皟鐢℅eneralUrlClassLoader鐨刴ergeResources方法
+                // 方法2：调用GeneralUrlClassLoader的mergeResources方法
                 classLoader.mergeResources(tempLoader);
                 
-                System.out.println("Added resource to shared mode classloader: " + url);
+                log.info("Added resource to shared mode classloader: {}", url);
             }
         } catch (Exception e) {
-            System.err.println("Failed to add resources to shared mode classloader: " + e.getMessage());
-            // 方法3锛氱粓鏋佸洖閫€鏂规
+            log.error("Failed to add resources to shared mode classloader: {}", e.getMessage(), e);
+            // 方法3：最终回退方案
             System.setProperty("java.system.class.loader", 
                 "com.zqzqq.bootkits.loader.classloader.GeneralUrlClassLoader");
             throw e;
@@ -81,4 +84,3 @@ public class CoexistBaseLauncher extends AbstractMainLauncher {
     }
 
 }
-

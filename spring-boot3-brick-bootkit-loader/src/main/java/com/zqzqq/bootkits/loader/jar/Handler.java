@@ -18,6 +18,8 @@
 package com.zqzqq.bootkits.loader.jar;
 
 import com.zqzqq.bootkits.loader.PluginResourceStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.util.regex.Pattern;
  */
 public class Handler extends URLStreamHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(Handler.class);
     // NOTE: in order to be found as a URL protocol handler, this class must be public,
     // must be named Handler and must be in a package ending '.jar'
 
@@ -124,7 +127,7 @@ public class Handler extends URLStreamHandler {
         String file = url.getFile();
         if (isTomcatWarUrl(file)) {
             file = file.substring(TOMCAT_WARFILE_PROTOCOL.length());
-            file = file.replaceFirst("\\*/", "!/");
+            file = file.replaceFirst("\\*", "!/");
             try {
                 URLConnection connection = openConnection(new URL("jar:file:" + file));
                 connection.getInputStream().close();
@@ -137,7 +140,7 @@ public class Handler extends URLStreamHandler {
     }
 
     private boolean isTomcatWarUrl(String file) {
-        if (file.startsWith(TOMCAT_WARFILE_PROTOCOL) || !file.contains("*/")) {
+        if (file.startsWith(TOMCAT_WARFILE_PROTOCOL) || !file.contains("*")) {
             try {
                 URLConnection connection = new URL(file).openConnection();
                 if (connection.getClass().getName().startsWith("org.apache.catalina")) {
@@ -203,7 +206,7 @@ public class Handler extends URLStreamHandler {
             Logger.getLogger(getClass().getName()).log(level, message, cause);
         } catch (Exception ex) {
             if (warning) {
-                System.err.println("WARNING: " + message);
+                log.warn("WARNING: {}", message);
             }
         }
     }
@@ -429,4 +432,3 @@ public class Handler extends URLStreamHandler {
     }
 
 }
-

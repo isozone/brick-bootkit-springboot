@@ -18,6 +18,8 @@ package com.zqzqq.bootkits.integration.listener;
 
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.utils.SpringBeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.nio.file.Path;
@@ -25,13 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 榛樿鐨勬彃浠跺伐鍘?
+ * 默认的插件监听器
  * @author starBlues
  * @since 3.0.0
  * @version 3.0.3
  */
 public class DefaultPluginListenerFactory implements PluginListenerFactory{
 
+    private static final Logger log = LoggerFactory.getLogger(DefaultPluginListenerFactory.class);
     private final List<PluginListener> listeners;
 
     public DefaultPluginListenerFactory(ApplicationContext applicationContext){
@@ -67,7 +70,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.loadSuccess(pluginInfo);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin loadSuccess listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
@@ -78,7 +81,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.loadFailure(path, throwable);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin loadFailure listener error for path: {}", path, e);
             }
         }
     }
@@ -89,7 +92,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.unLoadSuccess(pluginInfo);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin unLoadSuccess listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
@@ -100,7 +103,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.startSuccess(pluginInfo);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin startSuccess listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
@@ -111,7 +114,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.startFailure(pluginInfo, throwable);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin startFailure listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
@@ -122,7 +125,7 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.stopSuccess(pluginInfo);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin stopSuccess listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
@@ -133,11 +136,10 @@ public class DefaultPluginListenerFactory implements PluginListenerFactory{
             try {
                 listener.stopFailure(pluginInfo, throwable);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Plugin stopFailure listener error for plugin: {}", pluginInfo.getPluginId(), e);
             }
         }
     }
 
 
 }
-

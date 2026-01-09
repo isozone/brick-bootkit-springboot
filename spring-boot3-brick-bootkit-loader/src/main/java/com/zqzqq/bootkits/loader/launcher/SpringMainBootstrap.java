@@ -19,12 +19,14 @@ package com.zqzqq.bootkits.loader.launcher;
 import com.zqzqq.bootkits.loader.jar.JarFile;
 import com.zqzqq.bootkits.loader.launcher.runner.MainMethodRunner;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 主程序搴忓紩瀵煎櫒
+ * 主程序引导器
  *
  * @author starBlues
  * @since 3.0.0
@@ -32,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class SpringMainBootstrap {
 
+    private static final Logger log = LoggerFactory.getLogger(SpringMainBootstrap.class);
     static final String MAIN_RUN_METHOD = "main";
 
     private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
@@ -43,7 +46,7 @@ public class SpringMainBootstrap {
             SpringBootstrap springBootstrap = bootstrapClass.getConstructor().newInstance();
             launch(springBootstrap, args);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to launch bootstrap class: {}", bootstrapClass.getName(), e);
         }
     }
 
@@ -58,7 +61,7 @@ public class SpringMainBootstrap {
         try {
             COUNT_DOWN_LATCH.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Launch thread interrupted", e);
         }
     }
 
@@ -76,7 +79,7 @@ public class SpringMainBootstrap {
             try {
                 methodRunner.run(contextClassLoader);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Failed to run method in launch thread", e);
             } finally {
                 COUNT_DOWN_LATCH.countDown();
             }
@@ -90,4 +93,3 @@ public class SpringMainBootstrap {
     }
 
 }
-

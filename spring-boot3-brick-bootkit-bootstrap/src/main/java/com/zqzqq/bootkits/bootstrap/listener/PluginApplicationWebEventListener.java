@@ -17,6 +17,8 @@
 package com.zqzqq.bootkits.bootstrap.listener;
 
 import com.zqzqq.bootkits.bootstrap.PluginWebApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -25,7 +27,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.ResolvableType;
 
 /**
- * 閹绘帊娆㈤惄鎴濇儔闁革絻鍔嶆晶璺ㄤ沪?
+ * 插件Web应用事件监听器
  *
  * @author starBlues
  * @since 3.0.0
@@ -33,7 +35,7 @@ import org.springframework.core.ResolvableType;
  */
 public class PluginApplicationWebEventListener implements ApplicationListener<ApplicationEvent> {
 
-
+    private static final Logger log = LoggerFactory.getLogger(PluginApplicationWebEventListener.class);
     private final PluginWebApplicationContext applicationContext;
 
     public PluginApplicationWebEventListener(PluginWebApplicationContext applicationContext) {
@@ -60,7 +62,7 @@ public class PluginApplicationWebEventListener implements ApplicationListener<Ap
                         (ApplicationListener<WebServerInitializedEvent>) applicationContext.getBean(beanName);
                 applicationListener.onApplicationEvent(pluginWebServerInitializedEvent);
             } catch (Exception e){
-                e.printStackTrace();
+                log.error("Failed to call web server initialized event for bean: {}", beanName, e);
             }
         }
     }
@@ -81,4 +83,3 @@ public class PluginApplicationWebEventListener implements ApplicationListener<Ap
     }
 
 }
-
