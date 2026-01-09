@@ -22,13 +22,21 @@ import com.zqzqq.bootkits.core.descriptor.ComposeDescriptorLoader;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptorLoader;
 import com.zqzqq.bootkits.core.scanner.BasePluginScanner;
 import com.zqzqq.bootkits.core.scanner.DevPathResolve;
+import com.zqzqq.bootkits.core.scanner.PathResolve;
 import com.zqzqq.bootkits.core.scanner.PluginScanner;
 import com.zqzqq.bootkits.core.scanner.ProdPathResolve;
 import com.zqzqq.bootkits.core.version.SemverVersionInspector;
 import com.zqzqq.bootkits.core.version.VersionInspector;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.utils.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+
+import java.io.File;
+import java.net.URI;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 
 /**
  * 默认的RealizeProvider实现
@@ -39,6 +47,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class DefaultRealizeProvider implements RealizeProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(DefaultRealizeProvider.class);
+
     private PluginScanner pluginScanner;
     private PluginBasicChecker pluginBasicChecker;
     private PluginDescriptorLoader pluginDescriptorLoader;
@@ -46,6 +56,11 @@ public class DefaultRealizeProvider implements RealizeProvider {
 
     protected final IntegrationConfiguration configuration;
     protected final ApplicationContext applicationContext;
+
+    /**
+     * 获取 jar 所在目录（缓存结果，避免重复计算）
+     */
+    private String cachedRootPath;
 
     public DefaultRealizeProvider(IntegrationConfiguration configuration,
                                   ApplicationContext applicationContext){
@@ -55,14 +70,10 @@ public class DefaultRealizeProvider implements RealizeProvider {
 
     @Override
     public void init() {
-        BasePluginScanner basePluginScanner = new BasePluginScanner();
-        // 设置根目录路径（jar 所在目录），用于解析 ~ 相对路径
-        basePluginScanner.setRootPath(getRootPath());
-        if(configuration.environment() == RuntimeMode.DEV){
-            basePluginScanner.setPathResolve(new DevPathResolve());
-        } else {
-            basePluginScanner.setPathResolve(new ProdPathResolve());
-        }
+        PathResolve pathResolve = configuration.environment() == RuntimeMode.DEV
+                ? new DevPathResolve()
+                : new ProdPathResolve();
+        BasePluginScanner basePluginScanner = new BasePluginScanner(pathResolve, getRootPath());
         setPluginScanner(basePluginScanner);
         setPluginBasicChecker(new ComposePluginBasicChecker(applicationContext));
         setPluginDescriptorLoader(new ComposeDescriptorLoader(applicationContext, pluginBasicChecker));
@@ -74,31 +85,32 @@ public class DefaultRealizeProvider implements RealizeProvider {
      * @return jar 所在目录绝对路径
      */
     protected String getRootPath() {
+        if (cachedRootPath != null) {
+            return cachedRootPath;
+        }
         try {
-            java.security.ProtectionDomain protectionDomain = getClass().getProtectionDomain();
+            ProtectionDomain protectionDomain = getClass().getProtectionDomain();
             if (protectionDomain != null) {
-                java.security.CodeSource codeSource = protectionDomain.getCodeSource();
+                CodeSource codeSource = protectionDomain.getCodeSource();
                 if (codeSource != null) {
-                    java.net.URI location = codeSource.getLocation().toURI();
-                    if (location != null) {
-                        String path = location.getSchemeSpecificPart();
-                        if (path != null) {
-                            java.io.File root = new java.io.File(path);
-                            if (root.exists()) {
-                                if (root.isFile()) {
-                                    return root.getParent();
-                                } else {
-                                    return root.getAbsolutePath();
-                                }
-                            }
+                    URI location = codeSource.getLocation().toURI();
+                    String path = location.getSchemeSpecificPart();
+                    if (path != null) {
+                        File root = new File(path);
+                        if (root.exists()) {
+                            cachedRootPath = root.isFile() ? root.getParent() : root.getAbsolutePath();
+                            log.debug("解析 jar 所在目录: {}", cachedRootPath);
+                            return cachedRootPath;
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            // 获取失败时返回当前工作目录
+            log.warn("获取 jar 所在目录失败，使用当前工作目录: {}", e.getMessage());
         }
-        return System.getProperty("user.dir");
+        cachedRootPath = System.getProperty("user.dir");
+        log.debug("使用当前工作目录作为插件根目录: {}", cachedRootPath);
+        return cachedRootPath;
     }
 
     public void setPluginScanner(PluginScanner pluginScanner) {

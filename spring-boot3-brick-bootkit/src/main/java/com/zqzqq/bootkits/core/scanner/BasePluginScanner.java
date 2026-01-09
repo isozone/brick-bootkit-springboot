@@ -34,22 +34,27 @@ import java.util.List;
  */
 public class BasePluginScanner implements PluginScanner{
 
-    private PathResolve pathResolve;
+    private final PathResolve pathResolve;
 
     /**
      * 根目录路径（jar 所在目录），用于解析 ~ 相对路径
      */
-    private String rootPath;
+    private final String rootPath;
 
-    public void setPathResolve(PathResolve pathResolve) {
-        this.pathResolve = pathResolve;
+    /**
+     * 默认构造函数
+     */
+    public BasePluginScanner() {
+        this(null, null);
     }
 
     /**
-     * 设置根目录路径（jar 所在目录）
+     * 构造函数
+     * @param pathResolve 路径解析器
      * @param rootPath jar 所在目录
      */
-    public void setRootPath(String rootPath) {
+    public BasePluginScanner(PathResolve pathResolve, String rootPath) {
+        this.pathResolve = pathResolve;
         this.rootPath = rootPath;
     }
 

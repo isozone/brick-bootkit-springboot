@@ -33,20 +33,26 @@ import java.util.List;
  */
 public class ProdPathResolve implements PathResolve{
 
-    private final List<String> packageSuffix = new ArrayList<>();
+    /**
+     * 支持的插件包后缀名
+     */
+    private static final String PLUGIN_PACKAGE_SUFFIX_JAR = ".jar";
+    private static final String PLUGIN_PACKAGE_SUFFIX_ZIP = ".zip";
+
+    private final List<String> pluginPackageSuffixes = new ArrayList<>();
 
     public ProdPathResolve(){
         // jar包
-        addPackageSuffix(".jar");
+        addPackageSuffix(PLUGIN_PACKAGE_SUFFIX_JAR);
         // zip包
-        addPackageSuffix(".zip");
+        addPackageSuffix(PLUGIN_PACKAGE_SUFFIX_ZIP);
     }
 
     protected void addPackageSuffix(String name){
         if(ObjectUtils.isEmpty(name)){
             return;
         }
-        packageSuffix.add(name);
+        pluginPackageSuffixes.add(name);
     }
 
     @Override
@@ -55,7 +61,7 @@ public class ProdPathResolve implements PathResolve{
             return path;
         }
         String fileName = path.getFileName().toString().toLowerCase();
-        for (String suffixName : packageSuffix) {
+        for (String suffixName : pluginPackageSuffixes) {
             boolean exist = fileName.endsWith(suffixName.toLowerCase());
             if(exist){
                 return path;
