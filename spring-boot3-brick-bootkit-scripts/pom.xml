@@ -18,20 +18,11 @@
     <artifactId>spring-boot3-brick-bootkit-scripts</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <spring-boot.version>3.5.5</spring-boot.version>
-        <junit.version>5.10.0</junit.version>
-        <mockito.version>5.5.0</mockito.version>
-        <assertj.version>3.24.2</assertj.version>
-        <jacoco.version>0.8.11</jacoco.version>
-    </properties>
-
     <dependencies>
         <!-- Spring Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -39,7 +30,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -48,7 +38,7 @@
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- SLF4J API -->
@@ -61,7 +51,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.16.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -79,7 +68,6 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -97,7 +85,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
 
@@ -105,28 +92,24 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
 

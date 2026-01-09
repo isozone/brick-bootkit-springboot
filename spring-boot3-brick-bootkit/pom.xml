@@ -19,18 +19,6 @@
     <artifactId>spring-boot3-brick-bootkit</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <slf4j.version>2.0.9</slf4j.version>
-        <commons-io.version>2.15.1</commons-io.version>
-        <spring.version>6.1.5</spring.version>
-        <spring-boot.version>3.5.5</spring-boot.version>
-        <thymeleaf-spring6.version>3.1.2.RELEASE</thymeleaf-spring6.version>
-        <springdoc.version>2.5.0</springdoc.version>
-        <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
-        <java-semver.version>0.9.0</java-semver.version>
-        <junit.version>5.10.0</junit.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.zqzqq</groupId>
@@ -53,25 +41,21 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.zafarkhaja</groupId>
             <artifactId>java-semver</artifactId>
-            <version>${java-semver.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -79,7 +63,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -87,7 +70,6 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring6</artifactId>
-            <version>${thymeleaf-spring6.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -95,7 +77,6 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${jakarta.servlet-api.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -104,7 +85,6 @@
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
-            <version>4.4.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -138,7 +118,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-            <version>1.12.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>

@@ -19,23 +19,16 @@
     <artifactId>spring-boot3-brick-bootkit-common</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <spring-boot.version>3.5.5</spring-boot.version>
-        <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <version>${spring-boot.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${jakarta.servlet-api.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
