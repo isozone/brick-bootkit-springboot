@@ -17,6 +17,8 @@
 package com.zqzqq.bootkits.core.scanner;
 
 import com.zqzqq.bootkits.common.PackageStructure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -33,6 +35,7 @@ import java.util.List;
  */
 public class DevPathResolve implements PathResolve{
 
+    private static final Logger log = LoggerFactory.getLogger(DevPathResolve.class);
     private final List<String> devCompilePackageNames = new ArrayList<>();
 
     public DevPathResolve() {
@@ -91,6 +94,7 @@ public class DevPathResolve implements PathResolve{
             
             return false;
         } catch (Exception e) {
+            log.debug("Error checking valid plugin directory: {}", path, e);
             return false;
         }
     }

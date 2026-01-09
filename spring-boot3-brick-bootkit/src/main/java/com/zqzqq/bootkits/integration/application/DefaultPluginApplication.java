@@ -79,7 +79,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
             pluginOperator.initPlugins(listener);
             beInitialized.set(true);
         } catch (Exception e) {
-            LOG.error("鍒濆鍖栨彃浠跺紓甯?" + e.getMessage());
+            LOG.error("初始化插件异常", e);
         }
     }
 

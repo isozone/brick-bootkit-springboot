@@ -33,7 +33,7 @@ public class Knife4jSwaggerListener implements PluginListener {
                 log.debug("插件[{}]注册锟?Knife4j 鎴愬姛", MsgUtils.getPluginUnique(descriptor));
             }
         } catch (Exception e) {
-            log.error("插件[{}]注册锟?Knife4j 失败: {}", MsgUtils.getPluginUnique(descriptor), e.getMessage());
+            log.error("插件[{}]注册到Knife4j失败: {}", MsgUtils.getPluginUnique(descriptor), e);
         }
     }
 

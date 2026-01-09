@@ -140,8 +140,8 @@ public class PluginResource implements Resource {
             } else {
                 return true;
             }
-        } catch (Exception e) {
-            log.debug(e.getMessage(), e);
+        } catch (IOException e) {
+            log.debug("Failed to check if resource is readable: {}", path, e);
             return false;
         }
     }

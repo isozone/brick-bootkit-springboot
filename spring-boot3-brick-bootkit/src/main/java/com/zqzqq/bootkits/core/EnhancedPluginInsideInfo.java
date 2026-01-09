@@ -306,7 +306,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                                     closeJarMethod.invoke(jarFile);
                                 }
                             } catch (Exception ex) {
-                                // 忽略单个loader的清理错误
+                                LOGGER.log(Level.FINE, "Failed to close individual loader resource", ex);
                             }
                         }
                         loaders.clear();
@@ -366,7 +366,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 ((Collection<?>) obj).clear();
             }
         } catch (Exception e) {
-            // 忽略不存在鍦ㄧ殑字段鎴栨棤娉曟竻鐞嗙殑鎯呭喌
+            LOGGER.log(Level.FINE, "Could not clear field '" + fieldName + "' from ClassLoader", e);
         }
     }
 }
