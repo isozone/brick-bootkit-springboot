@@ -46,7 +46,7 @@ import static com.zqzqq.bootkits.common.PackageStructure.*;
 import static com.zqzqq.bootkits.common.PluginDescriptorKey.*;
 
 /**
- * 鍩虹打包
+ * 基础打包
  *
  * @author starBlues
  * @since 3.0.0
@@ -146,20 +146,10 @@ public class BasicRepackager implements Repackager{
     protected void writeManifest(Manifest manifest) throws Exception {
         String manifestPath = FilesUtils.joiningFilePath(rootDir, resolvePath(this.relativeManifestPath));
         File file = new File(manifestPath);
-        FileOutputStream outputStream = null;
-        try {
-            FileUtils.forceMkdirParent(file);
-            if(file.createNewFile()){
-                outputStream = new FileOutputStream(file, false);
+        FileUtils.forceMkdirParent(file);
+        if(file.createNewFile()){
+            try (FileOutputStream outputStream = new FileOutputStream(file, false)) {
                 manifest.write(outputStream);
-            }
-        } finally {
-            if(outputStream != null){
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    repackageMojo.getLog().error(e.getMessage(), e);
-                }
             }
         }
     }
@@ -379,6 +369,4 @@ public class BasicRepackager implements Repackager{
     }
 
 
-
 }
-

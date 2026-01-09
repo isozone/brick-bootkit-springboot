@@ -16,8 +16,6 @@
 
 package com.zqzqq.bootkits.utils;
 
-
-
 import com.zqzqq.bootkits.common.ManifestKey;
 
 import com.zqzqq.bootkits.common.PackageStructure;
@@ -31,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 import org.slf4j.LoggerFactory;
-
 
 
 import java.io.*;
@@ -82,20 +79,16 @@ public final class PluginFileUtils {
 
 
     public static String getMd5ByFile(File file) throws FileNotFoundException {
-        String value = null;
-        FileInputStream in = new FileInputStream(file);
-        try {
+        try (FileInputStream in = new FileInputStream(file)) {
             MappedByteBuffer byteBuffer = in.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(byteBuffer);
             BigInteger bi = new BigInteger(1, md5.digest());
-            value = bi.toString(16);
+            return bi.toString(16);
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(in);
+            log.error("Failed to calculate MD5 for file: {}", file.getPath(), e);
+            return null;
         }
-        return value;
     }
 
 
@@ -300,4 +293,3 @@ public final class PluginFileUtils {
     }
 
 }
-

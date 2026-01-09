@@ -74,11 +74,13 @@ public class ProdDirPluginDescriptorLoader extends AbstractPluginDescriptorLoade
         if(!pluginMetaFile.exists()){
             return null;
         }
-        Properties properties = super.getDecryptProperties(new FileInputStream(pluginMetaFile));
-        if(properties.isEmpty()){
-            return null;
+        try (FileInputStream fis = new FileInputStream(pluginMetaFile)) {
+            Properties properties = super.getDecryptProperties(fis);
+            if(properties.isEmpty()){
+                return null;
+            }
+            return new PluginMeta(packageType, properties);
         }
-        return new PluginMeta(packageType, properties);
     }
 
     @Override

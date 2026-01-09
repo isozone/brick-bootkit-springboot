@@ -67,12 +67,14 @@ public class ProdPackagePluginDescriptorLoader extends AbstractPluginDescriptorL
             if(jarEntry == null){
                 return null;
             }
-            Properties properties = super.getDecryptProperties(jarFile.getInputStream(jarEntry));
-            if(properties.isEmpty()){
-                return null;
+            try (InputStream is = jarFile.getInputStream(jarEntry)) {
+                Properties properties = super.getDecryptProperties(is);
+                if(properties.isEmpty()){
+                    return null;
+                }
+                pluginResourcesConfig = getPluginResourcesConfig(jarFile, properties);
+                return new PluginMeta(packageType, properties);
             }
-            pluginResourcesConfig = getPluginResourcesConfig(jarFile, properties);
-            return new PluginMeta(packageType, properties);
         }
     }
 
