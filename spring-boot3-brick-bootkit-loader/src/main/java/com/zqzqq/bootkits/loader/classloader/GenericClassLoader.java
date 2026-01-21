@@ -60,18 +60,64 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     }
 
     public GenericClassLoader(String name, ClassLoader parent, ResourceLoaderFactory resourceLoaderFactory) {
-        super(new URL[]{}, ensureValidParent(parent));
+        super(new URL[]{}, getSystemClassLoaderWithJavaBase(parent));
         this.name = Assert.isNotEmpty(name, "name 不能为空");
         this.resourceLoaderFactory = Assert.isNotNull(resourceLoaderFactory, "resourceLoaderFactory 不能为空");
-        this.parent = ensureValidParent(parent);
+        this.parent = parent;
         this.classLoaderTranslator = new ClassLoaderTranslator(this);
         
         // 确保类加载器能够访问Java基础类
-        log.debug("创建 GenericClassLoader '{}'，父类加载器: {}", name, this.parent);
+        log.debug("创建 GenericClassLoader '{}'，父类加载器: {}", name, getSystemClassLoaderWithJavaBase(parent));
     }
 
     /**
-     * 确保父类加载器不为空且有效
+     * 获取系统类加载器并确保能访问Java基础类
+     */
+    private static ClassLoader getSystemClassLoaderWithJavaBase(ClassLoader parent) {
+        // 首先尝试获取系统类加载器
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        
+        if (parent != null) {
+            // 如果有自定义父类加载器，使用组合模式
+            return parent;
+        }
+        
+        // 如果没有父类加载器，确保至少有系统类加载器
+        return systemClassLoader != null ? systemClassLoader : getBootstrapClassLoader();
+    }
+    
+    /**
+     * 获取Bootstrap类加载器（用于访问Java基础类）
+     */
+    private static ClassLoader getBootstrapClassLoader() {
+        try {
+            // 通过反射获取Bootstrap类加载器
+            ClassLoader bootstrapClassLoader = ClassLoader.getSystemClassLoader().getParent();
+            if (bootstrapClassLoader != null) {
+                return bootstrapClassLoader;
+            }
+        } catch (Exception e) {
+            log.warn("无法获取Bootstrap类加载器: {}", e.getMessage());
+        }
+        
+        // 如果无法获取Bootstrap类加载器，使用系统类加载器
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        if (systemClassLoader != null) {
+            return systemClassLoader;
+        }
+        
+        // 最后的回退：使用当前类的类加载器
+        ClassLoader currentClassLoader = GenericClassLoader.class.getClassLoader();
+        if (currentClassLoader != null) {
+            return currentClassLoader;
+        }
+        
+        // 最后的最后：使用应用类加载器
+        return Thread.currentThread().getContextClassLoader();
+    }
+
+    /**
+     * 确保父类加载器不为空且有效（保留旧方法以保持兼容性）
      */
     private static ClassLoader ensureValidParent(ClassLoader parent) {
         if (parent != null) {
@@ -155,8 +201,35 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(className)) {
+            // Java基础类应该优先由系统类加载器加载
+            if (isJavaBaseClass(className)) {
+                ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+                if (systemClassLoader != null) {
+                    return systemClassLoader.loadClass(className);
+                }
+            }
             return findClass(className);
         }
+    }
+    
+    /**
+     * 判断是否为Java基础类
+     */
+    private boolean isJavaBaseClass(String className) {
+        if (className == null) {
+            return false;
+        }
+        
+        // Java基础包
+        return className.startsWith("java.") ||
+               className.startsWith("javax.") ||
+               className.startsWith("sun.") ||
+               className.startsWith("jdk.") ||
+               // 一些特殊的Java基础类
+               className.equals("java.lang.Object") ||
+               className.equals("java.lang.String") ||
+               className.equals("java.lang.Class") ||
+               className.equals("java.lang.Thread");
     }
 
     @Override
@@ -257,6 +330,11 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
 
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
+        // Java基础类应该优先由父类加载器处理
+        if (isJavaBaseClass(className)) {
+            return findClassFromParent(className);
+        }
+        
         Class<?> loadedClass = findClassFromParent(className);
         if (loadedClass != null) {
             return loadedClass;
@@ -273,9 +351,35 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     }
 
     protected Class<?> findClassFromParent(String className) throws ClassNotFoundException{
+        if (className == null) {
+            throw new ClassNotFoundException("类名为空");
+        }
+        
         try {
+            // Java基础类优先使用系统类加载器
+            if (isJavaBaseClass(className)) {
+                ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+                if (systemClassLoader != null) {
+                    return systemClassLoader.loadClass(className);
+                }
+            }
+            
+            // 如果有自定义父类加载器，尝试使用
             if(parent != null){
                 return parent.loadClass(className);
+            }
+            
+            // 使用系统类加载器
+            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+            if (systemClassLoader != null) {
+                return systemClassLoader.loadClass(className);
+            }
+            
+            return null;
+        } catch (ClassNotFoundException e) {
+            // 对于Java基础类，抛出更详细的错误信息
+            if (isJavaBaseClass(className)) {
+                throw new ClassNotFoundException("无法加载Java基础类: " + className + "，请检查JVM环境配置", e);
             }
             return null;
         } catch (Exception e){

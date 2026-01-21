@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public class DefaultMainResourcePatternDefiner extends JavaMainResourcePatternDefiner {
 
-    private static final String FRAMEWORK = "com/gitee/starblues/**";
+    private static final String FRAMEWORK = "com/zqzqq/bootkits/**";
 
     public static final String FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories";
 
