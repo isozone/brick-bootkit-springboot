@@ -22,6 +22,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -33,10 +34,38 @@ import java.util.Set;
  */
 public class DefaultMainResourceMatcher implements MainResourceMatcher{
 
+    /**
+     * 框架默认需要从主程序加载的资源模式
+     */
+    private static final Set<String> DEFAULT_FRAMEWORK_PATTERNS = new HashSet<>();
+    
+    static {
+        // 插件引导类相关
+        DEFAULT_FRAMEWORK_PATTERNS.add("com/zqzqq/bootkits/bootstrap/**");
+        // 插件交互接口和启动器相关
+        DEFAULT_FRAMEWORK_PATTERNS.add("com/zqzqq/bootkits/core/launcher/plugin/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("com/zqzqq/bootkits/core/launcher/plugin/involved/**");
+        // Spring 核心类（隔离模式下需要从主程序加载）
+        // 注意：不能包含 web.servlet.mvc 相关的类，否则会导致主应用的 Controller 映射被插件覆盖
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/boot/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/core/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/context/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/beans/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/aop/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/util/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/stereotype/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/annotation/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/lang/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/expression/**");
+        DEFAULT_FRAMEWORK_PATTERNS.add("org/springframework/jcl/**");
+    }
+
     private final Set<String> includePatterns;
     private final Set<String> excludePatterns;
 
     private final PathMatcher pathMatcher;
+    
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DefaultMainResourceMatcher.class);
 
     public DefaultMainResourceMatcher(MainResourcePatternDefiner mainResourcePatternDefiner) {
         this.includePatterns = mainResourcePatternDefiner.getIncludePatterns();
@@ -46,18 +75,45 @@ public class DefaultMainResourceMatcher implements MainResourceMatcher{
 
     @Override
     public Boolean match(String resourceUrl) {
-        return match(includePatterns, resourceUrl);
+        // 首先检查用户配置的模式
+        if (match(includePatterns, resourceUrl)) {
+            log.debug("资源[{}]匹配用户配置模式", resourceUrl);
+            return Boolean.TRUE;
+        }
+        // 如果用户没有配置模式，则使用默认的框架模式
+        if (ObjectUtils.isEmpty(includePatterns)) {
+            boolean matched = match(DEFAULT_FRAMEWORK_PATTERNS, resourceUrl);
+            if (matched) {
+                log.debug("资源[{}]匹配默认框架模式", resourceUrl);
+            } else {
+                log.debug("资源[{}]未匹配任何模式 includePatterns为空, DEFAULT_FRAMEWORK_PATTERNS匹配结果: {}", resourceUrl, matched);
+            }
+            return matched;
+        }
+        log.debug("资源[{}]未匹配任何模式", resourceUrl);
+        return Boolean.FALSE;
     }
 
     private Boolean match(Collection<String> patterns, String url){
         if(ObjectUtils.isEmpty(patterns) || ObjectUtils.isEmpty(url)){
             return Boolean.FALSE;
         }
-        url = UrlUtils.formatMatchUrl(url);
+        // 格式化URL路径，确保不以/开头（AntPathMatcher要求）
+        String formattedUrl = UrlUtils.formatMatchUrl(url);
+        if (formattedUrl.startsWith("/")) {
+            formattedUrl = formattedUrl.substring(1);
+        }
+        log.debug("尝试匹配资源[{}] against patterns: {}", formattedUrl, patterns);
         for (String pattern : patterns) {
-            boolean match = pathMatcher.match(pattern, url);
+            // 确保模式不以/开头
+            String formattedPattern = pattern;
+            if (formattedPattern.startsWith("/")) {
+                formattedPattern = formattedPattern.substring(1);
+            }
+            boolean match = pathMatcher.match(formattedPattern, formattedUrl);
+            log.debug("模式[{}] 匹配 结果: {}", formattedPattern, match);
             if(match){
-                return !excludeMatch(excludePatterns, url);
+                return !excludeMatch(excludePatterns, formattedUrl);
             }
         }
         return Boolean.FALSE;
@@ -67,9 +123,18 @@ public class DefaultMainResourceMatcher implements MainResourceMatcher{
         if(ObjectUtils.isEmpty(patterns) || ObjectUtils.isEmpty(url)){
             return Boolean.FALSE;
         }
-        url = UrlUtils.formatMatchUrl(url);
+        // 格式化URL路径，确保不以/开头（AntPathMatcher要求）
+        String formattedUrl = UrlUtils.formatMatchUrl(url);
+        if (formattedUrl.startsWith("/")) {
+            formattedUrl = formattedUrl.substring(1);
+        }
         for (String pattern : patterns) {
-            boolean match = pathMatcher.match(pattern, url);
+            // 确保模式不以/开头
+            String formattedPattern = pattern;
+            if (formattedPattern.startsWith("/")) {
+                formattedPattern = formattedPattern.substring(1);
+            }
+            boolean match = pathMatcher.match(formattedPattern, formattedUrl);
             if(match){
                 return Boolean.TRUE;
             }

@@ -57,8 +57,14 @@ public class IsolationBaseLauncher extends AbstractMainLauncher {
 
     @Override
     protected ClassLoader createClassLoader(String... args) throws Exception {
-        return new GenericClassLoader(MAIN_CLASS_LOADER_NAME, getParentClassLoader(),
+        GenericClassLoader classLoader = new GenericClassLoader(MAIN_CLASS_LOADER_NAME, getParentClassLoader(),
                 getResourceLoaderFactory(args));
+        // 添加主应用的类路径
+        Set<URL> baseResources = getBaseResource();
+        for (URL url : baseResources) {
+            classLoader.addResource(url);
+        }
+        return classLoader;
     }
 
     @Override
