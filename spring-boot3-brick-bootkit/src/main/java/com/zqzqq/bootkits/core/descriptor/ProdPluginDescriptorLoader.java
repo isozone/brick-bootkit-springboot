@@ -16,13 +16,18 @@
 
 package com.zqzqq.bootkits.core.descriptor;
 
+import com.zqzqq.bootkits.common.PackageStructure;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.utils.FilesUtils;
 import com.zqzqq.bootkits.utils.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 生产环境插件描述加载器
@@ -47,20 +52,37 @@ public class ProdPluginDescriptorLoader implements PluginDescriptorLoader{
     public InsidePluginDescriptor load(Path location) throws PluginException {
         if(ResourceUtils.isJarFile(location)){
             target = new ProdPackagePluginDescriptorLoader(pluginDescriptorDecrypt);
+            return target.load(location);
         } else if(ResourceUtils.isZipFile(location)){
             target = new ProdPackagePluginDescriptorLoader(pluginDescriptorDecrypt);
+            return target.load(location);
         } else if(ResourceUtils.isDirFile(location)){
-            target = new ProdDirPluginDescriptorLoader(pluginDescriptorDecrypt);
-        } else {
-            logger.warn("不能解析文件: {}", location);
-            return null;
+            // 如果是目录且包含 PLUGIN.META，使用目录插件加载器
+            if(isDirPlugin(location)) {
+                target = new ProdDirPluginDescriptorLoader(pluginDescriptorDecrypt);
+                return target.load(location);
+            }
         }
-        return target.load(location);
+        logger.warn("不能解析文件: {}", location);
+        return null;
+    }
+
+    /**
+     * 检查目录是否是目录插件（包含 META-INF/PLUGIN.META）
+     */
+    private boolean isDirPlugin(Path path) {
+        File pluginMetaFile = new File(FilesUtils.joiningFilePath(
+                path.toString(),
+                PackageStructure.resolvePath(PackageStructure.PROD_MANIFEST_PATH)
+        ));
+        return pluginMetaFile.exists() && pluginMetaFile.isFile();
     }
 
     @Override
     public void close() throws Exception {
-        target.close();
+        if(target != null) {
+            target.close();
+        }
     }
 }
 

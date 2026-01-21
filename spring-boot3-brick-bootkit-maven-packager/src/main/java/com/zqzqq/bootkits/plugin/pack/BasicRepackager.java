@@ -29,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -166,10 +165,10 @@ public class BasicRepackager implements Repackager{
         attributes.putValue(ManifestKey.BUILD_TIME, CommonUtils.getDateTime());
         attributes.putValue(ManifestKey.PLUGIN_META_PATH, getPluginMetaInfoPath());
         attributes.putValue(ManifestKey.PLUGIN_PACKAGE_TYPE, PackageType.PLUGIN_PACKAGE_TYPE_DEV);
-        // 添加jar包title和version属性
-        MavenProject mavenProject = this.repackageMojo.getProject();
-        attributes.putValue(ManifestKey.IMPLEMENTATION_TITLE, mavenProject.getArtifactId());
-        attributes.putValue(ManifestKey.IMPLEMENTATION_VERSION, mavenProject.getVersion());
+        // 添加jar包title和version属性，使用pluginInfo而非mavenProject
+        PluginInfo pluginInfo = this.repackageMojo.getPluginInfo();
+        attributes.putValue(ManifestKey.IMPLEMENTATION_TITLE, pluginInfo.getId());
+        attributes.putValue(ManifestKey.IMPLEMENTATION_VERSION, pluginInfo.getVersion());
         return manifest;
     }
 

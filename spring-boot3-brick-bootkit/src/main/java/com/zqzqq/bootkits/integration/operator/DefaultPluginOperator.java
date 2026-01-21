@@ -89,7 +89,6 @@ public class DefaultPluginOperator implements PluginOperator {
             throw new RuntimeException("插件已经被初始化了，不能再初始化.");
         }
         try {
-            log.info("当前版本是: {}","3.1.4");
             log.info("插件加载环境: {}", configuration.environment().toString());
             log.info("插件加载模式: {}", DevelopmentModeSetting.getDevelopmentMode());
             pluginInitializerListenerFactory.addListener(pluginInitializerListener);
@@ -98,7 +97,7 @@ public class DefaultPluginOperator implements PluginOperator {
                return true;
             }
             initBeforeLogPrint();
-            if(!configuration.enable()){
+            if(Boolean.FALSE.equals(configuration.enable())){
                 log.info("插件功能已被禁用!");
                 return false;
             }
