@@ -97,7 +97,7 @@ public class PluginOneselfInteractive implements PluginInteractive {
             String metaInf = FilesUtils.joiningFilePath(classesPath.toString(), PackageStructure.META_INF_NAME);
             InsidePluginDescriptor pluginDescriptor = pluginDescriptorLoader.load(Paths.get(metaInf));
             if(pluginDescriptor == null){
-                throw new RuntimeException("娌℃湁鍙戠幇插件淇℃伅, 璇蜂娇鐢ㄦ鏋舵彁渚涚殑Maven插件鍣ㄥ插件杩涜缂栬瘧!");
+                throw new RuntimeException("没有发现插件信息, 请使用构建工具提供的Maven插件对插件进行编译!");
             }
             return new DefaultPluginInsideInfo(pluginDescriptor);
         } catch (Exception e){

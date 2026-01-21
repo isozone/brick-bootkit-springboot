@@ -4,7 +4,7 @@
     <name>Spring Boot Plugin Maven Packager</name>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-    <version>4.0.2</version>
+    <version>4.0.3</version>
     <goalPrefix>spring-boot3-brick-bootkit-packager</goalPrefix>
     <isolatedRealm>false</isolatedRealm>
     <inheritedByDefault>true</inheritedByDefault>

@@ -22,6 +22,8 @@ import com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
 import com.zqzqq.bootkits.loader.utils.ObjectUtils;
 import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
@@ -40,6 +42,8 @@ import java.util.Set;
  */
 public class IsolationBaseLauncher extends AbstractMainLauncher {
 
+    private static final Logger log = LoggerFactory.getLogger(IsolationBaseLauncher.class);
+    
     private final MethodRunner methodRunner;
 
     public IsolationBaseLauncher(MethodRunner methodRunner) {
@@ -69,7 +73,28 @@ public class IsolationBaseLauncher extends AbstractMainLauncher {
     }
 
     protected ClassLoader getParentClassLoader(){
-        return IsolationBaseLauncher.class.getClassLoader();
+        // 获取当前类的类加载器作为起始点
+        ClassLoader classLoader = IsolationBaseLauncher.class.getClassLoader();
+        
+        // 回退到线程上下文类加载器
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        
+        // 回退到系统类加载器
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        
+        // 最终回退：确保至少有一个有效的类加载器
+        if (classLoader == null) {
+            classLoader = IsolationBaseLauncher.class.getClassLoader();
+        }
+        
+        // 记录调试信息
+        log.debug("隔离模式父类加载器: {}", classLoader);
+        
+        return classLoader;
     }
 
     protected Set<URL> getBaseResource() {

@@ -120,7 +120,7 @@ public class PluginThymeleafInvolved implements PluginLaunchInvolved {
     }
 
     private Set<ITemplateResolver> getTemplateResolvers(SpringTemplateEngine springTemplateEngine) {
-        String errorMsg = "褰撳墠插件不能浣跨敤Thymeleaf, 主程序搴忔湭鍙戠幇Thymeleaf注册鍏ュ彛";
+        String errorMsg = "当前插件不能使用Thymeleaf, 主程序未发现Thymeleaf注册接口";
         if(springTemplateEngine == null){
             logger.error(errorMsg);
         }

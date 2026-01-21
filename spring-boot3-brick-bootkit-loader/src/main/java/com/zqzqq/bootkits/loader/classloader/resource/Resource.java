@@ -43,7 +43,7 @@ public interface Resource extends AutoCloseable, Release {
     URL getBaseUrl();
 
     /**
-     * 得到瀹屾暣URL鍦板潃
+     * 获取完整URL路径
      * @return URL
      */
     URL getUrl();

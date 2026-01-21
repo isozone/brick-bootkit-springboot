@@ -66,7 +66,7 @@ public class DefaultPluginDescriptorDecrypt implements PluginDescriptorDecrypt{
         }
         Boolean enable = decryptConfig.getEnable();
         if(enable == null || !enable){
-            // 娌℃湁鍚敤
+            // 没有启用
             return null;
         }
         Map<String, Object> props = decryptConfig.getProps();
@@ -76,12 +76,12 @@ public class DefaultPluginDescriptorDecrypt implements PluginDescriptorDecrypt{
         }
         String className = decryptConfig.getClassName();
         if(ObjectUtils.isEmpty(pluginDecryptConfig)){
-            // 娌℃湁配置鍏蜂綋插件鐨勮В瀵嗛厤锟?
+            // 没有配置具体插件的解密配置
             return getPluginCipherBean(className, props);
         }
         DecryptPluginConfiguration decryptPluginConfiguration = pluginDecryptConfig.get(pluginId);
         if(decryptPluginConfiguration == null){
-            // 褰撳墠插件娌℃湁配置瑙ｅ瘑配置, 璇存槑涓嶅惎鐢ㄨВ锟?
+            // 当前插件没有配置解密配置, 说明不启用解密
             return null;
         }
         Map<String, Object> pluginParam = decryptPluginConfiguration.getProps();
@@ -100,7 +100,7 @@ public class DefaultPluginDescriptorDecrypt implements PluginDescriptorDecrypt{
             }
             Class<?> aClass = defaultClassLoader.loadClass(className);
 
-            String error = "瑙ｅ瘑实现鑰匸" + className + "]娌℃湁缁ф壙 [" + AbstractPluginCipher.class.getName() + "]";
+            String error = "解密实现类[" + className + "]没有继承 [" + AbstractPluginCipher.class.getName() + "]";
 
             if(aClass.isAssignableFrom(AbstractPluginCipher.class)){
                 throw new PluginDecryptException(error);
@@ -114,7 +114,7 @@ public class DefaultPluginDescriptorDecrypt implements PluginDescriptorDecrypt{
                 throw new PluginDecryptException(error);
             }
         } catch (ClassNotFoundException e) {
-            throw new PluginDecryptException("娌℃湁鍙戠幇瑙ｅ瘑实现锟? " + className);
+            throw new PluginDecryptException("没有发现解密实现类: " + className);
         }
     }
 

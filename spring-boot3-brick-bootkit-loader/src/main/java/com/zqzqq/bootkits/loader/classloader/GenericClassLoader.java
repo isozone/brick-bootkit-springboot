@@ -56,15 +56,42 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
     private final Map<String, Class<?>> pluginClassCache = new ConcurrentHashMap<>();
 
     public GenericClassLoader(String name, ResourceLoaderFactory resourceLoaderFactory) {
-        this(name, null, resourceLoaderFactory);
+        this(name, Thread.currentThread().getContextClassLoader(), resourceLoaderFactory);
     }
 
     public GenericClassLoader(String name, ClassLoader parent, ResourceLoaderFactory resourceLoaderFactory) {
-        super(new URL[]{}, null);
+        super(new URL[]{}, ensureValidParent(parent));
         this.name = Assert.isNotEmpty(name, "name 不能为空");
         this.resourceLoaderFactory = Assert.isNotNull(resourceLoaderFactory, "resourceLoaderFactory 不能为空");
-        this.parent = parent;
+        this.parent = ensureValidParent(parent);
         this.classLoaderTranslator = new ClassLoaderTranslator(this);
+        
+        // 确保类加载器能够访问Java基础类
+        log.debug("创建 GenericClassLoader '{}'，父类加载器: {}", name, this.parent);
+    }
+
+    /**
+     * 确保父类加载器不为空且有效
+     */
+    private static ClassLoader ensureValidParent(ClassLoader parent) {
+        if (parent != null) {
+            return parent;
+        }
+        
+        // 回退到系统类加载器
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        if (systemClassLoader != null) {
+            return systemClassLoader;
+        }
+        
+        // 最后的回退：使用当前类的类加载器
+        ClassLoader currentClassLoader = GenericClassLoader.class.getClassLoader();
+        if (currentClassLoader != null) {
+            return currentClassLoader;
+        }
+        
+        // 最后的最后：使用应用类加载器
+        return Thread.currentThread().getContextClassLoader();
     }
 
     public String getName() {

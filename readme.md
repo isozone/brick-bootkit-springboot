@@ -145,7 +145,7 @@
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
-<version>4.0.2</version>
+<version>4.0.3</version>
 </dependency>
 
 ```
@@ -156,7 +156,7 @@
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-<version>4.0.2</version>
+<version>4.0.3</version>
 </dependency>
 
 ```
@@ -167,9 +167,14 @@
 com.zqzqq.bootkits.*
 ```
 
+### 打包
+> mvn clean install -Dgpg.skip=true -Djacoco.skip=true  -DskipTests=true
+> 
+> 
+
 
 ### 更新
-[4.0.2](./doc/updates/4.0.2.md)
+[4.0.3](./doc/updates/4.0.3.md)
 
 
 ### 文档地址

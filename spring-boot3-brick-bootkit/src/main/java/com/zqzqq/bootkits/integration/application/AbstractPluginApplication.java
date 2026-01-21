@@ -41,8 +41,8 @@ public abstract class AbstractPluginApplication implements PluginApplication {
             // no show exception
         }
         if(configuration == null){
-            throw new BeanCreationException("娌℃湁鍙戠幇 <IntegrationConfiguration> Bean, " +
-                    "璇峰湪 Spring 瀹瑰櫒涓皢 <IntegrationConfiguration> 瀹氫箟涓築ean");
+            throw new BeanCreationException("没有发现 <IntegrationConfiguration> Bean, " +
+                    "请在 Spring 容器中将 <IntegrationConfiguration> 定义为Bean");
         }
         return configuration;
     }
