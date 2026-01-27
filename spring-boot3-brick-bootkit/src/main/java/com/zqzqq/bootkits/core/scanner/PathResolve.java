@@ -28,8 +28,8 @@ public interface PathResolve {
 
     /**
      * 解析并返回合适的路径
-     * @param path 寰呰繃婊よ矾寰?
-     * @return  path 处理鍚庣殑璺緞, 杩斿洖null 琛ㄧず涓嶅彲鐢?
+     * @param path 待过滤路径
+     * @return  处理后的路径, 返回null 表示不可用
      */
     Path resolve(Path path);
 

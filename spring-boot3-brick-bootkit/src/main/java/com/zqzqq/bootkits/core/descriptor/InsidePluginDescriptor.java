@@ -36,7 +36,7 @@ public interface InsidePluginDescriptor extends PluginDescriptor {
     Set<String> getExcludeAutoConfigurations();
 
     /**
-     * 璁剧疆需要排除的自动配置
+     * 设置需要排除的自动配置
      * @param excludeClasses 排除的自动配置类集合
      */
     void setExcludeAutoConfigurations(Set<String> excludeClasses);

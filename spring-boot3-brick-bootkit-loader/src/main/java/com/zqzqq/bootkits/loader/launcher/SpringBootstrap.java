@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.loader.launcher;
 import com.zqzqq.bootkits.loader.DevelopmentMode;
 
 /**
- * 主程序搴忓疄鐜拌接口寮曞鍚姩SpringBoot
+ * 主程序包实现该接口引导启动SpringBoot
  *
  * @author starBlues
  * @since 3.0.0
@@ -28,15 +28,15 @@ import com.zqzqq.bootkits.loader.DevelopmentMode;
 public interface SpringBootstrap {
 
     /**
-     * 鍚姩
+     * 启动
      * @param args 启动参数
-     * @throws Exception 鍚姩异常
+     * @throws Exception 启动异常
      */
     void run(String[] args) throws Exception;
 
 
     /**
-     * 璁剧疆寮€鍙戞ā寮?
+     * 设置开发模式
      *
      * @return DevelopmentMode
      */

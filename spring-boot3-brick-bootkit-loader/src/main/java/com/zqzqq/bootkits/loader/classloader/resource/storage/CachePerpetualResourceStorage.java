@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 永久缓存
- * 浼樼偣: 閫熷害锟?
+ * 优点: 速度快
  * 缺点: 占用内存非常高
  *
  * @author starBlues

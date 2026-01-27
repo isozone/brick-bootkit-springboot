@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * 插件的资源婧愬姞杞藉櫒
+ * 插件的资源加载器
  * @author starBlues
  * @since 3.0.0
  * @version 3.1.1
@@ -46,13 +46,13 @@ public abstract class AbstractResourceLoader implements ResourceLoader{
     }
 
     /**
-     * 鍒濆鍖杛esource
-     * @throws Exception 鍒濆异常
+     * 初始化Resource
+     * @throws Exception 初始化异常
      */
     @Override
     public final synchronized void load(ResourceStorage resourceStorage) throws Exception{
         if(loaded){
-            throw new Exception(this.getClass().getName()+": 宸茬粡鍒濆鍖栦簡, 不能鍐嶅垵濮嬪寲!");
+            throw new Exception(this.getClass().getName()+": 已经初始化了, 不能再次初始化!");
         }
         try {
             // 添加root 资源
@@ -64,9 +64,9 @@ public abstract class AbstractResourceLoader implements ResourceLoader{
     }
 
     /**
-     * 子类鍒濆鍖栧疄鐜?
+     * 子类初始化实现
      * @param resourceStorage 资源存储
-     * @throws Exception 鍒濆异常
+     * @throws Exception 初始化异常
      */
     protected abstract void loadOfChild(ResourceStorage resourceStorage) throws Exception;
 

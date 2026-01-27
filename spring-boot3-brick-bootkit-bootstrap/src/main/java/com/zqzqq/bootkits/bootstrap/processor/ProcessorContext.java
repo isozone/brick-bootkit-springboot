@@ -51,13 +51,13 @@ public interface ProcessorContext extends RegistryInfo {
     SpringPluginBootstrap getSpringPluginBootstrap();
 
     /**
-     * 得到插件淇℃伅 PluginDescriptor
+     * 得到插件信息 PluginDescriptor
      * @return PluginDescriptor
      */
     InsidePluginDescriptor getPluginDescriptor();
 
     /**
-     * 得到插件淇℃伅 PluginInfo
+     * 得到插件信息 PluginInfo
      * @return PluginInfo
      */
     PluginInfo getPluginInfo();
@@ -106,7 +106,7 @@ public interface ProcessorContext extends RegistryInfo {
     ClassLoader getClassLoader();
 
     /**
-     * 得到插件的资源婧恖oader
+     * 得到插件的资源Loader
      * @return ResourceLoader
      */
     ResourceLoader getResourceLoader();
@@ -124,7 +124,7 @@ public interface ProcessorContext extends RegistryInfo {
     void setApplicationContext(GenericApplicationContext applicationContext);
 
     /**
-     * 杩愯妯″紡
+     * 运行模式
      */
     enum RunMode{
         /**

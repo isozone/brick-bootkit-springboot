@@ -21,7 +21,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 
 /**
- * 鍏敤鐨勭殑插件搴旂敤
+ * 通用的插件应用
  *
  * @author starBlues
  * @version 3.0.0
@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationContext;
 public abstract class AbstractPluginApplication implements PluginApplication {
 
     /**
-     * 子类鍙€氳繃Application 获取插件瀹氫箟鐨勯厤锟?
+     * 子类可通过Application 获取插件定义的配置
      * @param applicationContext applicationContext
      * @return IntegrationConfiguration
      */

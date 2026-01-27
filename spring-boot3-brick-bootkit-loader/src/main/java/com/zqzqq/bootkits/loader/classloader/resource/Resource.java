@@ -32,7 +32,7 @@ public interface Resource extends AutoCloseable, Release {
 
     /**
      * 得到资源名称
-     * @return 鍏ㄥ眬鍞竴的资源婧愬悕绉?
+     * @return 全局唯一的资源名称
      */
     String getName();
 

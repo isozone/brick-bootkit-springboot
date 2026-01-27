@@ -23,7 +23,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
- * 鑷畾涔夋彃浠禸ean工具锟?
+ * 自定义插件Bean工具类
  * @author starBlues
  * @since 3.0.0
  * @version 3.1.1
@@ -95,9 +95,9 @@ public class SpringBeanCustomUtils {
     }
 
     /**
-     * 获取存在鐨凚ean銆傚悕绉板拰类型浠绘剰鎵归噺鍗冲彲杩斿洖
+     * 获取存在的Bean。名称和类型任意匹配即可返回
      * @param applicationContext applicationContext
-     * @param beanName bean鍚嶇О
+     * @param beanName bean名称
      * @param beanClass bean class
      * @return T
      * @param <T> bean 类型

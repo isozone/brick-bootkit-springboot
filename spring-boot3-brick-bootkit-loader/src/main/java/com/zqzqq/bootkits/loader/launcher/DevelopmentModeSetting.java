@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.loader.launcher;
 import com.zqzqq.bootkits.loader.DevelopmentMode;
 
 /**
- * DevelopmentMode 璁剧疆鍣?
+ * DevelopmentMode 设置类
  *
  * @author starBlues
  * @since 3.0.4

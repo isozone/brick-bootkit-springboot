@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.loader.launcher;
 
 /**
- * 鍚姩寮曞鍣?
+ * 启动引导器
  *
  * @author starBlues
  * @since 3.0.0
@@ -28,10 +28,10 @@ public interface Launcher<R> {
     String SPRING_BOOTSTRAP_RUN_METHOD = "run";
 
     /**
-     * 鍚姩杩愯
-     * @param args 鍚姩浼犲叆鐨勫弬鏁?
-     * @return 鍚姩鍚庣殑杩斿洖值
-     * @throws Exception 鍚姩异常
+     * 启动运行
+     * @param args 启动传入的参数
+     * @return 启动后的返回值
+     * @throws Exception 启动异常
      */
     R run(String... args) throws Exception;
 

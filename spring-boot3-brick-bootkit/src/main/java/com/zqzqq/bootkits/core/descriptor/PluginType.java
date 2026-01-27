@@ -31,7 +31,7 @@ import java.util.Objects;
 public enum PluginType {
 
     /**
-     * 寮€鍙戞ā寮忕洰锟?
+     * 开发模式目录
      */
     DEV(PackageType.PLUGIN_PACKAGE_TYPE_DEV),
 

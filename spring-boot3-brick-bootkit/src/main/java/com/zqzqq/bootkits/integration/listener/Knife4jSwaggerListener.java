@@ -30,7 +30,7 @@ public class Knife4jSwaggerListener implements PluginListener {
             OpenAPI openAPI = mainApplicationContext.getBean(OpenAPI.class);
             if(openAPI != null) {
                 addPluginApiInfo(openAPI, descriptor);
-                log.debug("插件[{}]注册锟?Knife4j 鎴愬姛", MsgUtils.getPluginUnique(descriptor));
+                log.debug("插件[{}]注册到Knife4j 成功", MsgUtils.getPluginUnique(descriptor));
             }
         } catch (Exception e) {
             log.error("插件[{}]注册到Knife4j失败: {}", MsgUtils.getPluginUnique(descriptor), e);
@@ -39,8 +39,8 @@ public class Knife4jSwaggerListener implements PluginListener {
 
     @Override
     public void stopSuccess(PluginInfo pluginInfo) {
-        // Knife4j浼氳嚜鍔ㄥ鐞咥PI鏂囨。鏇存柊锛屾棤闇€鎵嬪姩操作
-        log.debug("插件[{}]锟?Knife4j 移除鎴愬姛", MsgUtils.getPluginUnique(pluginInfo.getPluginDescriptor()));
+        // Knife4j会自动处理API文档更新，无需手动操作
+        log.debug("插件[{}]从Knife4j 移除成功", MsgUtils.getPluginUnique(pluginInfo.getPluginDescriptor()));
     }
 
     private void addPluginApiInfo(OpenAPI openAPI, PluginDescriptor descriptor) {

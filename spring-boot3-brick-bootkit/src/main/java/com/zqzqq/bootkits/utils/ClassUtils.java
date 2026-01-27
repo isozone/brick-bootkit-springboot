@@ -88,7 +88,7 @@ public class ClassUtils {
      * 通过反射Field获取字段
      *
      * @param field Field字段
-     * @param o 褰撳墠对象
+     * @param o 当前对象
      * @param <T> 字段类型
      * @return 字段值
      * @throws IllegalAccessException 异常信息
@@ -106,7 +106,7 @@ public class ClassUtils {
     /**
      * 获取注解修改者
      *
-     * TODO 鍙兘鏌愪釜java版本涓嶇敓鏁?
+     * TODO 可能在某个java版本不生效
      * @param annotation 注解
      * @return 修改者集合
      * @throws Exception 异常

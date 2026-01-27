@@ -34,7 +34,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * 绯荤粺web环境配置锟?
+ * 系统web环境扩展配置
  * @author starBlues
  * @version 3.0.0
  */

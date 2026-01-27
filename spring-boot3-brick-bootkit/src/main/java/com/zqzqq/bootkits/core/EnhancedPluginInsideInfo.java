@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 /**
  * 增强插件内部信息实现（线程安全）
- * 提供者浜嗗畬鏁寸殑插件鐢熷懡鍛ㄦ湡绠＄悊鍜岃祫婧愯窡韪姛锟?
+ *  * 提供了完整的插件生命周期管理和资源跟踪功能
  */
 public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     private static final Logger LOGGER = Logger.getLogger(EnhancedPluginInsideInfo.class.getName());
@@ -103,7 +103,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 }
             }
             
-            // 鐘舵€佽浆鎹㈤獙锟?
+                        // 状态转换验证
             if (oldState != null && oldState instanceof EnhancedPluginState && 
                 !((EnhancedPluginState)oldState).canTransitionTo(newState)) {
                 throw new IllegalStateException(String.format(
@@ -111,7 +111,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                     oldState, newState, getPluginId()));
             }
             
-            // 执行状态变动锟?
+            // 执行状态变动
             this.state = newState;
             
             // 记录时间戳
@@ -123,11 +123,11 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
             
             // 特殊状态处理
             if (newState == EnhancedPluginState.UNLOADED) {
-                // 鍦ㄥ嵏杞界姸鎬佷笅清理所有夎祫锟?
+                // 在卸载状态下清理所有跟踪资源
                 cleanupAllResources();
             }
             
-            // 鍚庣疆閫氱煡
+            // 后置通知
             for (PluginStateInterceptor interceptor : interceptors) {
                 interceptor.postStateChange(this, oldState, newState);
             }
@@ -215,7 +215,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     
     /**
      * 跟踪资源以便在卸载时清理
-     * @param resource 闇€瑕佽窡韪殑资源
+     * @param resource 需要跟踪的资源
      */
     public void trackResource(Object resource) {
         if (resource != null) {
@@ -224,10 +224,10 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     }
     
     /**
-     * 清理所有夎窡韪殑资源
+     * 清理所有跟踪的资源
      */
     private void cleanupAllResources() {
-        // 清理所有夎窡韪殑资源
+        // 清理所有跟踪的资源
         Iterator<WeakReference<Object>> iterator = resourceTracker.iterator();
         while (iterator.hasNext()) {
             WeakReference<Object> ref = iterator.next();
@@ -255,7 +255,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     
     /**
      * 增强的ClassLoader清理方法
-     * 处理各种类型鐨凜lassLoader骞跺皾璇曢噴鏀惧叾资源
+     * 处理各种类型的ClassLoader并尝试释放其资源
      */
     private void cleanupClassLoader(ClassLoader classLoader) {
         if (classLoader == null) {
@@ -336,7 +336,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 Vector<Class<?>> classes = (Vector<Class<?>>) classesField.get(classLoader);
                 classes.clear();
                 
-                // 尝试清理其它鍙兘鐨勭紦瀛樺瓧锟?
+                // 尝试清理其他可能的缓存字符
                 clearFieldIfExists(classLoader, "resourceCache");
                 clearFieldIfExists(classLoader, "packageMap");
                 clearFieldIfExists(classLoader, "nativeLibraries");

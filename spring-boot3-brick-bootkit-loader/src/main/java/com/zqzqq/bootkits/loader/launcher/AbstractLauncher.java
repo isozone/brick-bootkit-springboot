@@ -77,19 +77,19 @@ public abstract class AbstractLauncher<R> implements Launcher<R> {
     }
 
     /**
-     * 鍒涘缓classloader
+     * 创建classloader
      * @param args 参数
      * @return ClassLoader
-     * @throws Exception 鍒涘缓异常
+     * @throws Exception 创建异常
      */
     protected abstract ClassLoader createClassLoader(String... args) throws Exception;
 
     /**
      * 子类实现具体的启动方法
-     * @param classLoader 褰撳墠鐨凜lassLoader
-     * @param args 鍚姩参数
-     * @return 鍚姩杩斿洖值
-     * @throws Exception 鍚姩异常
+     * @param classLoader 当前的ClassLoader
+     * @param args 启动参数
+     * @return 启动返回值
+     * @throws Exception 启动异常
      */
     protected abstract R launch(ClassLoader classLoader, String... args) throws Exception;
 

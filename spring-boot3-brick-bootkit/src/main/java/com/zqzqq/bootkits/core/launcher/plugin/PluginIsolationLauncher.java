@@ -65,7 +65,7 @@ public class PluginIsolationLauncher extends AbstractPluginLauncher {
                 SpringBeanCustomUtils.getBeans(mainApplicationContext, MainResourceMatcher.class);
 
         List<MainResourceMatcher> resourceMatchers = new ArrayList<>(mainResourceMatchers);
-        // 鏂板插件瀹氫箟的资源婧愬尮锟?
+        // 新增插件定义的资源匹配器
         resourceMatchers.add(new DefaultMainResourceMatcher(
                 new PluginMainResourcePatternDefiner(pluginInteractive)
         ));

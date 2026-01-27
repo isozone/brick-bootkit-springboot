@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.loader.launcher;
 
 /**
- * 鍚姩上下?
+ * 启动上下文
  *
  * @author starBlues
  * @since 3.0.0
@@ -28,16 +28,16 @@ public class LauncherContext {
     private static volatile ClassLoader mainClassLoader = null;
 
     /**
-     * 获取主程序搴忕殑ClassLoader
-     * @return 主程序搴廋lassLoader
+     * 获取主程序包的ClassLoader
+     * @return 主程序包ClassLoader
      */
     public static ClassLoader getMainClassLoader(){
         return mainClassLoader;
     }
 
     /**
-     * 璁剧疆主程序搴忕殑ClassLoader
-     * @param classLoader 主程序搴廋lassLoader
+     * 设置主程序包的ClassLoader
+     * @param classLoader 主程序包ClassLoader
      */
     static void setMainClassLoader(ClassLoader classLoader){
         if(mainClassLoader == null){

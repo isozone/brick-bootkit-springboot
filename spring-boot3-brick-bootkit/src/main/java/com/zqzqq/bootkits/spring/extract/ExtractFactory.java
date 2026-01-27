@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 扩展宸ュ巶
+ * 扩展工厂
  * @author starBlues
  * @version 3.0.0
  */
@@ -38,28 +38,28 @@ public interface ExtractFactory {
     }
 
     /**
-     * 通过鍧愭爣得到扩展
-     * @param coordinate 扩展鐨勫潗锟?
-     * @param <T> 扩展鐨勬硾锟?
+     * 通过坐标得到扩展
+     * @param coordinate 扩展的坐标
+     * @param <T> 扩展的泛型
      * @return 扩展实例, 如果不存在则抛出 RuntimeException 异常
      */
     <T> T getExtractByCoordinate(ExtractCoordinate coordinate);
 
     /**
-     * 根据插件id鍜屽潗鏍囧緱鍒版墿锟?
+     * 根据插件id和坐标得到扩展
      * @param pluginId 插件id
-     * @param coordinate 扩展鐨勫潗锟?
-     * @param <T> 扩展鐨勬硾锟?
+     * @param coordinate 扩展的坐标
+     * @param <T> 扩展的泛型
      * @return 扩展实例, 如果不存在则抛出 RuntimeException 异常
      */
     <T> T getExtractByCoordinate(String pluginId, ExtractCoordinate coordinate);
 
 
     /**
-     * 根据鍧愭爣得到主程序搴忕殑扩展
-     * 主程序搴忔墿灞曞繀椤讳娇锟?@Extract+@Component 杩涜瀹氫箟
-     * @param coordinate 扩展鐨勫潗锟?
-     * @param <T> 扩展鐨勬硾锟?
+     * 根据坐标得到主程序包的扩展
+     * 主程序包扩展必须使用@Extract+@Component 进行定义
+     * @param coordinate 扩展的坐标
+     * @param <T> 扩展的泛型
      * @return 扩展实例, 如果不存在则抛出 RuntimeException 异常
      */
     <T> T getExtractByCoordinateOfMain(ExtractCoordinate coordinate);
@@ -83,7 +83,7 @@ public interface ExtractFactory {
 
     /**
      * 根据接口类型获取主程序程序的扩展
-     * 主程序搴忔墿灞曞繀椤讳娇锟?@Extract+@Component 杩涜瀹氫箟
+     * 主程序包扩展必须使用@Extract+@Component 进行定义
      * @param interfaceClass 接口类型
      * @param <T> 接口类型泛型
      * @return 扩展实现集合

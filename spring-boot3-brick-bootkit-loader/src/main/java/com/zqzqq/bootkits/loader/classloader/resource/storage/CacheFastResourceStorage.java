@@ -31,8 +31,8 @@ import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 蹇€熶笖鍙紦瀛樼殑资源存储锟?
- * 浼樼偣: 释放鍓嶉€熷害比较锟? 释放鍚庡彲根据LRU缓存鏈哄埗杩涜缓存
+ * 快速且可缓存的资源存储
+ * 优点: 释放前速度比较快, 释放后可根据LRU缓存机制进行缓存
  * 缺点: 释放前占用内存比较高
  *
  * @author starBlues
@@ -49,7 +49,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
     @SuppressWarnings("all")
     public CacheFastResourceStorage(String key) {
         this.cacheResourceStorage = new CachePerpetualResourceStorage();
-        // 链锟?1000 锟? 链锟?3 鍒嗛挓
+        // 链容量1000, 过期时间3分钟
         CacheExpirationTrigger trigger = DefaultCacheExpirationTrigger
                 .getCacheExpirationTrigger(3, TimeUnit.MINUTES);
         resourceStorage = (MultiCache<String, Resource>) trigger.getCache(key,
@@ -130,12 +130,12 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
     public synchronized void release() throws Exception {
         if(!release){
             try {
-                // 纭繚缓存资源存储琚纭叧锟?
+                // 确保缓存资源存储被正确关闭
                 if (cacheResourceStorage != null) {
                     cacheResourceStorage.close();
                 }
             } catch (Exception e) {
-                // 忽略异常锛岀‘淇濈户缁墽锟?
+                // 忽略异常，确保继续执行
             }
         }
         
@@ -145,7 +145,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
                 resourceStorage.cleanExpired();
             }
         } catch (Exception e) {
-            // 忽略异常锛岀‘淇濈户缁墽锟?
+            // 忽略异常，确保继续执行
         }
         
         release = true;
@@ -154,7 +154,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
     @Override
     public void close() throws Exception {
         try {
-            // 清理骞堕噴鏀炬墍鏈夎祫锟?
+            // 清理并释放所有资源
             if (resourceStorage != null) {
                 resourceStorage.clear(resource -> {
                     if (resource != null) {
@@ -168,11 +168,11 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
                 try {
                     cacheResourceStorage.close();
                 } catch (Exception e) {
-                    // 忽略异常锛岀‘淇濈户缁墽锟?
+                    // 忽略异常，确保继续执行
                 }
             }
             
-            // 调用鐖剁被关闭方法
+            // 调用父类关闭方法
             super.close();
         } catch (Exception e) {
             throw new Exception("关闭资源存储异常", e);

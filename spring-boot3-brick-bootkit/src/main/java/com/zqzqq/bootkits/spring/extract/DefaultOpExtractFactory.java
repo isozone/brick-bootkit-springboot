@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * 榛樿鐨勫彲扩展鐨勫伐锟?
+ * 默认的可扩展的工厂
  * @author starBlues
  * @version 3.1.0
  * @since 3.0.0
@@ -189,7 +189,7 @@ public class DefaultOpExtractFactory implements OpExtractFactory {
 
 
     /**
-     * 扩展对象鍖呰类型
+     * 扩展对象包装类型
      **/
     private static class ExtractWrapper{
         private final Object object;

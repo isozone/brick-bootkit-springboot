@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 璇ユ帴鍙ｇ敤浜庡湪主程序搴忔搷浣滆幏鍙栦富程序/插件锟?Spring 绠＄悊 Bean
+ * 璇ユ帴接口用于在主程序/插件中进行滆幏获取主程序/插件?Spring 绠＄悊 Bean
  * @author starBlues
  * @version 3.0.0
  */
@@ -29,7 +29,7 @@ public interface PluginUser {
 
     /**
      * 获取 Bean名称
-     * @param includeMainBeans 是否包含主程序/Bean
+     * @param includeMainBeans 是否包含主程序Bean
      * @return Bean 包装对象
      */
     BeanWrapper<Set<String>> getBeanName(boolean includeMainBeans);
@@ -62,7 +62,7 @@ public interface PluginUser {
     /**
      * 通过接口获取实现的对象集合
      * @param interfaceClass 接口的类
-     * @param includeMainBeans 是否包含主程序/Bean
+     * @param includeMainBeans 是否包含主程序Bean
      * @param <T> Bean的类
      * @return Bean包装对象
      */
@@ -80,7 +80,7 @@ public interface PluginUser {
     /**
      * 通过注解获取 Bean
      * @param annotationType 注解类型
-     * @param includeMainBeans 是否包含主程序/Bean
+     * @param includeMainBeans 是否包含主程序Bean
      * @return Bean包装对象
      */
     BeanWrapper<List<Object>> getBeansWithAnnotation(Class<? extends Annotation> annotationType, boolean includeMainBeans);
@@ -89,7 +89,7 @@ public interface PluginUser {
      * 通过注解获取具体插件中的 Bean
      * @param pluginId  插件id
      * @param annotationType 注解类型
-     * @return 璇ユ敞瑙ｇ殑 Bean 集合
+     * @return 该注解的 Bean 集合
      */
     List<Object> getBeansWithAnnotation(String pluginId, Class<? extends Annotation> annotationType);
 

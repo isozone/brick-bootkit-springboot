@@ -105,17 +105,17 @@ public class NestedPluginJarResourceLoader extends AbstractResourceLoader {
                 continue;
             }
             if (jarEntry.getMethod() != ZipEntry.STORED) {
-                throw new PluginException("插件依赖鍘嬬缉鏂瑰紡閿欒, 蹇呴』锟? 存储(stored)鍘嬬缉鏂瑰紡");
+                throw new PluginException("插件依赖压缩方式错误, 必须使用存储(stored)压缩方式");
             }
             InputStream jarFileInputStream = jarFile.getInputStream(jarEntry);
             URL url = new URL(baseUrl.toString() + pluginLibInfo.getPath() + "!/");
             if(parentResourceLoaderFactory != null && pluginLibInfo.isLoadToMain()){
                 parentResourceLoaderFactory.addResource(new JarResourceLoader(url, new JarInputStream(jarFileInputStream)));
-                log.debug("插件[{}]依赖琚姞杞藉埌主程序搴忎腑: {}", pluginUnique, pluginLibInfo.getPath());
+                log.debug("插件[{}]依赖被加载到主程序包中: {}", pluginUnique, pluginLibInfo.getPath());
             } else {
                 JarResourceLoader jarResourceLoader = new JarResourceLoader(url, new JarInputStream(jarFileInputStream));
                 resourceLoaderFactory.addResource(jarResourceLoader);
-                log.debug("插件[{}]依赖琚姞锟? {}", pluginUnique, pluginLibInfo.getPath());
+                log.debug("插件[{}]依赖被加载: {}", pluginUnique, pluginLibInfo.getPath());
             }
         }
     }

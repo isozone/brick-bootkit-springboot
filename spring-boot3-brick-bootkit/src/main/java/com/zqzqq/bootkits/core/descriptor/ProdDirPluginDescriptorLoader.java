@@ -111,7 +111,7 @@ public class ProdDirPluginDescriptorLoader extends AbstractPluginDescriptorLoade
     protected String getExistResourcesConfFile(String rootPath, String libIndexPath){
         libIndexPath = resolvePath(libIndexPath);
         if(ObjectUtils.isEmpty(libIndexPath)){
-            // 如果配置为空, 直接从默认路寰勮锟?
+            // 如果配置为空, 直接从默认路径读取
             libIndexPath = FilesUtils.joiningFilePath(rootPath, resolvePath(PROD_RESOURCES_DEFINE_PATH));
         } else {
             if(Files.exists(Paths.get(libIndexPath))){

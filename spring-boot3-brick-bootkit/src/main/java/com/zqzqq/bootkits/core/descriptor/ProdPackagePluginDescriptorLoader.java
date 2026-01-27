@@ -110,7 +110,7 @@ public class ProdPackagePluginDescriptorLoader extends AbstractPluginDescriptorL
                 return index;
             }
             if(index.startsWith(configPluginLibDir)){
-                // 鍏煎瑙ｅ喅鏃х増鏈腑 jar/zip 鍖呬腑, 依赖鍓嶇紑鎼哄甫 配置锟?lib 璺緞
+                // 兼容解决旧版本中 jar/zip 包中, 依赖前缀携带 配置的lib 路径
                 return index;
             }
             return FilesUtils.joiningZipPath(pluginLibDir, index);

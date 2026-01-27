@@ -43,8 +43,8 @@ public class AutoPluginApplication extends DefaultPluginApplication
 
 
     /**
-     * 璁剧疆插件鍒濆鍖栫洃鍚櫒
-     * @param pluginInitializerListener 插件监听鍣?
+     * 设置插件初始化监听器
+     * @param pluginInitializerListener 插件监听器
      */
     public void setPluginInitializerListener(PluginInitializerListener pluginInitializerListener) {
         this.pluginInitializerListener = pluginInitializerListener;
@@ -54,7 +54,7 @@ public class AutoPluginApplication extends DefaultPluginApplication
     @Override
     public void initialize(ApplicationContext applicationContext,
                            PluginInitializerListener listener) {
-        // 姝ゅ不可璁告墜鍔ㄥ垵濮嬪寲
+        // 此处不可手动初始化
         throw new RuntimeException("Cannot be initialized manually");
     }
 
@@ -69,7 +69,7 @@ public class AutoPluginApplication extends DefaultPluginApplication
     }
 
     /**
-     * Spring boot bean灞炴€цSet瀹屽悗调用銆備細鑷姩鍒濆鍖栨彃浠?
+     * Spring boot bean属性被Set完成后调用。会自动初始化插件
      */
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {

@@ -27,16 +27,16 @@ import java.util.List;
 public interface PluginListenerFactory extends PluginListener {
 
     /**
-     * 添加监听鑰?
+     * 添加监听者
      *
-     * @param pluginListener 插件监听鑰?
+     * @param pluginListener 插件监听者
      */
     void addPluginListener(PluginListener pluginListener);
 
     /**
-     * 得到监听鑰?
+     * 得到监听者
      *
-     * @return 监听鑰呴泦鍚?
+     * @return 监听者集合
      */
     List<PluginListener> getListeners();
 

@@ -271,7 +271,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
             }
             final int first = location.indexOf(":");
             if(first == -1){
-                logger.warn("插件[{}]配置鐨勯潤鎬佽祫婧愭牸寮忛敊锟? {}",
+                logger.warn("插件[{}]配置的静态资源格式错误: {}",
                         MsgUtils.getPluginUnique(pluginDescriptor), location);
                 continue;
             }
@@ -292,7 +292,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
                 }
                 filePaths.add(path);
             } else {
-                logger.warn("插件[{}]配置鐨勯潤鎬佽祫婧愮被鍨嬩笉鑳借瘑锟? {}", MsgUtils.getPluginUnique(pluginDescriptor), type);
+                logger.warn("插件[{}]配置的静态资源类型不能识别: {}", MsgUtils.getPluginUnique(pluginDescriptor), type);
             }
         }
 
@@ -302,7 +302,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         pluginResource.setPluginDescriptor(pluginDescriptor);
         pluginResource.setPluginClassLoader(pluginClassLoader);
 
-        logger.info("插件[{}]配置鐨勯潤鎬佽祫锟? classpath[{}], file[{}]", MsgUtils.getPluginUnique(pluginDescriptor),
+        logger.info("插件[{}]配置的静态资源: classpath[{}], file[{}]", MsgUtils.getPluginUnique(pluginDescriptor),
                 classPaths, filePaths);
 
         if(PLUGIN_RESOURCE_MAP.containsKey(pluginId)){

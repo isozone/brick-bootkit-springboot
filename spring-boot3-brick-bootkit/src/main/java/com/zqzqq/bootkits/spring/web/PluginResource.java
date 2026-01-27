@@ -33,8 +33,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * 插件资源实现锟?涓昏鏄Spring涓殑插件鐨凴esource实现.
- * 鍔熻兘: 涓昏鏄幏鍙栨彃浠跺寘涓殑文件资源锟?
+ * 插件资源实现。主要是对Spring中的插件的Resource实现.
+ * 功能: 主要是获取插件包中的文件资源.
  * @author starBlues
  * @version 3.0.0
  */
@@ -50,8 +50,8 @@ public class PluginResource implements Resource {
 
 
     /**
-     * 鐩稿Classpath 璺緞
-     * @param path 璺緞
+     * 相对Classpath 路径
+     * @param path 路径
      * @param pluginDescriptor pluginDescriptor
      */
     public PluginResource(String path, PluginDescriptor pluginDescriptor) {
