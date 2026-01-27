@@ -32,49 +32,49 @@ import org.springframework.context.support.GenericApplicationContext;
 public interface PluginLaunchInvolved {
 
     /**
-     * 鍒濆鍖栥€備粎调用涓€娆?
-     * @param applicationContext 主程序搴廏enericApplicationContext
-     * @param configuration 闆嗘垚配置
+     * 初始化。仅调用一次
+     * @param applicationContext 主程序上下文GenericApplicationContext
+     * @param configuration 集成配置
      */
     default void initialize(GenericApplicationContext applicationContext, IntegrationConfiguration configuration){}
 
     /**
-     * 鍚姩涔嬪墠
-     * @param pluginInsideInfo 插件淇℃伅
+     * 启动之前
+     * @param pluginInsideInfo 插件信息
      * @param classLoader 插件classloader
-     * @throws Exception 鎵ц异常
+     * @throws Exception 执行异常
      */
     default void before(PluginInsideInfo pluginInsideInfo, ClassLoader classLoader) throws Exception{}
 
     /**
-     * 鍚姩涔嬪悗
-     * @param pluginInsideInfo 插件淇℃伅
+     * 启动之后
+     * @param pluginInsideInfo 插件信息
      * @param classLoader 插件classloader
      * @param pluginHook 鍚姩鎴愬姛鍚庢彃浠惰繑鍥炵殑閽╁瓙
-     * @throws Exception 鎵ц异常
+     * @throws Exception 执行异常
      */
     default void after(PluginInsideInfo pluginInsideInfo, ClassLoader classLoader,
                        SpringPluginHook pluginHook) throws Exception{}
 
     /**
-     * 鍚姩失败
-     * @param pluginInsideInfo 插件淇℃伅
+     * 启动失败
+     * @param pluginInsideInfo 插件信息
      * @param classLoader 插件classloader
-     * @param throwable 异常淇℃伅
-     * @throws Exception 鎵ц异常
+     * @param throwable 异常信息
+     * @throws Exception 执行异常
      */
     default void failure(PluginInsideInfo pluginInsideInfo, ClassLoader classLoader, Throwable throwable) throws Exception{}
 
     /**
-     * 关闭鐨勬椂值
-     * @param pluginInsideInfo 插件淇℃伅
+     * 关闭时的值
+     * @param pluginInsideInfo 插件信息
      * @param classLoader 插件classloader
-     * @throws Exception 鎵ц异常
+     * @throws Exception 执行异常
      */
     default void close(PluginInsideInfo pluginInsideInfo, ClassLoader classLoader) throws Exception{}
 
     /**
-     * 鎵ц椤哄簭
+     * 执行顺序
      * @return OrderPriority
      */
     default OrderPriority order(){

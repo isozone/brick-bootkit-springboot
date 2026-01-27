@@ -50,10 +50,10 @@ public class ClassUtils {
      * 通过反射获取字段
      *
      * @param o 对象
-     * @param fieldName 字段鍚嶇О
+     * @param fieldName 字段名称
      * @param <T> 字段类型
      * @return 字段值
-     * @throws IllegalAccessException 异常淇℃伅
+     * @throws IllegalAccessException 异常信息
      */
     public static <T> T getReflectionField(Object o, String fieldName) throws IllegalAccessException {
         if (o == null) {
@@ -69,11 +69,11 @@ public class ClassUtils {
      * 通过反射获取字段
      *
      * @param o 对象
-     * @param fieldName 字段鍚嶇О
+     * @param fieldName 字段名称
      * @param fieldClassType 字段类型
      * @param <T> 字段类型
      * @return 字段值
-     * @throws IllegalAccessException 异常淇℃伅
+     * @throws IllegalAccessException 异常信息
      */
     public static <T> T getReflectionField(Object o, String fieldName, Class<?> fieldClassType) throws IllegalAccessException {
         if (o == null) {
@@ -91,7 +91,7 @@ public class ClassUtils {
      * @param o 褰撳墠对象
      * @param <T> 字段类型
      * @return 字段值
-     * @throws IllegalAccessException 异常淇℃伅
+     * @throws IllegalAccessException 异常信息
      */
     @SuppressWarnings("unchecked")
     public static <T> T getReflectionField(Field field, Object o) throws IllegalAccessException {
@@ -104,11 +104,11 @@ public class ClassUtils {
     }
 
     /**
-     * 得到注解淇敼鑰?
+     * 获取注解修改者
      *
      * TODO 鍙兘鏌愪釜java版本涓嶇敓鏁?
      * @param annotation 注解
-     * @return 淇敼鑰呴泦鍚?
+     * @return 修改者集合
      * @throws Exception 异常
      */
     @SuppressWarnings("unchecked")

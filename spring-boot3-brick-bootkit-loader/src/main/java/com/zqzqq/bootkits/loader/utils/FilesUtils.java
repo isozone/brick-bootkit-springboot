@@ -31,9 +31,9 @@ import java.io.IOException;
 public class FilesUtils {
 
     /**
-     * 获取存在鐨勬枃浠?
+     * 获取存在的文件
      *
-     * @param pathStr 文件璺緞
+     * @param pathStr 文件路径
      * @return File
      */
     public static File getExistFile(String pathStr){
@@ -46,10 +46,10 @@ public class FilesUtils {
 
 
     /**
-     * 鎷兼帴file璺緞
+     * 拼接file路径
      *
-     * @param paths 鎷兼帴鐨勮矾寰?
-     * @return 鎷兼帴鐨勮矾寰?
+     * @param paths 拼接的路径
+     * @return 拼接的路径
      */
     public static String joiningFilePath(String ...paths){
         if(paths == null || paths.length == 0){
@@ -97,10 +97,10 @@ public class FilesUtils {
 
 
     /**
-     * 瑙ｅ喅鐩稿璺緞
+     * 解决相对路径
      * @param rootPath 绝对路径
-     * @param relativePath 浠 寮€澶寸殑鐩稿璺緞
-     * @return 处理鍚庣殑璺緞
+     * @param relativePath 以/开头的相对路径
+     * @return 处理后的路径
      */
     public static String resolveRelativePath(String rootPath, String relativePath){
         if(ObjectUtils.isEmpty(relativePath)){
@@ -114,9 +114,9 @@ public class FilesUtils {
     }
 
     /**
-     * 鏄惁鏄浉瀵硅矾寰?
-     * @param path 璺緞
-     * @return true 涓虹浉瀵硅矾寰?false 涓洪潪鐩稿璺緞
+     * 是否是相对路径
+     * @param path 路径
+     * @return true 涓虹浉瀵硅矾寰?false 涓洪潪鐩稿路径
      */
     public static boolean isRelativePath(String path){
         if(ObjectUtils.isEmpty(path)){

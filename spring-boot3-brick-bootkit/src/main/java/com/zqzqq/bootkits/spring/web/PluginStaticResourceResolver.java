@@ -87,7 +87,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         }
 
         String key = computeKey(request, requestPath);
-        // 先不垽鏂紦瀛樹腑鏄惁存在锟?
+        // 先不检查缓存中是否存在?
         Resource resource = pluginResource.getCacheResource(key);
         if(resource != null){
             return resource;
@@ -97,38 +97,38 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
             pluginResource.putCacheResource(key, resource);
             return resource;
         } else {
-            // 尝试获取棣栭〉椤甸潰
+            // 尝试获取首页页面
             String indexPageName = config.getIndexPageName();
             if(ObjectUtils.isEmpty(indexPageName)){
                 indexPageName = PluginStaticResourceConfig.DEFAULT_INDEX_PAGE_NAME;
             }
             if(partialPath.lastIndexOf(".") > -1){
-                // 存在鍚庣紑
+                // 存在后缀
                 return null;
             }
 
-            // 鏌ユ壘绗竴绾ц妭鐐癸紝鎵句笉鍒板垯璇诲彇鏍筰ndex.html
+            // 寻找第一个节点, 找不到则读取根目录index.html
             if(partialPath.contains(UrlUtils.PATH_SEPARATOR)){
                 partialPath = partialPath.substring(0, partialPath.indexOf(UrlUtils.PATH_SEPARATOR));
             }
-            // 绗竴绾ц妭锟?
+            // 第一级节点?
             resource = findResource(pluginResource, UrlUtils.joiningUrlPath(partialPath, indexPageName));
             if(resource != null){
                 return resource;
             }
-            // 鏍硅妭锟?
+            // 根节点?
             return findResource(pluginResource, UrlUtils.joiningUrlPath(UrlUtils.PATH_SEPARATOR, indexPageName));
         }
     }
 
     private Resource findResource(PluginStaticResource pluginResource, String partialPath){
-        // 浠巆lasspath 获取资源
+        // 从classpath 获取资源
         Resource resource = resolveClassPath(pluginResource, partialPath);
         if(resource != null){
             return resource;
         }
 
-        // 浠庡缃枃浠惰矾寰勮幏鍙栬祫锟?
+        // 从外部文件路径获取资源?
         resource = resolveFilePath(pluginResource, partialPath);
         if(resource != null){
             return resource;
@@ -137,10 +137,10 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     }
 
     /**
-     * 瑙ｅ喅 ClassPath 的资源婧愭枃浠躲€備篃就是插件涓畾涔夌殑  classpath:/xx/xx/ 配置
+     * 解决 ClassPath 的资源路径文件。也就是插件中定义的  classpath:/xx/xx/ 配置
      * @param pluginResource 插件资源配置Bean
-     * @param partialPath 閮ㄥ垎璺緞
-     * @return 资源銆傛病鏈夊彂鐜板垯杩斿洖null
+     * @param partialPath 部分路径
+     * @return 资源。没有发现则返回null
      */
     private Resource resolveClassPath(PluginStaticResource pluginResource, String partialPath){
         Set<String> classPaths = pluginResource.getClassPaths();
@@ -154,7 +154,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
                 PluginResource resource = new PluginResource(classPath + partialPath, pluginResource.getPluginDescriptor());
                 resource.setClassLoader(pluginClassLoader);
                 if(resource.exists()){
-                    // 纭繚资源涓烘枃锟?
+                    // 确保资源为文件?
                     File file = resource.getFile();
                     if(file != null && file.isFile()){
                         return resource;
@@ -168,10 +168,10 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     }
 
     /**
-     * 瑙ｅ喅插件涓厤缃殑缁濆文件璺緞鐨勬枃浠惰祫婧愩€備篃就是插件涓畾涔夌殑  file:D://xx/xx/ 配置
+     * 解决插件中配置的绝对文件路径的文件资源。也就是插件中定义的  file:D://xx/xx/ 配置
      * @param pluginResource 插件资源配置Bean
-     * @param partialPath 閮ㄥ垎璺緞
-     * @return 资源銆傛病鏈夊彂鐜板垯杩斿洖null
+     * @param partialPath 部分路径
+     * @return 资源。没有发现则返回null
      */
     private Resource resolveFilePath(PluginStaticResource pluginResource, String partialPath) {
         Set<String> filePaths = pluginResource.getFilePaths();
@@ -207,8 +207,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     /**
      * 璁＄畻key
      * @param request request
-     * @param requestPath 璇锋眰璺緞
-     * @return 杩斿洖key
+     * @param requestPath 请求路径
+     * @return 返回key
      */
     protected String computeKey(HttpServletRequest request, String requestPath) {
         StringBuilder key = new StringBuilder(RESOLVED_RESOURCE_CACHE_KEY_PREFIX);
@@ -223,7 +223,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     }
 
     /**
-     * 根据璇锋眰获取内容code key
+     * 根据请求获取内容编码key
      * @param request request
      * @return key
      */
@@ -244,8 +244,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
 
 
     /**
-     * 姣忔柊澧炰竴涓彃锟? 閮介渶瑕佽皟鐢ㄨ方法锛屾潵解析璇ユ彃浠剁殑 StaticResourceConfig 配置銆傚苟灏嗗叾淇濆瓨锟?StaticResourceConfig bean 涓拷?
-     * @param pluginDescriptor 插件淇℃伅
+     * 每当新增一个插件。都必须调用该方法, 来解析该插件的 StaticResourceConfig 配置。并将其保存到StaticResourceConfig bean 中?
+     * @param pluginDescriptor 插件信息
      * @param pluginClassLoader 插件classloader
      * @param webConfig web配置
      */
@@ -315,7 +315,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
 
 
     /**
-     * 卸载插件鏃躲€傝皟鐢ㄨ方法移除插件的资源婧愪俊锟?
+     * 卸载插件时。调用该方法移除插件的资源信息
      * @param pluginId 插件id
      */
     public static synchronized void remove(String pluginId){
@@ -327,7 +327,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     }
 
     /**
-     * 插件资源解析鍚庣殑淇℃伅
+     * 插件资源解析后的信息
      */
     private static class PluginStaticResource {
 
@@ -342,17 +342,17 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         private ClassLoader pluginClassLoader;
 
         /**
-         * 瀹氫箟鐨刢lasspath集合
+         * 定义的classpath集合
          */
         private Set<String> classPaths;
 
         /**
-         * 瀹氫箟鐨勬枃浠惰矾寰勯泦锟?
+         * 定义的文件路径集合?
          */
         private Set<String> filePaths;
 
         /**
-         * 缓存的资源婧愩€俴ey 涓鸿祫婧愮殑鍙互銆傚€间负资源
+         * 缓存的资源。key 为资源的可以。键值为资源
          */
         private final Map<String, Resource> cacheResourceMaps = new ConcurrentHashMap<>();
 

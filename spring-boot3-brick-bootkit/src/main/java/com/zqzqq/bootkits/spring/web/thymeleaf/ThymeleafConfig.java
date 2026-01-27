@@ -35,33 +35,33 @@ public class ThymeleafConfig {
     private boolean enabled = true;
 
     /**
-     * 瀛樻斁妯℃澘寮曟搸鐨勫墠缂€
+     * 存放模板引擎的前缀
      */
     private String prefix = DEFAULT_PREFIX;
 
     /**
-     * 妯℃澘寮曟搸文件鐨勫悗缂€
+     * 模板引擎文件的后缀
      */
     private String suffix = DEFAULT_SUFFIX;
 
     /**
-     * 妯″瀷寮曞叆鐨勬ā鍨?
-     * HTML銆乆ML銆乀EXT銆丣AVASCRIPT銆丆SS銆丷AW
+     * 模板引入的模式
+     * HTML、XML、TEXT、JAVASCRIPT、CSS、RAW
      */
     private String mode = "HTML";
 
     /**
-     * 妯℃澘寮曟搸鐨勭紪鐮?
+     * 模板引擎的编码
      */
     private Charset encoding = DEFAULT_ENCODING;
 
     /**
-     * 鏄惁鍚敤妯℃澘寮曟搸鐨勭紦瀛?
+     * 是否启用模板引擎的缓存?
      */
     private Boolean cache = true;
 
     /**
-     * 妯℃澘解析鍣ㄧ殑鎵ц椤哄簭, 鏁板瓧瓒婂皬瓒婂厛鎵ц
+     * 模板解析器的执行顺序, 数字越小越先执行
      */
     private Integer templateResolverOrder;
 

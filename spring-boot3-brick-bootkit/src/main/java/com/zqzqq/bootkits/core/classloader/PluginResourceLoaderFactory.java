@@ -30,7 +30,7 @@ public interface PluginResourceLoaderFactory extends ResourceLoaderFactory {
 
     /**
      * 加载插件资源
-     * @param descriptor 插件资源鎻忚堪
+     * @param descriptor 插件资源描述
      * @throws Exception 添加插件资源异常
      * @since 3.0.4
      */

@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 增强鐗堟彃浠跺唴閮ㄤ俊鎭疄鐜帮紙线程安全锟?
+ * 增强插件内部信息实现（线程安全）
  * 提供者浜嗗畬鏁寸殑插件鐢熷懡鍛ㄦ湡绠＄悊鍜岃祫婧愯窡韪姛锟?
  */
 public class EnhancedPluginInsideInfo implements PluginInsideInfo {
@@ -111,7 +111,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                     oldState, newState, getPluginId()));
             }
             
-            // 鎵ц鐘舵€佸彉锟?
+            // 执行状态变动锟?
             this.state = newState;
             
             // 记录时间戳
@@ -121,7 +121,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 this.stopTime = System.currentTimeMillis();
             }
             
-            // 鐗规畩鐘舵€佸锟?
+            // 特殊状态处理
             if (newState == EnhancedPluginState.UNLOADED) {
                 // 鍦ㄥ嵏杞界姸鎬佷笅清理所有夎祫锟?
                 cleanupAllResources();
@@ -192,10 +192,10 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     }
     
     /**
-     * 清理所有夋嫤鎴櫒
+     * 清理所有拦截器
      */
     public void clearInterceptors() {
-        // 淇濈暀榛樿鎷︽埅锟?
+        // 保留默认拦截器
         PluginStateInterceptor defaultInterceptor = null;
         for (PluginStateInterceptor interceptor : interceptors) {
             if (interceptor instanceof DefaultStateInterceptor) {
@@ -214,7 +214,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     }
     
     /**
-     * 璺熻釜资源浠ヤ究鍦ㄥ嵏杞芥椂清理
+     * 跟踪资源以便在卸载时清理
      * @param resource 闇€瑕佽窡韪殑资源
      */
     public void trackResource(Object resource) {
@@ -255,7 +255,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
     
     /**
      * 增强的ClassLoader清理方法
-     * 处理鍚勭类型鐨凜lassLoader骞跺皾璇曢噴鏀惧叾资源
+     * 处理各种类型鐨凜lassLoader骞跺皾璇曢噴鏀惧叾资源
      */
     private void cleanupClassLoader(ClassLoader classLoader) {
         if (classLoader == null) {
@@ -274,7 +274,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 }
             }
             
-            // 2. 如果鏄疷RLClassLoader锛屽皾璇曞叧闂叾URLs
+            // 2. 如果是URLClassLoader，尝试关闭其URLs
             if (classLoader instanceof URLClassLoader) {
                 URLClassLoader urlClassLoader = (URLClassLoader) classLoader;
                 try {
@@ -336,7 +336,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
                 Vector<Class<?>> classes = (Vector<Class<?>>) classesField.get(classLoader);
                 classes.clear();
                 
-                // 尝试清理鍏朵粬鍙兘鐨勭紦瀛樺瓧锟?
+                // 尝试清理其它鍙兘鐨勭紦瀛樺瓧锟?
                 clearFieldIfExists(classLoader, "resourceCache");
                 clearFieldIfExists(classLoader, "packageMap");
                 clearFieldIfExists(classLoader, "nativeLibraries");
@@ -347,13 +347,13 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
             }
             
         } catch (Throwable t) {
-            // 鎹曡幏所有夊紓甯革紝纭繚涓嶄細褰卞搷鍏朵粬操作
+            // 捕获所有异常，确保不会影响其他操作
             LOGGER.log(Level.WARNING, "Unexpected error during ClassLoader cleanup: " + classLoader, t);
         }
     }
     
     /**
-     * 尝试清理ClassLoader涓殑鎸囧畾字段
+     * 尝试清理ClassLoader中的指定字段
      */
     private void clearFieldIfExists(ClassLoader classLoader, String fieldName) {
         try {

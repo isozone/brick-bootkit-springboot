@@ -28,37 +28,37 @@ public interface RegistryInfo {
 
     /**
      * 添加注册的信息
-     * @param key 注册淇℃伅key
-     * @param value 注册淇℃伅值
+     * @param key 注册信息key
+     * @param value 注册信息值
      */
     void addRegistryInfo(String key, Object value);
 
     /**
-     * 得到注册淇℃伅
-     * @param key 注册淇℃伅key
-     * @param <T> 杩斿洖类型娉涘瀷
-     * @return 注册淇℃伅的值
+     * 获取注册信息
+     * @param key 注册信息key
+     * @param <T> 返回类型泛型
+     * @return 注册信息的值
      */
     <T> T getRegistryInfo(String key);
 
     /**
-     * 得到注册淇℃伅
-     * @param key 注册淇℃伅key
-     * @param notExistCreate 不存在鍦ㄧ殑璇? 杩涜鍒涘缓操作
-     * @param <T> 杩斿洖类型娉涘瀷
-     * @return 注册淇℃伅的值
+     * 获取注册信息
+     * @param key 注册信息key
+     * @param notExistCreate 不存在时的回调，进行创建操作
+     * @param <T> 返回类型泛型
+     * @return 注册信息的值
      */
     <T> T getRegistryInfo(String key, Supplier<T> notExistCreate);
 
 
     /**
-     * 移除注册淇℃伅
-     * @param key 注册淇℃伅key
+     * 移除注册信息
+     * @param key 注册信息key
      */
     void removeRegistryInfo(String key);
 
     /**
-     * 娓呴櫎鍏ㄩ儴鐨勬敞鍐屼俊鎭?
+     * 清除全部的注册信息
      */
     void clearRegistryInfo();
 

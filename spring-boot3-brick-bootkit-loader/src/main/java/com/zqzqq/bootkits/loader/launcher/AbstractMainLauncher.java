@@ -30,13 +30,13 @@ public abstract class AbstractMainLauncher extends AbstractLauncher<ClassLoader>
     public static final String MAIN_CLASS_LOADER_NAME = "MainProgramLauncherClassLoader";
 
     /**
-     * SpringPluginBootstrap 鍖呭悕绉?
+     * SpringPluginBootstrap 包名
      * @since 3.0.4
      */
     private final static String SPRING_PLUGIN_BOOTSTRAP_PACKAGE_NAME = "com.zqzqq.bootkits.bootstrap.SpringPluginBootstrap";
 
     /**
-     * SpringPluginBootstrap 依赖鍧愭爣
+     * SpringPluginBootstrap 依赖坐标
      * @since 3.0.4
      */
     private final static String SPRING_PLUGIN_BOOTSTRAP_COORDINATE = "com.zqzqq.bootkits:spring-boot3-brick-bootkit-bootstrap";
@@ -69,15 +69,15 @@ public abstract class AbstractMainLauncher extends AbstractLauncher<ClassLoader>
     }
 
     /**
-     * 妫€鏌?{@link this#SPRING_PLUGIN_BOOTSTRAP_COORDINATE} 依赖鏄惁配置鍚堢悊
-     * @param classLoader 褰撳墠主程序搴廲lassloader
-     * @throws RuntimeException 妫€鏌ュ紓甯?
+     * 检查{@link this#SPRING_PLUGIN_BOOTSTRAP_COORDINATE} 依赖是否配置合理
+     * @param classLoader 当前主程序包classloader
+     * @throws RuntimeException 检查异常
      */
     private void checkSpringPluginBootstrap(ClassLoader classLoader) throws RuntimeException{
         try {
             classLoader.loadClass(SPRING_PLUGIN_BOOTSTRAP_PACKAGE_NAME);
             if(DevelopmentModeSetting.isolation()){
-                // 主程序搴忓姞杞藉埌浜?
+                // 主程序包加载到插件
                 throw new RuntimeException("[" + DevelopmentMode.ISOLATION + "]模式中" +
                         "不能将[" + SPRING_PLUGIN_BOOTSTRAP_COORDINATE + "]依赖定义到主程序中，只能依赖到插件中!");
             }

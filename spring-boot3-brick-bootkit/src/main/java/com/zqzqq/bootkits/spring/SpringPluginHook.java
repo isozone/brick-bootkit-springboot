@@ -22,7 +22,7 @@ import com.zqzqq.bootkits.core.exception.PluginProhibitStopException;
 import com.zqzqq.bootkits.spring.web.thymeleaf.ThymeleafConfig;
 
 /**
- * 插件鎶婃焺接口
+ * 插件钩子接口
  * @author starBlues
  * @since 3.0.0
  * @version 3.1.0
@@ -30,25 +30,25 @@ import com.zqzqq.bootkits.spring.web.thymeleaf.ThymeleafConfig;
 public interface SpringPluginHook {
 
     /**
-     * 鍋滄鍓嶆牎楠? 如果鎶涘嚭 PluginProhibitStopException 异常, 琛ㄧず褰撳墠插件涓嶅彲鍋滄
-     * @throws PluginProhibitStopException 插件绂佹鍋滄
+     * 停止前校验。如果抛出 PluginProhibitStopException 异常, 表示当前插件不可停止
+     * @throws PluginProhibitStopException 插件禁止停止
      */
     void stopVerify() throws PluginProhibitStopException;
 
     /**
-     * 杩斿洖插件 ApplicationContext
+     * 返回插件 ApplicationContext
      * @return ApplicationContext
      */
     ApplicationContext getApplicationContext();
 
     /**
-     * 得到插件涓 web 鐨勯厤缃?
+     * 得到插件中 web 的配置
      * @return WebConfig
      */
     WebConfig getWebConfig();
 
     /**
-     * 获取插件涓 Thymeleaf 鐨勯厤缃?
+     * 获取插件中 Thymeleaf 的配置
      * @return ThymeleafConfig
      */
     ThymeleafConfig getThymeleafConfig();

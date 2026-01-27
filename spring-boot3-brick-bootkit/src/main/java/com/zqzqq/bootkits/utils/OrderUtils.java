@@ -33,9 +33,9 @@ public class OrderUtils {
     private OrderUtils(){}
 
     /**
-     * list鎸夌収int鎺掑簭. 鏁板瓧瓒婂ぇ, 瓒婃帓鍦ㄥ墠闈?
+     * list按照int排序. 数字越大, 越排在前面
      * @param list list集合
-     * @param orderImpl 鎺掑簭实现
+     * @param orderImpl 排序实现
      * @param <T> T
      * @return List
      */
@@ -49,9 +49,9 @@ public class OrderUtils {
 
 
     /**
-     * 瀵?OrderPriority 杩涜鎺掑簭操作
+     * 对OrderPriority进行排序操作
      * @param order OrderPriority
-     * @param <T> 褰撳墠操作瑕佽鎺掑簭鐨刡ean
+     * @param <T> 当前操作需要被排序的bean
      * @return Comparator
      */
     public static <T> Comparator<T> orderPriority(final Function<T, OrderPriority> order){

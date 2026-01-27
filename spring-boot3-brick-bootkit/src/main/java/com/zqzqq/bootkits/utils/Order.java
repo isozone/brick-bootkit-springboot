@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.utils;
 
 /**
- * 鎺掑簭接口
+ * 排序接口
  * @author starBlues
  * @since 1.0.0
  * @version 1.0.0
@@ -25,7 +25,7 @@ package com.zqzqq.bootkits.utils;
 public interface Order {
 
     /**
-     * 鎺掑簭, 鏁板瓧瓒婂ぇ瓒婂厛鎵ц
+     * 排序, 数字越大越先执行
      * @return OrderPriority
      */
     OrderPriority order();

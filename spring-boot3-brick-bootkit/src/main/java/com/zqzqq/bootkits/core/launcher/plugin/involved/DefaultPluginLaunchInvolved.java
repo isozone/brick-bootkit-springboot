@@ -75,7 +75,7 @@ public class DefaultPluginLaunchInvolved implements PluginLaunchInvolved{
     private void setExtensionInfoSupplier(PluginInsideInfo pluginInsideInfo, SpringPluginHook pluginHook){
         if(pluginInsideInfo instanceof com.zqzqq.bootkits.core.EnhancedPluginInsideInfo) {
             ((com.zqzqq.bootkits.core.EnhancedPluginInsideInfo) pluginInsideInfo).setExtensionInfoSupplier(()->{
-                // 璁剧疆插件鑷富扩展淇℃伅
+                // 设置插件自有扩展信息
                 ApplicationContext applicationContext = pluginHook.getApplicationContext();
                 List<PluginExtensionInfo> beans = SpringBeanCustomUtils.getBeans(applicationContext,
                         PluginExtensionInfo.class);

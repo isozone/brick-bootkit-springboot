@@ -131,7 +131,7 @@ public class PluginThymeleafInvolved implements PluginLaunchInvolved {
             }
             return templateResolvers;
         } catch (Exception e){
-            logger.error("褰撳墠插件不能浣跨敤Thymeleaf, 获取主程序搴忔敞鍐屽叆鍙ｅけ璐? {}", e.getMessage());
+            logger.error("褰撳墠插件不能使用Thymeleaf, 获取主程序搴忔敞鍐屽叆鍙ｅけ璐? {}", e.getMessage());
             return null;
         }
     }

@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
- * 榛樿鐨勬彃浠?PluginApplication
+ * 默认的插件PluginApplication
  * @author starBlues
  * @version 3.0.0
  */
@@ -65,7 +65,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
         }
         // 获取Configuration
         IntegrationConfiguration configuration = getConfiguration(applicationContext);
-        // 妫€鏌ラ厤缃?
+        // 检查配置
         configuration.checkConfig();
         createPluginUser(applicationContext);
         createPluginOperator(applicationContext);
@@ -84,7 +84,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 鍒涘缓插件浣跨敤鑰呫€傚瓙绫诲彲扩展
+     * 创建插件使用者。子类可扩展
      * @param applicationContext Spring ApplicationContext
      * @return pluginUser
      */
@@ -96,7 +96,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 鍒涘缓插件操作鑰呫€傚瓙绫诲彲扩展
+     * 创建插件操作者。子类可扩展
      * @param applicationContext Spring ApplicationContext
      * @return pluginOperator
      */
@@ -120,7 +120,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 鍒濆鍖栨墿灞曞伐鍘?
+     * 初始化扩展工厂
      * @param applicationContext applicationContext
      */
     private void initExtractFactory(GenericApplicationContext applicationContext){
@@ -130,12 +130,12 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 鍒濆鍖栦富程序涓殑扩展
+     * 初始化主程序中的扩展
      * @param opExtractFactory opExtractFactory
      * @param beanFactory beanFactory
      */
     private void initMainExtract(OpExtractFactory opExtractFactory, ListableBeanFactory beanFactory){
-        // 获取主程序搴忕殑扩展
+        // 获取主程序包中的扩展
         Map<String, Object> extractMap = beanFactory.getBeansWithAnnotation(Extract.class);
         if(ObjectUtils.isEmpty(extractMap)){
             return;
@@ -146,7 +146,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 鐩存帴灏?PluginOperator 鍜?PluginUser 娉ㄥ叆鍒癆pplicationContext瀹瑰櫒在
+     * 直接将 PluginOperator 和 PluginUser 注入到ApplicationContext容器中
      * @param applicationContext ApplicationContext
      */
     protected void setBeanFactory(GenericApplicationContext applicationContext){
@@ -156,7 +156,7 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
     }
 
     /**
-     * 妫€鏌ユ敞鍏?
+     * 检查注入
      */
     private void assertInjected() {
         if (this.pluginUser == null) {

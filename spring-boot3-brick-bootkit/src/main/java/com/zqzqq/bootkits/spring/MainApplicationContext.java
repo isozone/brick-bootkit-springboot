@@ -23,7 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.util.Map;
 
 /**
- * 主程序锟?ApplicationContext 接口
+ * 主程序ApplicationContext 接口
  * @author starBlues
  * @version 3.0.1
  */
@@ -37,58 +37,58 @@ public interface MainApplicationContext extends ApplicationContext {
     Map<String, Map<String, Object>> getConfigurableEnvironment();
 
     /**
-     * 得到主程序搴忛厤缃殑 Provider
+     * 得到主程序包配置的 Provider
      * @return EnvironmentProvider
      */
     EnvironmentProvider getEnvironmentProvider();
 
     /**
-     * 杩斿洖主程序搴忛厤缃殑Profile配置
+     * 返回主程序包配置的Profile配置
      * @return String 数组
      */
     String[] getActiveProfiles();
 
     /**
-     * 杩斿洖主程序搴忛粯璁ょ殑Profile配置
+     * 返回主程序包默认的Profile配置
      * @return String 数组
      */
     String[] getDefaultProfiles();
 
     /**
-     * 浠庝富程序获取依赖
+     * 从主程序获取依赖
      *
-     * @param requestingBeanName 依赖Bean鍚嶇О
+     * @param requestingBeanName 依赖Bean名称
      * @param dependencyType 依赖类型
      * @return boolean
      */
     Object resolveDependency(String requestingBeanName, Class<?> dependencyType);
 
     /**
-     * 鏄惁涓簑eb鐜
+     * 是否为Web环境
      * @return boolean
      */
     boolean isWebEnvironment();
 
     /**
-     * 得到鍘熷锟?ApplicationContext
+     * 得到原始ApplicationContext
      * @return Object
      */
     Object getSourceApplicationContext();
 
     /**
-     * 鏄惁鑳芥敞鍐孋ontroller
+     * 是否能注册Controller
      * @return boolean
      */
     boolean isRegisterController();
 
     /**
-     * 获取主程序搴忕殑 RequestMappingHandlerMapping
+     * 获取主程序包的 RequestMappingHandlerMapping
      * @return RequestMappingHandlerMapping
      */
     RequestMappingHandlerMapping getRequestMappingHandlerMapping();
 
     /**
-     * 获取主程序搴忕殑 RequestMappingHandlerAdapter
+     * 获取主程序包的 RequestMappingHandlerAdapter
      * @return RequestMappingHandlerAdapter
      */
     RequestMappingHandlerAdapter getRequestMappingHandlerAdapter();

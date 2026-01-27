@@ -55,14 +55,14 @@ public enum EnhancedPluginState implements PluginState {
     }
 
     /**
-     * 获取所有夊厑璁哥殑杞崲状态
+     * 获取所有允许的转换状态
      */
     public Set<EnhancedPluginState> getAllowedTransitions() {
         return EnumSet.copyOf(allowedTransitions);
     }
 
     /**
-     * 获取鐘舵€佹弿杩?
+     * 获取状态描述
      */
     @Override
     public String getDescription() {

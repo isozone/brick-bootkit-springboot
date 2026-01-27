@@ -21,7 +21,7 @@ import com.zqzqq.bootkits.loader.utils.Release;
 import java.net.URL;
 
 /**
- * 资源淇℃伅
+ * 资源信息
  * @author starBlues
  * @since 3.0.0
  * @version 3.0.0
@@ -31,7 +31,7 @@ public interface Resource extends AutoCloseable, Release {
     String PACKAGE_SPLIT = "/";
 
     /**
-     * 得到资源鍚嶇О
+     * 得到资源名称
      * @return 鍏ㄥ眬鍞竴的资源婧愬悕绉?
      */
     String getName();

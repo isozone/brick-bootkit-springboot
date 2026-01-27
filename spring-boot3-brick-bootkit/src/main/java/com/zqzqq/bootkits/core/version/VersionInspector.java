@@ -28,18 +28,18 @@ import com.zqzqq.bootkits.core.exception.PluginException;
 public interface VersionInspector {
 
     /**
-     * 妫€鏌ユ彃浠剁増鏈彿鏄惁鍚堟硶
-     * @param version 版本可
-     * @throws PluginException 版本鍙蜂笉鍚堟硶鍒欐姏鍑哄紓甯?
+     * 检查插件版本号是否合法
+     * @param version 版本号
+     * @throws PluginException 版本号不合法则抛出异常
      */
     void check(String version) throws PluginException;
 
     /**
-     * 比较 v1 鍜?v2版本.
-     * @param v1 版本鍙风爜1
-     * @param v2 版本鍙风爜2
-     * @return 如果 v1澶т簬绛変簬v2, 鍒欒繑鍥炲ぇ浜庣瓑浜?鐨勬暟瀛? 鍚﹀垯杩斿洖灏忎簬0鐨勬暟瀛?
-     * @throws PluginException 版本鍙蜂笉鍚堟硶鍒欐姏鍑哄紓甯?
+     * 比较 v1 和 v2版本.
+     * @param v1 版本号1
+     * @param v2 版本号2
+     * @return 如果 v1大于等于v2, 则返回大于等于0的数值。否则返回小于0的数值
+     * @throws PluginException 版本号不合法则抛出异常
      */
     int compareTo(String v1, String v2) throws PluginException;;
 

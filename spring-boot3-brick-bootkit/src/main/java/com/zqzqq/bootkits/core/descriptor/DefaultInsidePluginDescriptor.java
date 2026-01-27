@@ -159,32 +159,32 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
     }
 
     /**
-     * 鏄惁浣跨敤涓诲簲鐢ㄦ暟鎹簮
-     * @return true浣跨敤涓绘暟鎹簮锛宖alse浣跨敤插件鐙珛数据婧?
+     * 是否使用主应用数据源
+     * @return true使用主数据源，false使用插件独立数据源
      */
     public boolean isUseMainDataSource() {
         return useMainDataSource;
     }
 
     /**
-     * 璁剧疆鏄惁浣跨敤涓诲簲鐢ㄦ暟鎹簮
-     * @param useMainDataSource true浣跨敤涓绘暟鎹簮锛宖alse浣跨敤插件鐙珛数据婧?
+     * 设置是否使用主应用数据源
+     * @param useMainDataSource true使用涓绘暟鎹簮锛宖alse使用插件鐙珛数据婧?
      */
     public void setUseMainDataSource(boolean useMainDataSource) {
         this.useMainDataSource = useMainDataSource;
     }
 
     /**
-     * 获取插件数据婧愰厤缃?JSON鏍煎紡)
-     * @return 数据婧愰厤缃?
+     * 获取插件数据源配置(JSON格式)
+     * @return 数据源配置
      */
     public String getPluginDataSourceConfig() {
         return pluginDataSourceConfig;
     }
 
     /**
-     * 璁剧疆插件数据婧愰厤缃?JSON鏍煎紡)
-     * @param config 数据婧愰厤缃?
+     * 设置插件数据源配置JSON鏍煎紡)
+     * @param config 数据源配置
      */
     public void setPluginDataSourceConfig(String config) {
         this.pluginDataSourceConfig = config;

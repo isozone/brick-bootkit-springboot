@@ -58,7 +58,7 @@ public interface PluginDescriptor {
     String getPluginPath();
 
     /**
-     * 获取插件鍚嶅瓧
+     * 获取插件名称
      * @return String
      */
     default String getName() {
@@ -66,7 +66,7 @@ public interface PluginDescriptor {
     }
 
     /**
-     * 获取插件涓荤被
+     * 获取插件主类
      * @return String
      */
     default String getMainClass() {
@@ -74,19 +74,19 @@ public interface PluginDescriptor {
     }
 
     /**
-     * 获取插件鎻忚堪
+     * 获取插件描述
      * @return String
      */
     String getDescription();
 
     /**
-     * 获取插件鎵€鑳藉畨瑁呭埌主程序搴忕殑版本
+     * 获取插件所能安装到主程序包的版本
      * @return String
      */
     String getRequires();
 
     /**
-     * 获取插件提供者寮€鍙戣€?
+     * 获取插件提供者/开发者
      * @return String
      */
     String getProvider();
@@ -98,7 +98,7 @@ public interface PluginDescriptor {
     String getLicense();
 
     /**
-     * 获取褰撳墠插件依赖
+     * 获取当前插件依赖
      * @return List
      */
     List<DependencyPlugin> getDependencyPlugin();
@@ -110,23 +110,23 @@ public interface PluginDescriptor {
     PluginType getType();
 
     /**
-     * 鍔ㄦ€佽缃彃浠跺叾浠栧睘鎬?
+     * 主动设置插件其它属性
      * @return map
      */
     HashMap<String,Object> pluginExtensionInfo();
 
     /**
-     * 璁剧疆鎺堟潈鐮?
+     * 设置授权码
      * @return void
      */
     void setLicenseCode(String code);
     /**
-     * 璁剧疆鎻忚堪
+     * 设置描述
      * @return void
      */
     void setLicenseDesc(String desc);
     /**
-     * 璁剧疆鎺堟潈鏃堕棿
+     * 设置授权时间
      * @return void
      */
     void setLicenseDateMill(Long mills);
@@ -138,16 +138,16 @@ public interface PluginDescriptor {
     Long getLicenseDateMill();
 
     /**
-     * 获取闇€瑕佹帓闄ょ殑鑷姩配置类
-     * @return 排除鐨勮嚜鍔ㄩ厤缃被集合
+     * 获取需要排除的自动配置类
+     * @return 排除的自动配置类集合
      */
     default Set<String> getExcludeAutoConfigurations() {
         return Collections.emptySet();
     }
 
     /**
-     * 璁剧疆闇€瑕佹帓闄ょ殑鑷姩配置类
-     * @param excludeClasses 排除鐨勮嚜鍔ㄩ厤缃被集合
+     * 设置需要排除的自动配置类
+     * @param excludeClasses 排除的自动配置类集合
      */
     default void setExcludeAutoConfigurations(Set<String> excludeClasses) {
         // 榛樿绌哄疄鐜?
@@ -159,7 +159,7 @@ public interface PluginDescriptor {
      */
     default InsidePluginDescriptor toInsidePluginDescriptor() {
         try {
-            // 浣跨敤Path.of()鍒涘缓涓存椂Path对象
+            // 使用Path.of()创建临时Path对象
             Path pluginPath = Path.of(getPluginPath());
             DefaultInsidePluginDescriptor insideDescriptor = new DefaultInsidePluginDescriptor(
                 getPluginId(),
@@ -167,7 +167,7 @@ public interface PluginDescriptor {
                 getPluginBootstrapClass(),
                 pluginPath
             );
-            // 璁剧疆鍏朵粬蹇呰灞炴€?
+            // 设置其它必要属性
             insideDescriptor.setType(getType());
             insideDescriptor.setDescription(getDescription());
             insideDescriptor.setProvider(getProvider());
@@ -177,7 +177,7 @@ public interface PluginDescriptor {
             insideDescriptor.setLicenseDesc(getLicenseDesc());
             insideDescriptor.setLicenseDateMill(getLicenseDateMill());
             
-            // 浼犻€掓帓闄ょ殑鑷姩配置类
+            // 传递排除的自动配置类
             if (this instanceof InsidePluginDescriptor) {
                 insideDescriptor.setExcludeAutoConfigurations(
                     ((InsidePluginDescriptor) this).getExcludeAutoConfigurations()

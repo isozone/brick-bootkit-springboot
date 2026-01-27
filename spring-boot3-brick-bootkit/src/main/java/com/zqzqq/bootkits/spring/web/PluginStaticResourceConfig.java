@@ -34,17 +34,17 @@ public class PluginStaticResourceConfig {
     private static final Logger log = LoggerFactory.getLogger(PluginStaticResourceConfig.class);
 
     /**
-     * 插件闈欐€佽祫婧愯闂墠缂€
+     * 插件静态资源访问前缀
      */
     private String pathPrefix = DEFAULT_PLUGIN_STATIC_RESOURCE_PATH_PREFIX;
 
     /**
-     * 榛樿棣栭〉椤甸潰鍚嶇О
+     * 默认首页页面名称
      */
     private String indexPageName = DEFAULT_INDEX_PAGE_NAME;
 
     /**
-     * 椤甸潰鏄惁缓存
+     * 页面是否缓存
      */
     private CacheControl cacheControl = CacheControl.noCache();
 

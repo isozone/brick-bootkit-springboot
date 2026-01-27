@@ -28,9 +28,9 @@ import java.util.Set;
 public interface PluginUser {
 
     /**
-     * 获取 Bean鍚嶇О
-     * @param includeMainBeans 鏄惁鍖呭惈主程序锟?Bean
-     * @return Bean 鍖呰对象
+     * 获取 Bean名称
+     * @param includeMainBeans 是否包含主程序/Bean
+     * @return Bean 包装对象
      */
     BeanWrapper<Set<String>> getBeanName(boolean includeMainBeans);
 
@@ -51,28 +51,28 @@ public interface PluginUser {
     BeanWrapper<Object> getBean(String name, boolean includeMainBeans);
 
     /**
-     * 通过 Bean鍚嶇О获取鍏蜂綋插件涓殑 Bean 对象
-     * @param pluginId 插件id锟?
-     * @param name Bean鍚嶇О
+     * 通过 Bean名称获取具体插件中的 Bean 对象
+     * @param pluginId 插件id
+     * @param name Bean名称
      * @return Object
      */
     Object getBean(String pluginId, String name);
 
 
     /**
-     * 通过接口获取实现鐨勫璞￠泦锟?
-     * @param interfaceClass 接口鐨勭被
-     * @param includeMainBeans 鏄惁鍖呭惈主程序锟?Bean
-     * @param <T> Bean鐨勭被锟?
-     * @return Bean鍖呰对象
+     * 通过接口获取实现的对象集合
+     * @param interfaceClass 接口的类
+     * @param includeMainBeans 是否包含主程序/Bean
+     * @param <T> Bean的类
+     * @return Bean包装对象
      */
     <T> BeanWrapper<List<T>> getBeanByInterface(Class<T> interfaceClass, boolean includeMainBeans);
 
     /**
-     * 通过接口获取鍏蜂綋插件涓殑实现对象集合
+     * 通过接口获取具体插件中的实现对象集合
      * @param pluginId 插件id
-     * @param interfaceClass 接口鐨勭被
-     * @param <T> Bean鐨勭被锟?
+     * @param interfaceClass 接口的类
+     * @param <T> Bean的类
      * @return List
      */
     <T> List<T> getBeanByInterface(String pluginId, Class<T> interfaceClass);
@@ -80,13 +80,13 @@ public interface PluginUser {
     /**
      * 通过注解获取 Bean
      * @param annotationType 注解类型
-     * @param includeMainBeans 鏄惁鍖呭惈主程序锟?Bean
-     * @return Bean鍖呰对象
+     * @param includeMainBeans 是否包含主程序/Bean
+     * @return Bean包装对象
      */
     BeanWrapper<List<Object>> getBeansWithAnnotation(Class<? extends Annotation> annotationType, boolean includeMainBeans);
 
     /**
-     * 通过注解获取鍏蜂綋插件涓殑 Bean
+     * 通过注解获取具体插件中的 Bean
      * @param pluginId  插件id
      * @param annotationType 注解类型
      * @return 璇ユ敞瑙ｇ殑 Bean 集合

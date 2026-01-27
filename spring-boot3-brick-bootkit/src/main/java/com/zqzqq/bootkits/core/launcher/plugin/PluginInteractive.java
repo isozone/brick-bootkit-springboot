@@ -32,37 +32,37 @@ import com.zqzqq.bootkits.spring.invoke.InvokeSupperCache;
 public interface PluginInteractive {
 
     /**
-     * 获取插件淇℃伅
+     * 获取插件信息
      * @return PluginDescriptor
      */
     InsidePluginDescriptor getPluginDescriptor();
 
     /**
-     * 获取插件鍐呴儴淇℃伅
+     * 获取插件内部信息
      * @return PluginInsideInfo
      */
     PluginInsideInfo getPluginInsideInfo();
 
     /**
-     * 获取主程序搴忕殑 MainApplicationContext
+     * 获取主程序包的MainApplicationContext
      * @return MainApplicationContext
      */
     MainApplicationContext getMainApplicationContext();
 
     /**
-     * 获取主程序搴忓妗嗘灦闆嗘垚配置淇℃伅
+     * 获取主程序包框架集成配置信息
      * @return IntegrationConfiguration
      */
     IntegrationConfiguration getConfiguration();
 
     /**
-     * 获取杩滅▼调用缓存
+     * 获取远程调用缓存
      * @return InvokeSupperCache
      */
     InvokeSupperCache getInvokeSupperCache();
 
     /**
-     * 获取涓氬姟扩展鍔熻兘鐨勫伐鍘?
+     * 获取业务扩展功能的工厂
      * @return OpExtractFactory
      */
     OpExtractFactory getOpExtractFactory();
