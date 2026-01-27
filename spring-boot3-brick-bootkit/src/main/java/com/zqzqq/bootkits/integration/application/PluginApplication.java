@@ -31,19 +31,19 @@ public interface PluginApplication{
     /**
      * 鍒濆鍖?
      * @param applicationContext Spring上下?
-     * @param listener 插件鍒濆鍖栫洃鍚€?
+     * @param listener 插件初始化监听器?
      */
     void initialize(ApplicationContext applicationContext, PluginInitializerListener listener);
 
 
     /**
-     * 鑾峰緱鎻掓彃浠舵搷浣滆€?
+     * 获取插件操作权?
      * @return 插件操作鑰?
      */
     PluginOperator getPluginOperator();
 
     /**
-     * 鑾峰緱鎻掓彃浠舵搷浣滆€?
+     * 获取插件操作权?
      * @return 插件操作鑰?
      */
     PluginUser getPluginUser();

@@ -22,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 插件闈欐€佽祫婧恮ebMvc配置
+ * 插件闈欐佽祫婧恮ebMvc配置
  * @author starBlues
  * @version 3.0.0
  */

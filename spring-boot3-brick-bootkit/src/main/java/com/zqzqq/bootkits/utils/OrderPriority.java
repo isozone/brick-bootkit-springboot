@@ -30,7 +30,7 @@ public class OrderPriority {
     private static final Integer HIGH_PRIORITY = 1000;
 
     /**
-     * 涓紭鍏堢骇
+     * 中紭鍏堢骇
      */
     private static final Integer MIDDLE_PRIORITY = 0;
 
@@ -61,7 +61,7 @@ public class OrderPriority {
 
 
     /**
-     * 得到涓紭鍏堢骇
+     * 得到中紭鍏堢骇
      * @return OrderPriority
      */
     public static OrderPriority getMiddlePriority(){
@@ -79,7 +79,7 @@ public class OrderPriority {
 
 
     /**
-     * 鍗囦紭鍏堢骇.链楂樺彧鑳藉崌鍒版渶楂樹紭鍏堢骇鍒€備篃就是1000
+     * 鍗囦紭鍏堢骇.链楂樺彧鑳藉崌鍒版渶楂樹紭鍏堢骇鍒備篃就是1000
      * @param number 鍗囩骇鏁伴噺
      * @return OrderPriority
      */
@@ -97,7 +97,7 @@ public class OrderPriority {
     }
 
     /**
-     * 闄嶄紭鍏堢骇.链浣庡彧鑳介檷鍒版渶浣庝紭鍏堢骇鍒€備篃就是-1000
+     * 闄嶄紭鍏堢骇.链浣庡彧鑳介檷鍒版渶浣庝紭鍏堢骇鍒備篃就是-1000
      * @param number 闄嶇骇鏁伴噺
      * @return OrderPriority
      */

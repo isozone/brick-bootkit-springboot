@@ -22,7 +22,7 @@ import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
- * 插件琚仠姝㈢洃鍚€呫€傜敤浜庤嚜瀹氫箟关闭资源
+ * 插件琚仠姝㈢洃的呫傜敤浜庤嚜瀹氫箟关闭资源
  *
  * @author starBlues
  * @since 3.0.0

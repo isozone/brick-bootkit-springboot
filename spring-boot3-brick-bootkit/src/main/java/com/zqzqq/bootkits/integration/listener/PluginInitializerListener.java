@@ -18,7 +18,7 @@ package com.zqzqq.bootkits.integration.listener;
 
 
 /**
- * 插件鍒濆鍖栫洃鍚€?
+ * 插件初始化监听器?
  *
  * @author starBlues
  * @version 3.0.0

@@ -103,7 +103,7 @@ public class ResourceUtils {
     }
 
     /**
-     * 灏嗚祫婧愬悕绉扮粺涓€鏍煎紡鍖栦负标准鏍煎紡
+     * 灏嗚祫婧愬悕绉扮粺中鏍煎紡鍖栦负标准鏍煎紡
      * 标准鏍煎紡锛歛/b/c
      * @param name 原始资源名称
      * @return 标准资源名称

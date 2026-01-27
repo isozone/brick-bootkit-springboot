@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * 主程序搴忛厤缃俊鎭彁渚涜€呭疄鐜?
+ * 主程序搴忛厤缃俊鎭彁渚涜呭疄鐜?
  *
  * @author starBlues
  * @version 3.0.3

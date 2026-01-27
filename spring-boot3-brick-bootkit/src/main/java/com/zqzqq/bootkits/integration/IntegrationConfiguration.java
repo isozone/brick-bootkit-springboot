@@ -53,14 +53,14 @@ public interface IntegrationConfiguration {
 
     /**
      * 插件的路径。可设置多个插件路径
-     * 寮€鍙戠幆澧冨缓璁洿鎺ラ厤缃负插件模式鐨勭埗绾х洰褰曘€備緥濡? plugins銆傚鏋滃惎鍔ㄤ富程序鏃? 插件涓哄姞杞? 璇锋鏌ヨ配置是否姝ｇ‘銆?
+     * 开启戠幆澧冨缓璁洿鎺ラ厤缃负插件模式鐨勭埗绾х洰褰曘備緥濡? plugins銆傚鏋滃惎鍔ㄤ富程序鏃? 插件中哄姞杞? 璇锋鏌ヨ配置是否姝ｇ‘銆?
      * @return 插件鐨勮矾寰?
      */
     List<String> pluginPath();
 
     /**
      * 上传插件临时存储的临时路径。默认: temp(相对于主程序jar路径)
-     * @return 涓婁紶插件鐨勪复鏃朵繚瀛樿矾寰勩€?
+     * @return 中婁紶插件鐨勪复鏃朵繚瀛樿矾寰勩?
      */
     String uploadTempPath();
 

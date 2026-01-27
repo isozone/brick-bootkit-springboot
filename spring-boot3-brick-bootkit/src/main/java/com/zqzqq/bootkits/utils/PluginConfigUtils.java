@@ -32,12 +32,12 @@ public class PluginConfigUtils {
     private PluginConfigUtils(){}
 
     /**
-     * 根据椤圭洰杩愯鐜妯″紡鏉ヨ幏鍙栭厤缃枃浠跺悕绉?
-     * @param fileName 文件鍚嶇О
+     * 根据椤圭洰杩愯鐜妯″紡鏉ヨ幏可栭厤缃枃浠跺悕绉?
+     * @param fileName 文件的嶇О
      * @param prodSuffix 鐢熶骇鐜鍓嶇紑
-     * @param devSuffix 寮€鍙戠幆澧冨墠缂€
+     * @param devSuffix 开启戠幆澧冨墠缂
      * @param runtimeMode 杩愯妯″紡
-     * @return 文件鍚嶇О
+     * @return 文件的嶇О
      */
     public static FileNamePack getConfigFileName(String fileName,
                                                  String prodSuffix,
@@ -51,7 +51,7 @@ public class PluginConfigUtils {
             // 鐢熶骇鐜
             suffix = prodSuffix;
         } else if(runtimeMode == RuntimeMode.DEV){
-            // 寮€鍙戠幆澧?
+            // 开启戠幆澧?
             suffix = devSuffix;
         }
 

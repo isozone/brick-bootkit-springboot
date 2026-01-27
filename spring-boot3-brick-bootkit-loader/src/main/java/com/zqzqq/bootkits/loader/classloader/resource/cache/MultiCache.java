@@ -29,16 +29,16 @@ import java.util.Collection;
 public interface MultiCache<K, V> extends Cache<K, Collection<V>>{
 
     /**
-     * put 涓€涓拷?
+     * put 中中拷?
      * @param key 缓存的key
      * @param value 缓存鐨勶拷?
      */
     void putSingle(K key, V value);
 
     /**
-     * 得到绗竴涓獀alue
+     * 得到绗竴中獀alue
      * @param key 缓存的key
-     * @return 绗竴涓獀alue
+     * @return 绗竴中獀alue
      */
     V getFirst(K key);
 

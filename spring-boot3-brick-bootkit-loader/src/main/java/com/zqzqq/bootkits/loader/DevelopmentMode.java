@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.loader;
 
 /**
- * 寮€鍙戞ā寮弅ey瀹氫箟
+ * 开启戞ā寮弅ey瀹氫箟
  *
  * @author starBlues
  * @since 3.0.4

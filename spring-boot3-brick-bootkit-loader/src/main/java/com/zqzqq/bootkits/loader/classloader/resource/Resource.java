@@ -55,7 +55,7 @@ public interface Resource extends AutoCloseable, Release {
     byte[] getBytes();
 
     /**
-     * 瑙ｅ喅byte
+     * 解决byte
      * @throws Exception 处理资源字节异常
      */
     void resolveByte() throws Exception;

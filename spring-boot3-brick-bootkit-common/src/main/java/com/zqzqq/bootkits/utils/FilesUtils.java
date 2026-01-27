@@ -201,8 +201,8 @@ public class FilesUtils {
     /**
      * 解决存在的相对路径
      * @param rootPath 根路徑
-     * @param path 以~开头的相对路径或者€呭畬整路径
-     * @return File 或者€卬ull(不存在鍦?
+     * @param path 以~开头的相对路径或者呭畬整路径
+     * @return File 或者卬ull(不存在鍦?
      */
     public static File resolveExistRelativePathFile(String rootPath, String path){
         if(ObjectUtils.isEmpty(path)){

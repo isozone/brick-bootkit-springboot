@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
- * 鑷姩鍒濆鍖栫殑 PluginApplication銆傝PluginApplication 鍩轰簬 Spring InitializingBean 鑷姩鍒濆鍖栨彃浠躲€?
+ * 自动初始化的 PluginApplication銆傝PluginApplication 基于 Spring InitializingBean 鑷姩鍒濆鍖栨彃浠躲?
  *
  * @author starBlues
  * @version 3.0.0
