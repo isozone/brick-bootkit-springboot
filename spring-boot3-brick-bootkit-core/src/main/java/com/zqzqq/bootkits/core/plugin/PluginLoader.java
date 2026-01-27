@@ -20,8 +20,16 @@ public class PluginLoader {
 
     private static final PluginLogger logger = PluginLogger.getLogger(PluginLoader.class);
     
+    /**
+     * 类加载器缓存最大数量
+     */
+    private static final int MAX_CLASS_LOADER_CACHE_SIZE = 100;
+    
     // 插件类加载器缓存
     private final ConcurrentHashMap<String, URLClassLoader> classLoaders = new ConcurrentHashMap<>();
+    
+    // 用于跟踪访问顺序（简单实现，不使用LinkedHashMap以避免额外依赖）
+    private final java.util.List<String> accessOrder = new java.util.ArrayList<>();
 
     /**
      * 加载插件
@@ -68,8 +76,8 @@ public class PluginLoader {
                 // 创建插件实例
                 Plugin plugin = createPluginInstance(pluginClass, metadata);
                 
-                // 缓存类加载器
-                classLoaders.put(metadata.getId(), classLoader);
+                // 缓存类加载器（带LRU淘汰机制）
+                cacheClassLoader(metadata.getId(), classLoader);
                 
                 logger.info("插件加载成功: {} ({})", metadata.getName(), metadata.getId());
                 return plugin;
@@ -100,6 +108,9 @@ public class PluginLoader {
     public Plugin reloadPlugin(String pluginId, File pluginFile) {
         logger.info("重新加载插件: {}", pluginId);
         
+        // 从访问顺序中移除
+        accessOrder.remove(pluginId);
+        
         // 关闭旧的类加载器
         URLClassLoader oldClassLoader = classLoaders.remove(pluginId);
         if (oldClassLoader != null) {
@@ -118,6 +129,9 @@ public class PluginLoader {
      * 卸载插件类加载器
      */
     public void unloadPlugin(String pluginId) {
+        // 从访问顺序中移除
+        accessOrder.remove(pluginId);
+        
         URLClassLoader classLoader = classLoaders.remove(pluginId);
         if (classLoader != null) {
             try {
@@ -207,6 +221,40 @@ public class PluginLoader {
             );
         }
     }
+    
+    /**
+     * 缓存类加载器，带LRU淘汰机制
+     */
+    private void cacheClassLoader(String pluginId, URLClassLoader classLoader) {
+        // 检查缓存大小，必要时淘汰旧的类加载器
+        if (classLoaders.size() >= MAX_CLASS_LOADER_CACHE_SIZE) {
+            evictOldestClassLoader();
+        }
+        
+        classLoaders.put(pluginId, classLoader);
+        accessOrder.add(pluginId);
+    }
+    
+    /**
+     * 淘汰最旧的类加载器
+     */
+    private void evictOldestClassLoader() {
+        if (accessOrder.isEmpty()) {
+            return;
+        }
+        
+        String oldestId = accessOrder.remove(0);
+        URLClassLoader removed = classLoaders.remove(oldestId);
+        
+        if (removed != null) {
+            try {
+                removed.close();
+                logger.info("system", "已淘汰最旧的类加载器: {}", oldestId);
+            } catch (IOException e) {
+                logger.warn("system", "关闭淘汰的类加载器失败: {}", e.getMessage());
+            }
+        }
+    }
 
     /**
      * 插件元数据内部类
@@ -252,6 +300,7 @@ public class PluginLoader {
             });
             
             classLoaders.clear();
+            accessOrder.clear();
             logger.info("system", "插件加载器关闭完成");
             
         } catch (Exception e) {

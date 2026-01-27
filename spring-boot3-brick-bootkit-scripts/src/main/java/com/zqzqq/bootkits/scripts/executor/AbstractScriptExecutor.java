@@ -36,6 +36,37 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
         return t;
     });
     
+    /**
+     * 线程池关闭超时时间（秒）
+     */
+    private static final long EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
+    
+    static {
+        // 注册JVM关闭钩子，确保线程池被正确关闭
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdownExecutor();
+        }));
+    }
+    
+    /**
+     * 关闭线程池
+     */
+    public static void shutdownExecutor() {
+        OUTPUT_COLLECTOR_EXECUTOR.shutdown();
+        try {
+            if (!OUTPUT_COLLECTOR_EXECUTOR.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                OUTPUT_COLLECTOR_EXECUTOR.shutdownNow();
+                if (!OUTPUT_COLLECTOR_EXECUTOR.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    // 线程池仍未完全关闭，记录警告日志
+                    System.err.println("OutputCollector executor did not terminate gracefully");
+                }
+            }
+        } catch (InterruptedException e) {
+            OUTPUT_COLLECTOR_EXECUTOR.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+    
     @Override
     public boolean supports(OperatingSystem os, ScriptType scriptType) {
         OperatingSystem[] supportedOS = getSupportedOperatingSystems();
@@ -299,11 +330,17 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
         
         public void stop() {
             running = false;
-            try {
-                if (stdoutReader != null) stdoutReader.close();
-                if (stderrReader != null) stderrReader.close();
-            } catch (IOException e) {
-                // 忽略关闭异常
+            closeQuietly(stdoutReader);
+            closeQuietly(stderrReader);
+        }
+        
+        private void closeQuietly(java.io.Closeable closeable) {
+            if (closeable != null) {
+                try {
+                    closeable.close();
+                } catch (IOException e) {
+                    // 静默关闭，忽略异常
+                }
             }
         }
         

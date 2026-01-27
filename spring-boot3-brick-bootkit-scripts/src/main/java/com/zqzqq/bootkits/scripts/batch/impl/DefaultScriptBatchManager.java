@@ -22,9 +22,14 @@ import java.util.stream.Collectors;
  * @author starBlues
  * @since 4.0.1
  */
-public class DefaultScriptBatchManager implements ScriptBatchManager {
+public class DefaultScriptBatchManager implements ScriptBatchManager, AutoCloseable {
     
     private static final Logger logger = LoggerFactory.getLogger(DefaultScriptBatchManager.class);
+    
+    /**
+     * 线程池关闭超时时间（秒）
+     */
+    private static final long EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
     
     // 存储运行中的批量操作
     private final Map<String, BatchOperation> runningOperations = new ConcurrentHashMap<>();
@@ -1261,5 +1266,61 @@ public class DefaultScriptBatchManager implements ScriptBatchManager {
         }
         
         return arguments.toArray(new String[0]);
+    }
+    
+    /**
+     * 关闭管理器，释放资源
+     */
+    @Override
+    public void close() {
+        shutdown();
+    }
+    
+    /**
+     * 关闭管理器并释放资源
+     */
+    public void shutdown() {
+        logger.info("正在关闭脚本批量操作管理器...");
+        
+        // 停止清理任务
+        stopCleanupTask();
+        
+        // 关闭主执行器
+        shutdownExecutor(executorService, "batch-executor");
+        
+        // 关闭清理执行器
+        shutdownExecutor(cleanupExecutor, "batch-cleanup");
+        
+        // 清理操作记录
+        lock.writeLock().lock();
+        try {
+            runningOperations.clear();
+            completedOperations.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
+        
+        logger.info("脚本批量操作管理器已关闭");
+    }
+    
+    /**
+     * 关闭单个执行器
+     */
+    private void shutdownExecutor(ExecutorService executor, String name) {
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    if (!executor.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                        logger.warn("执行器 [{}] 未能在规定时间内终止", name);
+                    }
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+                logger.warn("关闭执行器 [{}] 时被中断", name);
+            }
+        }
     }
 }
