@@ -21,7 +21,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.Resource;
 import java.net.URL;
 
 /**
- * 榛樿的资源婧愪俊鎭?
+ * 默认的资源提供信息?
  * @author starBlues
  * @since 3.0.0
  * @version 4.0.0

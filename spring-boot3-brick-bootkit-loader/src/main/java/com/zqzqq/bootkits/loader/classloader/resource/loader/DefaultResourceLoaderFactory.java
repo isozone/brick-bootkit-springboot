@@ -31,7 +31,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * 榛樿的资源婧愬姞杞藉伐锟?
+ * 默认的资源加载加工厂?
  *
  * @author starBlues
  * @since 3.0.0

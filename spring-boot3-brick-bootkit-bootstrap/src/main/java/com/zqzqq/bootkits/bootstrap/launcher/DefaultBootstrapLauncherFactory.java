@@ -27,7 +27,7 @@ import com.zqzqq.bootkits.loader.launcher.DevelopmentModeSetting;
 import java.util.List;
 
 /**
- * 榛樿鐨?BootstrapLauncher 鍒涢€犲伐鍘?
+ * 默认的BootstrapLauncher 创建工厂
  *
  * @author starBlues
  * @since 3.0.4

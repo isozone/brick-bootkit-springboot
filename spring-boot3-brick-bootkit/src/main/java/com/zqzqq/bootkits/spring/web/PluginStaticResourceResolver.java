@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * 插件web闈欐€佽祫婧怰esolver
+ * 插件web静态资源Resolver
  * @author starBlues
  * @version 3.0.2
  */

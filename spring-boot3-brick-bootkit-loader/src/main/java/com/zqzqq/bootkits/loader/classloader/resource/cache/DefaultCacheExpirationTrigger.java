@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * 榛樿缓存过期璋冨害实现
+ * 默认缓存过期调度实现
  *
  * @author starBlues
  * @since 3.1.1

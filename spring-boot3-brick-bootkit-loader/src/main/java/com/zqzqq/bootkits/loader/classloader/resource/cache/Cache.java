@@ -37,30 +37,30 @@ public interface Cache<K, V> {
     void put(K key, V value);
 
     /**
-     * 缓存澶у皬
+     * 缓存大小
      * @return int
      */
     int size();
 
     /**
-     * 鏄惁存在缓存
+     * 是否存在缓存
      * @param key 缓存key
-     * @return true: 存在, false: 不存在鍦?
+     * @return true: 存在, false: 不存在
      */
     boolean containsKey(K key);
 
     /**
      * 获取缓存值
      * @param key 缓存的key
-     * @return 缓存值不存在鍦ㄨ繑鍥瀗ull
+     * @return 缓存值不存在则返回null
      */
     V get(K key);
 
     /**
-     * 得到缓存鍊笺€傚鏋滀笉存在鏀鹃粯璁ょ殑
+     * 得到缓存值。如果不存在支付默认的
      * @param key 缓存的key
-     * @param supplier 榛樿值
-     * @param defaultAdded 如果不存在鍦?榛樿鐨勯噴鏀炬坊鍔犺繘鍏ョ紦瀛樹腑
+     * @param supplier 默认值
+     * @param defaultAdded 如果不存在则默认的添加到缓存中
      * @return V
      */
     V getOrDefault(K key, Supplier<V> supplier, boolean defaultAdded);
@@ -74,18 +74,18 @@ public interface Cache<K, V> {
 
     /**
      * 清理过期的缓存
-     * @return 娓呴櫎鐨勪釜鏁?
+     * @return 清理的个数
      */
     int cleanExpired();
 
     /**
-     * 娓呴櫎鍏ㄩ儴缓存
+     * 清理全部缓存
      */
     void clear();
 
     /**
      * 依次删除
-     * @param consumer 娑堣垂
+     * @param consumer 消费
      */
     void clear(Consumer<V> consumer);
 

@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 榛樿鐨勬墿灞曞伐锟?
+ * 默认的扩展工厂
  * @author starBlues
  * @version 3.0.0
  */

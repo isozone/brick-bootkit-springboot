@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 榛樿鐨勬彃浠堕泦鎴愰厤缃€傜粰闈炲繀椤婚厤缃缃簡榛樿值
+ * 默认的插件集合配置。非必须配置设置了默认值
  *
  * @author starBlues
  * @since 3.0.0
@@ -121,7 +121,7 @@ public abstract class DefaultIntegrationConfiguration implements IntegrationConf
     }
 
     /**
-     * 妫€鏌ラ厤缃?
+     * 检查配置
      */
     @Override
     public void checkConfig(){

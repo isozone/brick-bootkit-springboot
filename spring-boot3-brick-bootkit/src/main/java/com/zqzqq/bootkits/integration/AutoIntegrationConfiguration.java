@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 鑷姩闆嗘垚鐨勯厤锟?
+ * 自动集成的配置?
  *
  * @author starBlues
  * @since 3.0.0
@@ -49,110 +49,110 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
     public static final String ENABLE_STARTER_KEY = "plugin.enableStarter";
 
     /**
-     * 鏄惁鍚敤插件鍔熻兘
+     * 是否启用插件功能
      */
     @Value("${enable:true}")
     private Boolean enable;
 
     /**
-     * 杩愯妯″紡
-     *  寮€鍙戠幆锟? development銆乨ev
-     *  鐢熶骇/閮ㄧ讲 鐜: deployment銆乸rod
+     * 运行模式
+     *  开发环境: development, dev
+     *  生产/部署 环境: deployment, prod
      */
     @Value("${runMode:dev}")
     private String runMode;
 
     /**
-     * 主程序搴忓寘锟?
+     * 主程序包名
      */
     @Value("${mainPackage:}")
     private String mainPackage;
 
     /**
-     * 插件鐨勮矾锟?
+     * 插件的路径
      */
     private List<String> pluginPath;
 
     /**
-     * 涓婁紶鐨勬彃浠舵墍存储鐨勪复鏃剁洰锟?
+     * 上传的插件所存储的临时目录
      */
     @Value("${uploadTempPath:}")
     private String uploadTempPath;
 
     /**
-     * 鍦ㄥ嵏杞芥彃浠跺悗, 澶囦唤插件鐨勭洰锟?
+     * 在卸载插件后, 备份插件的目录
      */
     @Value("${backupPath:backupPlugin}")
     private String backupPath;
 
     /**
-     * 插件rest接口鍓嶇紑. 榛樿: /plugins
+     * 插件rest接口前缀. 默认: /plugins
      */
     @Value("${pluginRestPathPrefix:/plugins}")
     private String pluginRestPathPrefix;
 
     /**
-     * 鏄惁鍚敤插件id浣滀负rest接口鍓嶇紑, 榛樿涓哄惎锟?
-     * 如果涓哄惎锟? 鍒欏湴鍧€锟?/pluginRestPathPrefix/pluginId
-     * pluginRestPathPrefix: 涓簆luginRestPathPrefix鐨勯厤缃拷?
-     * pluginId: 涓烘彃浠秈d
+     * 是否启用插件id作为rest接口前缀, 默认是否启?
+     * 如果启用 地址为: /pluginRestPathPrefix/pluginId
+     * pluginRestPathPrefix: 为pluginRestPathPrefix的配置?
+     * pluginId: 为插件id
      */
     @Value("${enablePluginIdRestPathPrefix:true}")
     private Boolean enablePluginIdRestPathPrefix;
 
     /**
-     * 鍚敤鐨勬彃浠秈d
+     * 启用的插件id
      */
     private Set<String> enablePluginIds;
 
     /**
-     * 绂佺敤鐨勬彃浠秈d, 绂佺敤鍚庣郴缁熶笉浼氬惎鍔ㄨ插件
-     * 如果绂佺敤所有夋彃锟? 鍒橲et集合中繑鍥炰竴涓瓧锟? *
+     * 禁用的插件id, 禁用后系统不会启动该插件
+     * 如果禁用所有插件, 则set集合中返回一个字?
      */
     private Set<String> disablePluginIds;
 
     /**
-     * 璁剧疆鍒濆鍖栨椂插件鍚姩鐨勯『锟?
+     * 设置初始化时插件启动的顺序
      */
     private List<String> sortInitPluginIds;
 
     /**
-     * 褰撳墠主程序搴忕殑版本锟? 鐢ㄤ簬鏍￠獙插件鏄惁鍙畨锟?
-     * 插件涓彲通过插件配置淇℃伅 requires 鏉ユ寚瀹氬彲瀹夎鐨勪富程序版本
-     * 如果锟? 0.0.0 鐨勮瘽, 琛ㄧず涓嶆牎锟?
+     * 当前主程序包版本? 用于验证插件是否可安?
+     * 插件中可通过插件配置信息 requires 来指定可安装的主程序版本
+     * 如果为 0.0.0 的话, 表示不校?
      */
     @Value("${version:0.0.0}")
     private String version;
 
     /**
-     * 璁剧疆涓簍rue琛ㄧず插件璁剧疆鐨剅equires鐨勭増鏈彿瀹屽叏鍖归厤version版本鍙锋墠鍙厑璁告彃浠跺畨锟? 锟? requires=x.y.z
-     * 璁剧疆涓篺alse琛ㄧず插件璁剧疆鐨剅equires鐨勭増鏈彿灏忎簬绛変簬version锟? 插件灏卞彲瀹夎, 鍗硆equires<=x.y.z
-     * 榛樿涓篺alse
+     * 设置为true表示插件设置的requires的版本号完全匹配version版本后才能允许插件安装?  requires=x.y.z
+     * 设置为false表示插件设置的requires的版本号小于等于version时 插件可安装, 即requires<=x.y.z
+     * 默认false
      */
     @Value("${exactVersion:false}")
     private Boolean exactVersion;
 
     /**
-     * 鎻掓槸鍚︽壂锟?swagger 接口
+     * 是否扫描swagger接口
      */
     @Value("${pluginSwaggerScan:true}")
     private Boolean pluginSwaggerScan;
 
 
     /**
-     * 插件鐨勯厤缃枃锟?Profile 鏄惁璺熼殢主程序搴忕殑 Profile 配置鍔ㄦ€佸垏锟?
+     * 插件的配置文?Profile 是否跟随主程序包的 Profile 配置动态切换?
      */
     @Value("${pluginFollowProfile:false}")
     private Boolean pluginFollowProfile;
 
     /**
-     * 插件鏃ュ織打印鏄惁璺熼殢主程序锟?
+     * 插件日志打印是否跟随主程序?
      */
     @Value("${pluginFollowLog:false}")
     private Boolean pluginFollowLog;
 
     /**
-     * 瀵规彃浠跺惎鍔ㄦ椂杩涜瑙ｅ瘑鏍￠獙配置銆傞粯璁や负涓嶅惎锟?
+     * 对插件启动时进行解密配置。默认是否启?
      */
     private DecryptConfiguration decrypt;
 

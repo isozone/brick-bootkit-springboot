@@ -20,7 +20,7 @@ import com.zqzqq.bootkits.utils.SpringBeanUtils;
 import org.springframework.context.ApplicationContext;
 
 /**
- * 榛樿鐨勫垵濮嬪寲监听鑰呫€傚唴缃敞鍐?
+ * 初始化监听器的默认实现。内部注册监听?
  *
  * @author starBlues
  * @version 3.0.0
@@ -50,11 +50,10 @@ public class DefaultInitializerListener implements PluginInitializerListener{
     }
 
     private void refresh(){
-        // Knife4j浼氳嚜鍔ㄥ鐞咥PI鏂囨。鏇存柊锛屾棤闇€鎵嬪姩操作
+        // Knife4j会自动处理API文档更新，无需手动操作
         if(swaggerListener != null){
-            // 绌哄疄鐜帮紝Knife4j浼氳嚜琛屽鐞嗘枃妗ｆ洿鏂?
+            // 未实现，Knife4j会自动处理文档更新?
         }
     }
 
 }
-

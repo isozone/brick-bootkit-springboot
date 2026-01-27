@@ -33,14 +33,14 @@ public interface DependencyPlugin {
     String getId();
 
     /**
-     * 依赖插件版本. 如果璁剧疆在0.0.0 琛ㄧず鏀寔浠绘剰版本依赖
+     * 依赖插件版本. 如果设置在0.0.0 表示支持任意版本依赖
      *
      * @return String
      */
     String getVersion();
 
     /**
-     * 鏄惁涓哄繀椤讳緷璧?榛樿: false
+     * 是否为必须依赖?默认: false
      *
      * @return boolean
      */

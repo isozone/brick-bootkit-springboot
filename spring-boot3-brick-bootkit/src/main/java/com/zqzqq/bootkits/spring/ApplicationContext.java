@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.spring;
 
 /**
- * 閼奉亜鐣炬稊鍫縫plicationContext
+ * 插件的ApplicationContext
  * @author starBlues
  * @since 3.0.0
  * @version 3.1.0
@@ -25,16 +25,15 @@ package com.zqzqq.bootkits.spring;
 public interface ApplicationContext extends AutoCloseable {
 
     /**
-     * 寰楀埌 SpringBeanFactory
+     * 获取SpringBeanFactory
      * @return SpringBeanFactory
      */
     SpringBeanFactory getSpringBeanFactory();
 
     /**
-     * 寰楀埌閸樼喎顫愰惃鍑歟anFactory
+     * 获取原始BeanFactory
      * @return BeanFactory
      */
     Object getSourceBeanFactory();
 
 }
-
