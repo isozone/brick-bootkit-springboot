@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 脚本执行器抽象基类
@@ -23,6 +26,15 @@ import java.util.Map;
 public abstract class AbstractScriptExecutor implements ScriptExecutor {
     
     protected static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    
+    /**
+     * 用于执行输出收集的线程池，避免每次执行创建新线程
+     */
+    private static final ExecutorService OUTPUT_COLLECTOR_EXECUTOR = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "OutputCollector");
+        t.setDaemon(true);
+        return t;
+    });
     
     @Override
     public boolean supports(OperatingSystem os, ScriptType scriptType) {
@@ -268,7 +280,6 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
         private final java.io.BufferedReader stderrReader;
         private final long maxOutputSize;
         private volatile boolean running = false;
-        private Thread collectorThread;
         
         public OutputCollector(Process process, ScriptConfiguration configuration) throws UnsupportedEncodingException {
             this.process = process;
@@ -282,16 +293,12 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
         public void start() {
             if (!running) {
                 running = true;
-                collectorThread = new Thread(this, "OutputCollector");
-                collectorThread.start();
+                OUTPUT_COLLECTOR_EXECUTOR.submit(this);
             }
         }
         
         public void stop() {
             running = false;
-            if (collectorThread != null && collectorThread.isAlive()) {
-                collectorThread.interrupt();
-            }
             try {
                 if (stdoutReader != null) stdoutReader.close();
                 if (stderrReader != null) stderrReader.close();
@@ -316,7 +323,7 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
             final long[] currentSize = {0};
             
             // 收集标准输出
-            new Thread(() -> {
+            OUTPUT_COLLECTOR_EXECUTOR.submit(() -> {
                 try {
                     String line;
                     while (running && (line = stdoutReader.readLine()) != null) {
@@ -335,10 +342,10 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                         stderr.add("标准输出收集异常: " + e.getMessage());
                     }
                 }
-            }, "stdout-collector").start();
+            });
             
             // 收集错误输出
-            new Thread(() -> {
+            OUTPUT_COLLECTOR_EXECUTOR.submit(() -> {
                 try {
                     String line;
                     while (running && (line = stderrReader.readLine()) != null) {
@@ -357,7 +364,7 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                         stderr.add("错误输出收集异常: " + e.getMessage());
                     }
                 }
-            }, "stderr-collector").start();
+            });
         }
         
         public java.util.List<String> getStdout() {

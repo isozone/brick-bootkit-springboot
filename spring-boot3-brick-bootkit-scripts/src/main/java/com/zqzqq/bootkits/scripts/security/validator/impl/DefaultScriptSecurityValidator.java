@@ -25,6 +25,9 @@ public class DefaultScriptSecurityValidator implements ScriptSecurityValidator {
     
     private static final Logger logger = LoggerFactory.getLogger(DefaultScriptSecurityValidator.class);
     
+    // 最大脚本文件大小: 10MB
+    private static final long MAX_SCRIPT_FILE_SIZE = 10 * 1024 * 1024;
+    
     // 安全规则存储
     private final Map<String, SecurityRule> securityRules = new ConcurrentHashMap<>();
     
@@ -112,7 +115,7 @@ public class DefaultScriptSecurityValidator implements ScriptSecurityValidator {
             }
             
             // 检查文件大小
-            if (scriptFile.length() > 10 * 1024 * 1024) { // 10MB
+            if (scriptFile.length() > MAX_SCRIPT_FILE_SIZE) {
                 return new SecurityValidationResult(false, "脚本文件过大（超过10MB）", SecuritySeverity.MEDIUM);
             }
             

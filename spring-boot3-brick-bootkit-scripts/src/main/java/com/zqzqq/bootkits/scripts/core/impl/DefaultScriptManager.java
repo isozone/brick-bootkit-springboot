@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 脚本管理器默认实现
@@ -21,8 +22,8 @@ public class DefaultScriptManager implements ScriptManager {
     
     private static final Logger log = LoggerFactory.getLogger(DefaultScriptManager.class);
     private final Map<String, ScriptExecutor> executorMap = new ConcurrentHashMap<>();
-    private final List<String> scriptPaths = new ArrayList<>();
-    private boolean initialized = false;
+    private final List<String> scriptPaths = new CopyOnWriteArrayList<>();
+    private volatile boolean initialized = false;
     
     /**
      * 构造函数

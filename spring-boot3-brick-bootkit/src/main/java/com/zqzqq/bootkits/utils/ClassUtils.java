@@ -40,7 +40,7 @@ public class ClassUtils {
     public static List<Field> getAllFields(Class<?> clazz) {
         List<Field> fieldList = new ArrayList<>();
         while (clazz != null) {
-            fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+            fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
             clazz = clazz.getSuperclass();
         }
         return fieldList;

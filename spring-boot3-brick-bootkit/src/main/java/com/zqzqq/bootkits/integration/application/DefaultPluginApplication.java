@@ -79,7 +79,9 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
             pluginOperator.initPlugins(listener);
             beInitialized.set(true);
         } catch (Exception e) {
+            beInitialized.set(false);
             LOG.error("初始化插件异常", e);
+            throw new RuntimeException("Failed to initialize plugin: " + e.getMessage(), e);
         }
     }
 

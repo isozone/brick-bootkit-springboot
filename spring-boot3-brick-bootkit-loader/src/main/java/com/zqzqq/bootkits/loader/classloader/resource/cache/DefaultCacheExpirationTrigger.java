@@ -37,6 +37,7 @@ public class DefaultCacheExpirationTrigger implements CacheExpirationTrigger{
     private ScheduledExecutorService scheduledExecutor;
 
     private static volatile DefaultCacheExpirationTrigger TRIGGER;
+    private static final Object MONITOR = new Object();
 
     private final long delay;
     private final TimeUnit unit;
@@ -47,12 +48,29 @@ public class DefaultCacheExpirationTrigger implements CacheExpirationTrigger{
         start();
     }
 
+    /**
+     * 获取缓存过期触发器单例
+     * 如果已存在实例，后续调用将使用已有实例的配置
+     * @param delay 调度延迟
+     * @param unit 时间单位
+     * @return 缓存过期触发器
+     */
     public static CacheExpirationTrigger getCacheExpirationTrigger(long delay, TimeUnit unit){
         if (TRIGGER == null){
-            synchronized(DefaultCacheExpirationTrigger.class){
-                TRIGGER = new DefaultCacheExpirationTrigger(delay, unit);
+            synchronized(MONITOR){
+                if (TRIGGER == null){
+                    TRIGGER = new DefaultCacheExpirationTrigger(delay, unit);
+                }
             }
         }
+        return TRIGGER;
+    }
+
+    /**
+     * 获取已存在的触发器实例，如果尚未初始化则返回 null
+     * @return 缓存过期触发器或 null
+     */
+    public static CacheExpirationTrigger getExistingTrigger() {
         return TRIGGER;
     }
 

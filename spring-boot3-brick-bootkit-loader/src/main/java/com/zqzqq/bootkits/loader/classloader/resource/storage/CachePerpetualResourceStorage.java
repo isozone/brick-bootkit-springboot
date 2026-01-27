@@ -35,13 +35,33 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CachePerpetualResourceStorage extends AbstractResourceStorage {
 
     protected final Map<String, List<Resource>> resourceStorage = new ConcurrentHashMap<>();
+    
+    /**
+     * 最大缓存条目数，默认为1000，超过时淘汰最早的条目
+     */
+    private static final int MAX_CACHE_SIZE = 1000;
+    
+    /**
+     * 记录资源添加顺序，用于LRU淘汰
+     */
+    private final LinkedHashMap<String, Long> accessOrder = new LinkedHashMap<>();
 
     @Override
     public void addResource(Resource resource) throws Exception {
         resource.resolveByte();
         String name = formatResourceName(resource.getName());
+        
+        // 检查是否超过最大容量
+        if (resourceStorage.size() >= MAX_CACHE_SIZE && !resourceStorage.containsKey(name)) {
+            // 淘汰最早的条目
+            String oldestKey = accessOrder.keySet().iterator().next();
+            resourceStorage.remove(oldestKey);
+            accessOrder.remove(oldestKey);
+        }
+        
         List<Resource> resources = resourceStorage.computeIfAbsent(name, k -> new ArrayList<>());
         resources.add(resource);
+        accessOrder.put(name, System.currentTimeMillis());
     }
 
     @Override
@@ -101,6 +121,7 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
             closeResources(resourceList);
         }
         resourceStorage.clear();
+        accessOrder.clear();
     }
 
 }

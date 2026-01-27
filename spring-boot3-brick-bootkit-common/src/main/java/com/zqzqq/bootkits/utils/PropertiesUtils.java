@@ -56,8 +56,8 @@ public abstract class PropertiesUtils {
             if(value == null && notExitsThrowException){
                 throwException = true;
             }
-        } catch (Throwable e){
-            // 忽略
+        } catch (Exception e){
+            // 记录异常日志
             throwException = true;
         }
         if(throwException){
