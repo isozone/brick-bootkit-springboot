@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 
 /**
- * 插件打包缁撴瀯
+ * 插件打包结构
  *
  * @author starBlues
  * @since 3.0.0

@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 插件鐜配置
+ * 插件环境配置
  *
  * @author starBlues
  * @since 3.0.0
@@ -76,7 +76,7 @@ public class ConfigurePluginEnvironment {
         }
         env.put(AutoIntegrationConfiguration.ENABLE_STARTER_KEY, false);
         env.put(SPRING_JMX_UNIQUE_NAMES, true);
-        // 鐩存帴绂佺敤插件锟?spring-admin mbean
+        // 直接禁用插件spring-admin mbean
         env.put(SPRING_ADMIM_ENABLED, false);
         env.put(SPRING_ADMIN_JMX_NAME, SPRING_ADMIN_JMX_VALUE + pluginId);
         env.put(REGISTER_SHUTDOWN_HOOK_PROPERTY, false);
@@ -127,7 +127,7 @@ public class ConfigurePluginEnvironment {
 
     private String getConfigFileLocation(String configFileLocation){
         String path = FilesUtils.resolveRelativePath(new File("").getAbsolutePath(), configFileLocation);
-        // 鎷兼帴链鍚庡瓧绗︽枩锟?
+        // 拼接路径字符
         if(path.endsWith(FilesUtils.SLASH) || path.endsWith(File.separator)){
             return path;
         } else {

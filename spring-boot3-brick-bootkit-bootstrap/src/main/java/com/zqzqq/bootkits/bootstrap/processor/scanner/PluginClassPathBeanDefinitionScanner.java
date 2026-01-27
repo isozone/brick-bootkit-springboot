@@ -21,7 +21,7 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 
 
 /**
- * 插件鑷畾涔?classpath bean 鎵弿
+ * 插件自定义classpath bean 扫描
  *
  * @author starBlues
  * @since 3.0.0

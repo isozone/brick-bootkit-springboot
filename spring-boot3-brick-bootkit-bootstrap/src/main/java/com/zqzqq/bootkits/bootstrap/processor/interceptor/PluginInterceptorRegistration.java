@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 插件鎷︽埅鍣ㄦ敞鍐岀殑淇℃伅
+ * 插件拦截器注册的信息
  *
  * @author starBlues
  * @since 3.0.0
@@ -53,9 +53,9 @@ public class PluginInterceptorRegistration {
     /**
      * Create an {@link InterceptorRegistration} instance.
      *
-     * @param interceptor 鎷︽埅鍣?
+     * @param interceptor 拦截器
      * @param type 类型
-     * @param pluginRestApiPrefix 接口鍓嶇紑
+     * @param pluginRestApiPrefix 接口前缀
      */
     public PluginInterceptorRegistration(HandlerInterceptor interceptor,
                                          PluginInterceptorRegistry.Type type,
@@ -84,7 +84,7 @@ public class PluginInterceptorRegistration {
         if(type == PluginInterceptorRegistry.Type.GLOBAL){
             this.includePatterns.addAll(Arrays.asList(patterns));
         }
-        // 灞€閮ㄧ殑
+        // 局部的
         for (String pattern : patterns) {
             if(ObjectUtils.isEmpty(pattern)){
                 continue;

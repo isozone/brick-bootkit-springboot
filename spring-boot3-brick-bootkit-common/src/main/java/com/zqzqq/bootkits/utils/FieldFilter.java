@@ -31,8 +31,8 @@ public interface FieldFilter {
     /**
      * 过滤
      *
-     * @param field 褰撳墠字段
-     * @return true 鍏佽, false 不可璁?
+     * @param field 当前字段
+     * @return true 允许, false 不可忽略
      */
     boolean filter(Field field);
 

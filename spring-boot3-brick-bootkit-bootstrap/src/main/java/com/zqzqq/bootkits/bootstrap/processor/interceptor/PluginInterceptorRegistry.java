@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 插件鎷︽埅鍣ㄦ坊鍔犺€?
+ * 插件拦截器添加接口
  *
  * @author starBlues
  * @since 3.0.0
@@ -98,12 +98,12 @@ public class PluginInterceptorRegistry {
 
     public enum Type{
         /**
-         * 鍏ㄥ眬鎷︽埅鍣?
+         * 全局拦截器
          */
         GLOBAL,
 
         /**
-         * 插件灞€閮ㄦ嫤鎴櫒, 蹇呴』璁剧疆 pluginRestPathPrefix 鐨勫€兼墠鐢熸晥
+         * 插件局部拦截器, 必须设置 pluginRestPathPrefix 的参数才生效
          */
         PLUGIN
     }

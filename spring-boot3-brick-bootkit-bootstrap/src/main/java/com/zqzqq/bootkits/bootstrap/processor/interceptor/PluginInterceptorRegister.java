@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.bootstrap.processor.interceptor;
 
 /**
- * 插件鎷︽埅鍣ㄦ敞鍐岃€?
+ * 插件拦截器注册接口
  *
  * @author starBlues
  * @since 3.0.0
@@ -26,7 +26,7 @@ package com.zqzqq.bootkits.bootstrap.processor.interceptor;
 public interface PluginInterceptorRegister {
 
     /**
-     * 鎷︽埅鍣ㄦ敞鍐岃€?
+     * 拦截器注册接口
      * @param registry 注册对象
      */
     void registry(PluginInterceptorRegistry registry);

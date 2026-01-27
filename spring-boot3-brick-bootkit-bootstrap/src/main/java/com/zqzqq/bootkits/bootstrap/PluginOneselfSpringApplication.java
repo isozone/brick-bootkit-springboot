@@ -11,7 +11,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
- * 插件鑷富鍚姩鐨?SpringApplication
+ * 插件自己启动的SpringApplication
  *
  * @author starBlues
  * @version 3.1.0
@@ -69,7 +69,7 @@ public class PluginOneselfSpringApplication extends SpringApplication {
             return super.run(args);
         } catch (Exception e) {
             pluginProcessor.failure(processorContext);
-            logger.debug("鍚姩插件[{}]失败. {}",
+            logger.debug("启动插件[{}]失败. {}",
                     processorContext.getPluginDescriptor().getPluginId(),
                     e.getMessage(), e);
             throw new RuntimeException(e);

@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Coexist妯″紡涓嬪瓨鍌ㄥ綋鍓嶆彃浠跺厑璁哥殑 auto 閰嶇疆
+ * Coexist模式下存放当前插件允许的 auto 配置
  *
  * @author starBlues
  * @since 3.0.4

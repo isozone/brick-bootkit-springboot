@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.bootstrap.launcher;
 import com.zqzqq.bootkits.spring.SpringPluginHook;
 
 /**
- * 插件鍚姩鍣?
+ * 插件启动器
  *
  * @author starBlues
  * @since 3.0.4
@@ -28,8 +28,8 @@ import com.zqzqq.bootkits.spring.SpringPluginHook;
 public interface BootstrapLauncher {
 
     /**
-     * 鍚姩插件
-     * @param primarySources 涓诲惎鍔ㄧ被
+     * 启动插件
+     * @param primarySources 主启动类
      * @param args 启动参数
      * @return SpringPluginHook
      */

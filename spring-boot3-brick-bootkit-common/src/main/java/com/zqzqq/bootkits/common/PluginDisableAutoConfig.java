@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 插件绂佺敤AutoConfiguration配置
+ * 插件禁用AutoConfiguration配置
  *
  * @author starBlues
  * @version 3.1.0

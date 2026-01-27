@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 鎻掍欢BeanFactory瀹炵幇
+ * 插件BeanFactory实现
  *
  * @author starBlues
  * @since 3.0.3

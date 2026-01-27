@@ -56,7 +56,7 @@ public interface StopValidator {
         }
 
         /**
-         * 鍙嵏杞?
+         * 可终止
          * @return Result
          * @since 3.0.3
          */
@@ -65,7 +65,7 @@ public interface StopValidator {
         }
 
         /**
-         * 绂佹鍋滄
+         * 禁止停止
          * @return Result
          * @since 3.0.3
          */
@@ -74,8 +74,8 @@ public interface StopValidator {
         }
 
         /**
-         * 绂佹鍋滄
-         * @param message 绂佹鍋滄淇℃伅
+         * 禁止停止
+         * @param message 禁止停止信息
          * @return Result
          * @since 3.0.3
          */

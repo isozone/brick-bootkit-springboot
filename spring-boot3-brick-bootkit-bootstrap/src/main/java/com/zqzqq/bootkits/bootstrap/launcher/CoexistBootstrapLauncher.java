@@ -32,7 +32,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
- * Coexist 类型鍚姩鍣?
+ * Coexist 类型启动器
  *
  * @author starBlues
  * @since 3.0.4

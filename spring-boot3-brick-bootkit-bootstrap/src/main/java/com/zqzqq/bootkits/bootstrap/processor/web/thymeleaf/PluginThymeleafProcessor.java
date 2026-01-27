@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
- * 鎻掍欢 Thymeleaf 娉ㄥ唽
+ * 插件 Thymeleaf 注册
  *
  * @author starBlues
  * @since 3.0.0

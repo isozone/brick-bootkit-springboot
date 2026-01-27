@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.common.cipher;
 
 /**
- * 插件瀵嗙爜接口
+ * 插件密码接口
  *
  * @author starBlues
  * @since 3.0.1
@@ -27,16 +27,16 @@ public interface PluginCipher {
 
     /**
      * 加密
-     * @param sourceStr 鍘熷瀛楃
-     * @return 加密鍚庣殑瀛楄妭
+     * @param sourceStr 原始字符串
+     * @return 加密后的字节
      * @throws Exception 加密异常
      */
     String encrypt(String sourceStr) throws Exception;
 
     /**
      * 解密
-     * @param cryptoStr 加密鐨勫瓧绗?
-     * @return 解密鍚庣殑瀛楃
+     * @param cryptoStr 加密的字符串
+     * @return 解密后的字符
      * @throws Exception 解密异常
      */
     String decrypt(String cryptoStr) throws Exception;

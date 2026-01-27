@@ -30,7 +30,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- * 处理者呬笂涓嬫枃
+ * 处理者上下文
  *
  * @author starBlues
  * @since 3.0.0
@@ -39,13 +39,13 @@ import org.springframework.core.io.ResourceLoader;
 public interface ProcessorContext extends RegistryInfo {
 
     /**
-     * 褰撳墠杩愯妯″紡
+     * 当前运行模式
      * @return RunMode
      */
     RunMode runMode();
 
     /**
-     * 得到鍏ュ彛绫诲锟?SpringPluginBootstrap
+     * 得到入口类对象SpringPluginBootstrap
      * @return SpringPluginBootstrap
      */
     SpringPluginBootstrap getSpringPluginBootstrap();
@@ -63,7 +63,7 @@ public interface ProcessorContext extends RegistryInfo {
     PluginInfo getPluginInfo();
 
     /**
-     * 得到鍚姩鐨刢lass锟?
+     * 得到启动的class
      * @return Class
      */
     Class<? extends SpringPluginBootstrap> getRunnerClass();
@@ -75,32 +75,32 @@ public interface ProcessorContext extends RegistryInfo {
     PluginInteractive getPluginInteractive();
 
     /**
-     * 得到主程序搴忕殑 ApplicationContext
+     * 得到主程序容器的 ApplicationContext
      * @return MainApplicationContext
      */
     MainApplicationContext getMainApplicationContext();
 
     /**
-     * 得到主程序搴忕殑 SpringBeanFactory
+     * 得到主程序容器的 SpringBeanFactory
      * @return SpringBeanFactory
      */
     SpringBeanFactory getMainBeanFactory();
 
     /**
-     * 得到褰撳墠妗嗘灦鐨勯泦鎴愰厤锟?
+     * 得到当前框架的集合配置
      * @return IntegrationConfiguration
      */
     IntegrationConfiguration getConfiguration();
 
 
     /**
-     * 得到褰撳墠插件锟?ApplicationContext
+     * 得到当前插件的 ApplicationContext
      * @return GenericApplicationContext
      */
     GenericApplicationContext getApplicationContext();
 
     /**
-     * 得到褰撳墠插件锟?ClassLoader
+     * 得到当前插件的 ClassLoader
      * @return ClassLoader
      */
     ClassLoader getClassLoader();
@@ -118,7 +118,7 @@ public interface ProcessorContext extends RegistryInfo {
     WebConfig getWebConfig();
 
     /**
-     * set 褰撳墠插件锟?ApplicationContext
+     * 设置当前插件的 ApplicationContext
      * @param applicationContext GenericApplicationContext
      */
     void setApplicationContext(GenericApplicationContext applicationContext);
@@ -128,17 +128,17 @@ public interface ProcessorContext extends RegistryInfo {
      */
     enum RunMode{
         /**
-         * 鍏ㄩ儴杩愯
+         * 全部运行
          */
         ALL,
 
         /**
-         * 插件鐜杩愯
+         * 插件环境运行
          */
         PLUGIN,
 
         /**
-         * 插件鐙珛杩愯
+         * 插件独立运行
          */
         ONESELF
     }

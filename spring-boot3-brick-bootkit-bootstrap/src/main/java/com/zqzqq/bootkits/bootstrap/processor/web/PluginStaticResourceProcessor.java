@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 插件web资源处理鍣? 获取资源配置
+ * 插件web资源处理器 获取资源配置
  *
  * @author starBlues
  * @since 3.0.0
@@ -37,8 +37,8 @@ public class PluginStaticResourceProcessor implements SpringPluginProcessor {
 
 
     /**
-     * 闈欐€佹枃浠堕厤缃墠缂€
-     * 闈欐€佹枃浠惰矾寰?
+     * 静态文件配置前缀
+     * 静态文件路径
      *  classpath: static/
      *  file: D://path/test
      */

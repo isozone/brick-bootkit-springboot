@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 反射调用鍏朵粬插件鐨勫鐞嗚€?
+ * 反射调用其他插件的处理者
  *
  * @author starBlues
  * @since 3.0.0
@@ -104,7 +104,7 @@ public class InvokeOtherPluginProcessor implements SpringPluginProcessor {
                     if(caller == null){
                         continue;
                     }
-                    // 鏄皟鐢ㄦ柟
+                    // 是调用方
                     definition.getPropertyValues().add("callerAnnotation", caller);
                     definition.getPropertyValues().add("callerInterface", aClass);
                     definition.getPropertyValues().add("invokeSupperCache", invokeSupperCache);

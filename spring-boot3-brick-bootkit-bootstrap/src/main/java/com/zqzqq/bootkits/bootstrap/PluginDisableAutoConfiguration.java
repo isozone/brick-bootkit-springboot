@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 插件绂佺敤AutoConfiguration
+ * 插件禁用AutoConfiguration
  *
  * @author starBlues
  * @version 3.1.0

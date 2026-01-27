@@ -24,7 +24,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import java.util.Map;
 
 /**
- * Extract 扩展Bean注册处理锟?
+ * Extract 扩展Bean注册处理
  *
  * @author starBlues
  * @since 3.0.0

@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 插件鐜配置
+ * 插件环境配置
  *
  * @author starBlues
  * @version 3.0.0

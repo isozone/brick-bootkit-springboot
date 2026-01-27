@@ -23,7 +23,7 @@ import org.springframework.beans.factory.FactoryBean;
 import java.lang.reflect.Proxy;
 
 /**
- * 反射调用鍏朵粬插件瀹氫箟鐨勬帴鍙ean宸ュ巶
+ * 反射调用其他插件定义的接口Bean工厂
  *
  * @author starBlues
  * @since 3.0.0

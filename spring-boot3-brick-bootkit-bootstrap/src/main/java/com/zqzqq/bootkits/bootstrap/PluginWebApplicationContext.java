@@ -25,7 +25,7 @@ import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
 
 /**
- * 主程序搴忎负 web 类型鏃跺垱寤虹殑插件 ApplicationContext
+ * 主程序应为 web 类型插件创建时的插件 ApplicationContext
  *
  * @author starBlues
  * @since 3.0.0

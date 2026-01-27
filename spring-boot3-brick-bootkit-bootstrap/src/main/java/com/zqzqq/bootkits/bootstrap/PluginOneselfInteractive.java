@@ -37,7 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * 插件鑷繁鐨処nteractive
+ * 插件自己的Interactive
  *
  * @author starBlues
  * @since 3.0.0

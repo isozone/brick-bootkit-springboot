@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.bootstrap.processor;
 
 /**
- * 处理鑰呭懎绱撶敮?
+ * 处理者异常
  *
  * @author starBlues
  * @since 3.0.0

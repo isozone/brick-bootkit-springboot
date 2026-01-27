@@ -51,7 +51,7 @@ public abstract class AbstractDependencyPlugin implements DependencyPlugin{
     /**
      * set optional
      *
-     * @param optional 鏄惁鍙€?
+     * @param optional 是否可选?
      */
     public abstract void setOptional(Boolean optional);
 

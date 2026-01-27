@@ -26,7 +26,7 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
- * 绌虹殑 SpringBeanFactory 瀹炵幇
+ * 空的 SpringBeanFactory 实现
  *
  * @author starBlues
  * @since 3.0.0

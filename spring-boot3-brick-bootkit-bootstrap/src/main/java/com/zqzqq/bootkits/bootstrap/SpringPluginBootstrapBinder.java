@@ -1,7 +1,7 @@
 package com.zqzqq.bootkits.bootstrap;
 
 /**
- * SpringPluginBootstrap 实例缁戝畾
+ * SpringPluginBootstrap 实例绑定
  *
  * @author starBlues
  * @since 3.0.4

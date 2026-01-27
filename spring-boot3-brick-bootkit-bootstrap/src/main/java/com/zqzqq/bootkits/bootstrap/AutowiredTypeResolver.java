@@ -20,7 +20,7 @@ import org.springframework.beans.factory.config.DependencyDescriptor;
 
 
 /**
- * 娉ㄥ叆类型处理
+ * 注入类型处理
  *
  * @author starBlues
  * @since 3.0.3
@@ -29,7 +29,7 @@ import org.springframework.beans.factory.config.DependencyDescriptor;
 public interface AutowiredTypeResolver {
 
     /**
-     * 閫氳繃 descriptor 鑾峰緱娉ㄥ叆类型
+     * 通过 descriptor 获取注入类型
      * @param descriptor descriptor
      * @return AutowiredType.Type
      */

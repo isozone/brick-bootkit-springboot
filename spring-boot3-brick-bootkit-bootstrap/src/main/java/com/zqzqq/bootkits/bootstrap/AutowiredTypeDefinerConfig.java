@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 閰嶇疆 ClassDefiner
+ * 配置 ClassDefiner
  *
  * @author starBlues
  * @since 3.0.3

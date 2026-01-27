@@ -23,7 +23,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
 /**
- * Coexist妯″紡涓嬭В鍐宠皟鐢ㄦ柟娉曟椂, 闈炴湰鎻掍欢鐨凜lassLoader
+ * Coexist模式下解决调用方法时, 非本插件的ClassLoader
  *
  * @author starBlues
  * @since 3.0.4

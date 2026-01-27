@@ -31,7 +31,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- * 鎻掍欢SpringApplication瀹炵幇
+ * 插件SpringApplication实现
  *
  * @author starBlues
  * @since 3.0.0
@@ -109,7 +109,7 @@ public class PluginSpringApplication extends SpringApplication {
             return super.run(args);
         } catch (Exception e) {
             pluginProcessor.failure(processorContext);
-            logger.debug("閸氼垰濮╂彃浠禰{}]澶辫触. {}",
+            logger.debug("启动插件[{}]失败. {}",
                     processorContext.getPluginDescriptor().getPluginId(),
                     e.getMessage(), e);
             throw new RuntimeException(e);

@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.boot.SpringApplication;
 
 /**
- * 鎻掍欢閼奉亙瀵岄崥顖氬З閰嶇疆
+ * 插件独自运行配置
  *
  * @author starBlues
  * @version 3.1.0

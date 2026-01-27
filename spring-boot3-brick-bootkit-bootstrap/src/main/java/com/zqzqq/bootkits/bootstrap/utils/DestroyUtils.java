@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 閿€姣佸伐鍏风被
+ * 销毁工具类
  *
  * @author starBlues
  * @since 3.0.0

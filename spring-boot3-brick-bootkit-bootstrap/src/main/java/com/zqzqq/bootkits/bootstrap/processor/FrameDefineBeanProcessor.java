@@ -22,7 +22,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
- * 妗嗘灦鍐呯疆bean注册
+ * 框架内置bean注册
  *
  * @author starBlues
  * @since 3.0.0

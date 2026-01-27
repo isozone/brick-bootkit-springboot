@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.bootstrap.launcher;
 import com.zqzqq.bootkits.bootstrap.SpringPluginBootstrap;
 
 /**
- * BootstrapLauncher 鍒涢€犲伐鍘?
+ * BootstrapLauncher 创建工厂
  *
  * @author starBlues
  * @since 3.0.4
@@ -28,7 +28,7 @@ import com.zqzqq.bootkits.bootstrap.SpringPluginBootstrap;
 public interface BootstrapLauncherFactory {
 
     /**
-     * 鍒涢€?BootstrapLauncher
+     * 创建BootstrapLauncher
      * @param bootstrap SpringPluginBootstrap
      * @return BootstrapLauncher
      */

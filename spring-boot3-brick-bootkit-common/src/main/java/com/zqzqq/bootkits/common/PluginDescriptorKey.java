@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.common;
 
 /**
- * 插件鎻忚堪文件配置key
+ * 插件描述文件配置key
  *
  * @author starBlues
  * @since 3.0.0

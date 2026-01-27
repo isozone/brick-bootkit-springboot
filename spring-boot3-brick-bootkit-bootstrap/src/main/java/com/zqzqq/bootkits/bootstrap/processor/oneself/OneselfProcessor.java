@@ -26,7 +26,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
- * 瀛愬惎鍔ㄥ鐞嗗櫒
+ * 子启动处理器
  *
  * @author starBlues
  * @version 3.1.0

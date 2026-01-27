@@ -34,17 +34,17 @@ import java.util.List;
 public class FilesUtils {
 
     /**
-     * 姝ｆ枩鏉?
+     * 正斜杠
      */
     public static final String SLASH = "/";
 
     /**
-     * 鍙屾鏂滄潬
+     * 双正斜杠
      */
     public static final String DOUBLE_SLASH = "//";
 
     /**
-     * 鍙嶆枩鏉?
+     * 反斜杠
      */
     public static final String  BACKSLASH = "\\";
 
@@ -52,7 +52,7 @@ public class FilesUtils {
     /**
      * 获取存在的文件
      *
-     * @param pathStr 文件璺緞
+     * @param pathStr 文件路径
      * @return File
      */
     public static File getExistFile(String pathStr){
@@ -64,8 +64,8 @@ public class FilesUtils {
     }
 
     /**
-     * 鏄惁存在文件
-     * @param path 文件璺緞
+     * 是否存在文件
+     * @param path 文件路径
      * @return boolean
      */
     public static boolean existFile(String path){
@@ -77,10 +77,10 @@ public class FilesUtils {
 
 
     /**
-     * 鎷兼帴file璺緞
+     * 拼接file路径
      *
-     * @param paths 鎷兼帴鐨勮矾寰?
-     * @return 鎷兼帴鐨勮矾寰?
+     * @param paths 拼接的路徑
+     * @return 拼接的路徑
      * @since 3.0.0
      */
     public static String joiningFilePath(String ...paths) {
@@ -119,10 +119,10 @@ public class FilesUtils {
     }
 
     /**
-     * 鎷兼帴 zip /jar 璺緞
+     * 拼接 zip /jar 路径
      *
-     * @param paths 鎷兼帴鐨勮矾寰?
-     * @return 鎷兼帴鐨勮矾寰?
+     * @param paths 拼接的路徑
+     * @return 拼接的路徑
      * @since 3.1.0
      */
     public static String joiningZipPath(String ...paths){
@@ -181,10 +181,10 @@ public class FilesUtils {
     }
 
     /**
-     * 瑙ｅ喅鐩稿璺緞
-     * @param rootPath 鏍硅矾寰?
-     * @param relativePath 浠寮€澶寸殑鐩稿璺緞
-     * @return 处理鍚庣殑璺緞
+     * 解决相对路径
+     * @param rootPath 根路徑
+     * @param relativePath 以~开头的相对路径
+     * @return 处理后的路径
      */
     public static String resolveRelativePath(String rootPath, String relativePath){
         if(ObjectUtils.isEmpty(relativePath)){
@@ -199,9 +199,9 @@ public class FilesUtils {
     }
 
     /**
-     * 瑙ｅ喅存在鐨勭浉瀵硅矾寰?
-     * @param rootPath 鏍硅矾寰?
-     * @param path 浠寮€澶寸殑鐩稿璺緞或者€呭畬鏁磋矾寰?
+     * 解决存在的相对路径
+     * @param rootPath 根路徑
+     * @param path 以~开头的相对路径或者€呭畬整路径
      * @return File 或者€卬ull(不存在鍦?
      */
     public static File resolveExistRelativePathFile(String rootPath, String path){
@@ -223,9 +223,9 @@ public class FilesUtils {
     }
 
     /**
-     * 鏄惁鏄浉瀵硅矾寰?
-     * @param path 璺緞
-     * @return true 涓虹浉瀵硅矾寰? false 鏈潪鐩稿璺緞
+     * 是否是相对路径
+     * @param path 路徑
+     * @return true 为相对路径 false 鏈潑鐩稿路徑
      */
     public static boolean isRelativePath(String path){
         if(ObjectUtils.isEmpty(path)){
@@ -235,10 +235,10 @@ public class FilesUtils {
     }
 
     /**
-     * 鍒ゆ柇涓ゆ枃浠舵槸鍚﹀湪鍚屼竴涓洰褰曚笅
+     * 判断两个文件是否在同一目录下
      * @param file1 文件1
      * @param file2 文件2
-     * @return 鎵€灞炵洰褰?
+     * @return 所在目录
      */
     public static File sameParent(File file1, File file2){
         if(file1 == null || file2 == null){
@@ -252,9 +252,9 @@ public class FilesUtils {
     }
 
     /**
-     * 鍒ゆ柇鏌愪釜鐩綍鏄惁存在浜庢牴鐩綍在
-     * @param rootPath 鏍圭洰褰?
-     * @param comparePath 比较鐨勭洰褰?
+     * 判断某个目录是否存在于根目录下
+     * @param rootPath 根目录
+     * @param comparePath 比较的目录
      * @return boolean
      */
     public static boolean includePath(Path rootPath, Path comparePath){
@@ -265,9 +265,9 @@ public class FilesUtils {
     }
 
     /**
-     * 鏄惁涓哄瓙文件
+     * 是否为子文件
      * @param rootFile rootFile
-     * @param childFile 瀛愭枃浠?
+     * @param childFile 子文件
      * @return boolean
      */
     public static boolean isChildFile(List<String> rootFile, File childFile){

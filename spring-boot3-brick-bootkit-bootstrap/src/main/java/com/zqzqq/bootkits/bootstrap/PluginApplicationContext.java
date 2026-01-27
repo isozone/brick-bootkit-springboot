@@ -23,7 +23,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 鎻掍欢ApplicationContext瀹炵幇
+ * 插件ApplicationContext实现
  *
  * @author starBlues
  * @since 3.0.0

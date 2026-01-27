@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * 绌虹殑MainApplicationContext瀹炵幇
+ * 空的MainApplicationContext实现
  *
  * @author starBlues
  * @since 3.0.0

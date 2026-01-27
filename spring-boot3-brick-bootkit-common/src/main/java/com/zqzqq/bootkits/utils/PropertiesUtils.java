@@ -34,7 +34,7 @@ public abstract class PropertiesUtils {
      *
      * @param properties properties
      * @param key 获取的key
-     * @return 获取鐨勫€兼垨鑰卬ull
+     * @return 获取的值或null
      */
     public static String getValue(Properties properties, String key){
         return getValue(properties, key, true);
@@ -45,7 +45,7 @@ public abstract class PropertiesUtils {
      *
      * @param properties properties
      * @param key 获取的key
-     * @param notExitsThrowException 如果不存在鍦ㄦ槸鍚︽姏鍑哄紓甯?
+     * @param notExitsThrowException 如果不存在是否抛出异常?
      * @return 获取的值或null
      */
     public static String getValue(Properties properties, String key, boolean notExitsThrowException){

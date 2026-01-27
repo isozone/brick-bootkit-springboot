@@ -68,8 +68,8 @@ public class AesPluginCipher extends AbstractPluginCipher{
     }
 
     /**
-     * 获取绉橀挜
-     * @return 绉橀挜瀛楃在
+     * 获取密钥
+     * @return 密钥字符串
      * @throws NoSuchAlgorithmException NoSuchAlgorithmException
      */
     public static String generateKey() throws Exception {

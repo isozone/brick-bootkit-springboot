@@ -28,7 +28,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.boot.SpringApplication;
 
 /**
- * isolation 妯″紡插件鍚姩鍣?
+ * isolation 模式插件启动器
  *
  * @author starBlues
  * @since 3.0.4

@@ -94,9 +94,9 @@ public class MapValueGetter {
     /**
      * 获取鍊煎苟根据鑷畾涔夊疄鐜拌浆鎹㈢被鍨?
      * @param key map key
-     * @param function 鑷畾涔夌被鍨嬭浆鎹?
-     * @param <T> 杞崲鍚庣殑类型娉涘瀷
-     * @return 杞崲鍚庣殑类型值
+     * @param function 自定义类型转换
+     * @param <T> 转换后的类型泛型
+     * @return 转换后的类型值
      */
     private <T> T getValue(String key, Function<Object, T> function){
         Object value = getObject(key);

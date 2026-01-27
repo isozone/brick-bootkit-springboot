@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 插件鎷︽埅鍣ㄥ鐞嗭拷?
+ * 插件拦截器处理
  *
  * @author starBlues
  * @since 3.0.0
@@ -134,7 +134,7 @@ public class PluginInterceptorsProcessor implements SpringPluginProcessor {
     }
 
     /**
-     * 得到鎷︽埅鍣ㄥ瓨鍌拷?
+     * 得到拦截器存储器
      * @param handlerMapping AbstractHandlerMapping
      * @return List<HandlerInterceptor>
      */
@@ -149,7 +149,7 @@ public class PluginInterceptorsProcessor implements SpringPluginProcessor {
     }
 
     /**
-     * 杞崲鎷︽埅锟?
+     * 转换拦截器
      * @param interceptor interceptor
      * @return HandlerInterceptor
      */

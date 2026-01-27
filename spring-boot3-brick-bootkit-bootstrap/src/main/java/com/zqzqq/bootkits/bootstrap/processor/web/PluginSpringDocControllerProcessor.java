@@ -106,21 +106,21 @@ public class PluginSpringDocControllerProcessor implements SpringPluginProcessor
     private void refresh(){
         if(openApiService != null){
             try {
-                // 鍏煎版本: 1.5.x
+                // 兼容版本: 1.5.x
                 Method setCachedOpenApiMethod =
                         ReflectionUtils.findMethod(openApiService.getClass(), "setCachedOpenAPI", OpenAPI.class);
                 if(setCachedOpenApiMethod != null){
                     setCachedOpenApiMethod.invoke(openApiService, null);
                 }
                 
-                // Spring Boot 3.5.x涓紝resetCalculatedOpenAPI方法鍙兘宸茶移除鎴栨洿鍚?
-                // 尝试通过反射调用鍙兘存在鐨勫埛鏂版柟娉?
+                // Spring Boot 3.5.x中，resetCalculatedOpenAPI方法可能已被移除或更改
+                // 尝试通过反射调用可能存在的刷新方法
                 try {
                     Method resetMethod = ReflectionUtils.findMethod(openApiService.getClass(), "resetCalculatedOpenAPI");
                     if(resetMethod != null){
                         resetMethod.invoke(openApiService);
                     } else {
-                        // 尝试鍏朵粬鍙兘鐨勫埛鏂版柟娉?
+                        // 尝试其他可能的刷新方法
                         Method clearCacheMethod = ReflectionUtils.findMethod(openApiService.getClass(), "clearCache");
                         if(clearCacheMethod != null){
                             clearCacheMethod.invoke(openApiService);
