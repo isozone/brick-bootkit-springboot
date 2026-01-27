@@ -110,11 +110,9 @@ public class SimpleEnvironmentVariableManager implements EnvironmentVariableMana
     
     @Override
     public List<EnvironmentVariable> getAllVariables() {
-        List<EnvironmentVariable> all = new ArrayList<>();
-        for (Map<String, EnvironmentVariable> scopeVars : scopeVariables.values()) {
-            all.addAll(scopeVars.values());
-        }
-        return all;
+        return scopeVariables.values().stream()
+            .flatMap(map -> map.values().stream())
+            .collect(Collectors.toList());
     }
     
     @Override

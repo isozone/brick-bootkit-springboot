@@ -68,11 +68,12 @@ public class ScriptRepositoryImpl implements ScriptRepository {
         
         Files.walk(repositoryPath)
             .filter(Files::isRegularFile)
-            .filter(path -> path.toString().endsWith(".lua") || 
-                           path.toString().endsWith(".py") || 
-                           path.toString().endsWith(".sh") || 
-                           path.toString().endsWith(".ps1") || 
-                           path.toString().endsWith(".bat"))
+            .filter(path -> {
+                String pathStr = path.toString();
+                return pathStr.endsWith(".lua") || pathStr.endsWith(".py") || 
+                       pathStr.endsWith(".sh") || pathStr.endsWith(".ps1") || 
+                       pathStr.endsWith(".bat");
+            })
             .forEach(path -> {
                 try {
                     String content = Files.readString(path, StandardCharsets.UTF_8);

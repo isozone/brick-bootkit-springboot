@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 插件的资源存储类
@@ -41,7 +42,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
     private static final Logger log = LoggerFactory.getLogger(AbstractResourceStorage.class);
     private final Set<URL> baseUrls = new HashSet<>();
     private final ArrayDeque<URL> hotUrls = new ArrayDeque<>();
-    private final List<InputStream> inputStreams = new ArrayList<>();
+    private final List<InputStream> inputStreams = new CopyOnWriteArrayList<>();
 
     @Override
     public void addBaseUrl(URL url){

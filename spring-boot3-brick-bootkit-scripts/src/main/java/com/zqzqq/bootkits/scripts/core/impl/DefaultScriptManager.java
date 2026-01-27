@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -399,9 +400,7 @@ public class DefaultScriptManager implements ScriptManager {
      * 从配置文件加载脚本路径
      */
     private void loadScriptPathsFromConfig() {
-        try {
-            // 尝试从类路径加载配置文件
-            var configStream = getClass().getClassLoader().getResourceAsStream("config/scripts.properties");
+        try (InputStream configStream = getClass().getClassLoader().getResourceAsStream("config/scripts.properties")) {
             if (configStream != null) {
                 java.util.Properties config = new java.util.Properties();
                 config.load(configStream);
@@ -411,7 +410,7 @@ public class DefaultScriptManager implements ScriptManager {
             }
         } catch (Exception e) {
             // 忽略配置文件加载错误，使用默认路径
-            log.warn("无法加载配置文件，使用默认路径: {}", e.getMessage());
+            log.warn("无法加载配置文件，使用默认路径", e);
         }
     }
     
