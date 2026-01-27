@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -16,9 +18,17 @@ import java.util.List;
  */
 public class PythonExecutor extends AbstractScriptExecutor {
     
+    private static final Logger log = LoggerFactory.getLogger(PythonExecutor.class);
+    
     private static final String[] PYTHON_COMMANDS = {
         "python3", "python", "py", "pypy3", "pypy"
     };
+    
+    private static final long VERSION_CHECK_TIMEOUT_SECONDS = 3;
+    private static final long AVAILABILITY_CHECK_TIMEOUT_SECONDS = 2;
+    private static final long MODULE_CHECK_TIMEOUT_SECONDS = 3;
+    private static final long FUNCTIONALITY_TEST_TIMEOUT_SECONDS = 5;
+    private static final long SIMPLE_TEST_TIMEOUT_SECONDS = 2;
     
     private String pythonPath;
     private String pythonVersion;
@@ -209,16 +219,17 @@ public class PythonExecutor extends AbstractScriptExecutor {
         for (String pythonCommand : PYTHON_COMMANDS) {
             try {
                 Process process = new ProcessBuilder(pythonCommand, "--version").start();
-                boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 
                 if (completed && process.exitValue() == 0) {
-                    java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(process.getInputStream()));
-                    String version = reader.readLine();
-                    
-                    if (version != null) {
-                        available.add(pythonCommand);
-                        versions.add(version.trim());
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()))) {
+                        String version = reader.readLine();
+                        
+                        if (version != null) {
+                            available.add(pythonCommand);
+                            versions.add(version.trim());
+                        }
                     }
                 } else {
                     if (!completed) {
@@ -226,7 +237,7 @@ public class PythonExecutor extends AbstractScriptExecutor {
                     }
                 }
             } catch (Exception e) {
-                // 忽略无法访问的命令
+                log.debug("Failed to find Python interpreter: {}", pythonCommand, e);
             }
         }
         
@@ -256,9 +267,10 @@ public class PythonExecutor extends AbstractScriptExecutor {
     private boolean isPythonAvailable(String pythonCommand) {
         try {
             Process process = new ProcessBuilder(pythonCommand, "--version").start();
-            boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+            boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.debug("Failed to check Python availability: {}", pythonCommand, e);
             return false;
         }
     }
@@ -275,12 +287,18 @@ public class PythonExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(pythonPath, "--version").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            process.waitFor();
-            return version != null ? version.trim() : "Unknown";
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                if (!completed) {
+                    process.destroyForcibly();
+                    return "Unknown";
+                }
+                return version != null ? version.trim() : "Unknown";
+            }
         } catch (Exception e) {
+            log.debug("Failed to detect Python version: {}", pythonPath, e);
             return "Unknown";
         }
     }
@@ -317,30 +335,30 @@ public class PythonExecutor extends AbstractScriptExecutor {
         // 检查Python版本
         try {
             Process process = new ProcessBuilder(pythonPath, "--version").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
-            
-            if (!completed) {
-                process.destroyForcibly();
-                return new PythonEnvironmentCheck(
-                    "Python版本检查超时: " + pythonPath,
-                    new RuntimeException("Python version check timeout"));
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                
+                if (!completed) {
+                    process.destroyForcibly();
+                    return new PythonEnvironmentCheck(
+                        "Python版本检查超时: " + pythonPath,
+                        new RuntimeException("Python version check timeout"));
+                }
+                
+                int exitCode = process.exitValue();
+                if (exitCode != 0) {
+                    return new PythonEnvironmentCheck(
+                        String.format("Python版本检查失败 (退出码: %d): %s", exitCode, pythonPath),
+                        new RuntimeException("Python version check failed"));
+                }
+                
+                if (version != null) {
+                    pythonVersion = version.trim();
+                    check.addDiagnostic("Python版本: " + pythonVersion);
+                }
             }
-            
-            int exitCode = process.exitValue();
-            if (exitCode != 0) {
-                return new PythonEnvironmentCheck(
-                    String.format("Python版本检查失败 (退出码: %d): %s", exitCode, pythonPath),
-                    new RuntimeException("Python version check failed"));
-            }
-            
-            if (version != null) {
-                pythonVersion = version.trim();
-                check.addDiagnostic("Python版本: " + pythonVersion);
-            }
-            
         } catch (Exception e) {
             return new PythonEnvironmentCheck(
                 "Python版本检测失败: " + e.getMessage(),
@@ -368,42 +386,44 @@ public class PythonExecutor extends AbstractScriptExecutor {
             String testScript = "import sys, os, json, re, collections, itertools; print('All modules OK')";
             Process process = new ProcessBuilder(pythonPath, "-c", testScript).start();
             
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String output = reader.readLine();
-            
-            // 等待进程完成
-            boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
-            
-            if (completed && process.exitValue() == 0) {
-                if (output != null && output.contains("All modules OK")) {
-                    return "Python核心模块检查: 通过 (sys, os, json, re, collections, itertools)";
-                } else {
-                    return "Python核心模块检查: 部分通过 (输出异常)";
-                }
-            } else {
-                if (!completed) {
-                    process.destroyForcibly();
-                }
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String output = reader.readLine();
                 
-                // 尝试更简单的测试
-                try {
-                    Process simpleProcess = new ProcessBuilder(pythonPath, "-c", "print('Simple test')").start();
-                    java.io.BufferedReader simpleReader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(simpleProcess.getInputStream()));
-                    String simpleOutput = simpleReader.readLine();
-                    boolean simpleCompleted = simpleProcess.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
-                    
-                    if (simpleCompleted && simpleProcess.exitValue() == 0) {
-                        return "Python核心模块检查: 基础功能正常 (简化测试通过)";
+                // 等待进程完成
+                boolean completed = process.waitFor(MODULE_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                
+                if (completed && process.exitValue() == 0) {
+                    if (output != null && output.contains("All modules OK")) {
+                        return "Python核心模块检查: 通过 (sys, os, json, re, collections, itertools)";
                     } else {
-                        if (!simpleCompleted) {
-                            simpleProcess.destroyForcibly();
-                        }
-                        return "Python核心模块检查: 失败 (基础执行异常)";
+                        return "Python核心模块检查: 部分通过 (输出异常)";
                     }
-                } catch (Exception simpleEx) {
-                    return "Python核心模块检查: 失败 (基础执行异常: " + simpleEx.getMessage() + ")";
+                } else {
+                    if (!completed) {
+                        process.destroyForcibly();
+                    }
+                    
+                    // 尝试更简单的测试
+                    try {
+                        Process simpleProcess = new ProcessBuilder(pythonPath, "-c", "print('Simple test')").start();
+                        try (java.io.BufferedReader simpleReader = new java.io.BufferedReader(
+                                new java.io.InputStreamReader(simpleProcess.getInputStream()))) {
+                            String simpleOutput = simpleReader.readLine();
+                            boolean simpleCompleted = simpleProcess.waitFor(SIMPLE_TEST_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                            
+                            if (simpleCompleted && simpleProcess.exitValue() == 0) {
+                                return "Python核心模块检查: 基础功能正常 (简化测试通过)";
+                            } else {
+                                if (!simpleCompleted) {
+                                    simpleProcess.destroyForcibly();
+                                }
+                                return "Python核心模块检查: 失败 (基础执行异常)";
+                            }
+                        }
+                    } catch (Exception simpleEx) {
+                        return "Python核心模块检查: 失败 (基础执行异常: " + simpleEx.getMessage() + ")";
+                    }
                 }
             }
         } catch (Exception e) {
@@ -498,13 +518,15 @@ public class PythonExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(pythonPath, "-c", "print('Python测试成功')").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String output = reader.readLine();
-            boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
-            return completed && process.exitValue() == 0 && 
-                   output != null && output.contains("Python测试成功");
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String output = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                return completed && process.exitValue() == 0 && 
+                       output != null && output.contains("Python测试成功");
+            }
         } catch (Exception e) {
+            log.debug("Failed to test Python functionality", e);
             return false;
         }
     }
@@ -519,18 +541,19 @@ public class PythonExecutor extends AbstractScriptExecutor {
         for (String pythonCommand : PYTHON_COMMANDS) {
             try {
                 Process process = new ProcessBuilder(pythonCommand, "--version").start();
-                boolean completed = process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                boolean completed = process.waitFor(AVAILABILITY_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 if (completed && process.exitValue() == 0) {
-                    java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(process.getInputStream()));
-                    String version = reader.readLine();
-                    available.add(pythonCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()))) {
+                        String version = reader.readLine();
+                        available.add(pythonCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    }
                 }
                 if (!completed) {
                     process.destroyForcibly();
                 }
             } catch (Exception e) {
-                // 忽略错误
+                log.debug("Failed to list Python interpreter: {}", pythonCommand, e);
             }
         }
         return available;

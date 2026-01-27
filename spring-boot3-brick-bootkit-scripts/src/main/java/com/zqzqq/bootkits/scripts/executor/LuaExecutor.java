@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +21,14 @@ import java.util.List;
  */
 public class LuaExecutor extends AbstractScriptExecutor {
     
+    private static final Logger log = LoggerFactory.getLogger(LuaExecutor.class);
+    
     private static final String[] LUA_COMMANDS = {
         "lua", "lua5.4", "lua5.3", "lua5.2", "lua5.1", "luajit"
     };
+    
+    private static final long VERSION_CHECK_TIMEOUT_SECONDS = 3;
+    private static final long AVAILABILITY_CHECK_TIMEOUT_SECONDS = 2;
     
     private String luaPath;
     private String luaVersion;
@@ -153,9 +160,10 @@ public class LuaExecutor extends AbstractScriptExecutor {
     private boolean isLuaAvailable(String luaCommand) {
         try {
             Process process = new ProcessBuilder(luaCommand, "-v").start();
-            boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+            boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.debug("Failed to check Lua availability: {}", luaCommand, e);
             return false;
         }
     }
@@ -172,12 +180,18 @@ public class LuaExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(luaPath, "-v").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            process.waitFor();
-            return version != null ? version.trim() : "Unknown";
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                if (!completed) {
+                    process.destroyForcibly();
+                    return "Unknown";
+                }
+                return version != null ? version.trim() : "Unknown";
+            }
         } catch (Exception e) {
+            log.debug("Failed to detect Lua version: {}", luaPath, e);
             return "Unknown";
         }
     }
@@ -229,12 +243,13 @@ public class LuaExecutor extends AbstractScriptExecutor {
         for (String luaCommand : LUA_COMMANDS) {
             try {
                 Process process = new ProcessBuilder(luaCommand, "-v").start();
-                boolean completed = process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                boolean completed = process.waitFor(AVAILABILITY_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 if (completed && process.exitValue() == 0) {
-                    java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(process.getInputStream()));
-                    String version = reader.readLine();
-                    available.add(luaCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()))) {
+                        String version = reader.readLine();
+                        available.add(luaCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    }
                 }
                 if (!completed) {
                     process.destroyForcibly();

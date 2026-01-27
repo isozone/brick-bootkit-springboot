@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -16,9 +18,14 @@ import java.util.List;
  */
 public class RubyExecutor extends AbstractScriptExecutor {
     
+    private static final Logger log = LoggerFactory.getLogger(RubyExecutor.class);
+    
     private static final String[] RUBY_COMMANDS = {
         "ruby", "ruby3.0", "ruby2.7", "ruby2.6"
     };
+    
+    private static final long VERSION_CHECK_TIMEOUT_SECONDS = 3;
+    private static final long AVAILABILITY_CHECK_TIMEOUT_SECONDS = 2;
     
     private String rubyPath;
     private String rubyVersion;
@@ -149,9 +156,10 @@ public class RubyExecutor extends AbstractScriptExecutor {
     private boolean isRubyAvailable(String rubyCommand) {
         try {
             Process process = new ProcessBuilder(rubyCommand, "--version").start();
-            boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+            boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.debug("Failed to check Ruby availability: {}", rubyCommand, e);
             return false;
         }
     }
@@ -168,12 +176,18 @@ public class RubyExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(rubyPath, "--version").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            process.waitFor();
-            return version != null ? version.trim() : "Unknown";
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                if (!completed) {
+                    process.destroyForcibly();
+                    return "Unknown";
+                }
+                return version != null ? version.trim() : "Unknown";
+            }
         } catch (Exception e) {
+            log.debug("Failed to detect Ruby version: {}", rubyPath, e);
             return "Unknown";
         }
     }
@@ -225,12 +239,13 @@ public class RubyExecutor extends AbstractScriptExecutor {
         for (String rubyCommand : RUBY_COMMANDS) {
             try {
                 Process process = new ProcessBuilder(rubyCommand, "--version").start();
-                boolean completed = process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                boolean completed = process.waitFor(AVAILABILITY_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 if (completed && process.exitValue() == 0) {
-                    java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(process.getInputStream()));
-                    String version = reader.readLine();
-                    available.add(rubyCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()))) {
+                        String version = reader.readLine();
+                        available.add(rubyCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    }
                 }
                 if (!completed) {
                     process.destroyForcibly();

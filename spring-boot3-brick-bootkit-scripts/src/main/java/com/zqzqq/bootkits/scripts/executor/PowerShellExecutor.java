@@ -1,11 +1,14 @@
 package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * PowerShell脚本执行器
@@ -16,9 +19,16 @@ import java.util.List;
  */
 public class PowerShellExecutor extends AbstractScriptExecutor {
     
+    private static final Logger log = LoggerFactory.getLogger(PowerShellExecutor.class);
+    
     private static final String[] POWERSHELL_COMMANDS = {
         "powershell", "powershell.exe", "pwsh", "pwsh.exe"
     };
+    
+    private static final long VERSION_CHECK_TIMEOUT_SECONDS = 5;
+    private static final long EXECUTION_POLICY_CHECK_TIMEOUT_SECONDS = 3;
+    private static final long AVAILABILITY_CHECK_TIMEOUT_SECONDS = 2;
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^\\d+\\.\\d+$");
     
     private String powerShellPath;
     private String powerShellVersion;
@@ -215,9 +225,10 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
     private boolean isPowerShellAvailable(String powerShellCommand) {
         try {
             Process process = new ProcessBuilder(powerShellCommand, "-Version").start();
-            boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
             return completed && process.exitValue() == 0;
         } catch (Exception e) {
+            log.debug("Failed to check PowerShell availability: {}", powerShellCommand, e);
             return false;
         }
     }
@@ -234,12 +245,18 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(powerShellPath, "-Version").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            process.waitFor();
-            return version != null ? version.trim() : "Unknown";
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                if (!completed) {
+                    process.destroyForcibly();
+                    return "Unknown";
+                }
+                return version != null ? version.trim() : "Unknown";
+            }
         } catch (Exception e) {
+            log.debug("Failed to detect PowerShell version: {}", powerShellPath, e);
             return "Unknown";
         }
     }
@@ -256,19 +273,24 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
         
         try {
             Process process = new ProcessBuilder(powerShellPath, "-Command", "Write-Host $PSVersionTable.PSVersion").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String output = reader.readLine();
-            process.waitFor();
-            
-            if (output != null && output.contains(".")) {
-                // PowerShell Core通常有更复杂的版本号
-                return !output.matches("^\\d+\\.\\d+$");
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String output = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                if (!completed) {
+                    process.destroyForcibly();
+                    return false;
+                }
+                
+                if (output != null && output.contains(".")) {
+                    return !output.matches("^\\d+\\.\\d+$");
+                }
             }
+            return false;
         } catch (Exception e) {
-            // 忽略错误
+            log.debug("Failed to check if PowerShell Core: {}", powerShellPath, e);
+            return false;
         }
-        return false;
     }
 
     /**
@@ -303,31 +325,31 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
         // 检查PowerShell版本
         try {
             Process process = new ProcessBuilder(powerShellPath, "-Version").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String version = reader.readLine();
-            boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
-            
-            if (!completed) {
-                process.destroyForcibly();
-                return new PowerShellEnvironmentCheck(
-                    "PowerShell版本检查超时: " + powerShellPath,
-                    new RuntimeException("PowerShell version check timeout"));
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String version = reader.readLine();
+                boolean completed = process.waitFor(VERSION_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                
+                if (!completed) {
+                    process.destroyForcibly();
+                    return new PowerShellEnvironmentCheck(
+                        "PowerShell版本检查超时: " + powerShellPath,
+                        new RuntimeException("PowerShell version check timeout"));
+                }
+                
+                int exitCode = process.exitValue();
+                if (exitCode != 0) {
+                    return new PowerShellEnvironmentCheck(
+                        String.format("PowerShell版本检查失败 (退出码: %d): %s", exitCode, powerShellPath),
+                        new RuntimeException("PowerShell version check failed"));
+                }
+                
+                if (version != null) {
+                    powerShellVersion = version.trim();
+                    check.setVersion(powerShellVersion);
+                    check.addDiagnostic("PowerShell版本: " + powerShellVersion);
+                }
             }
-            
-            int exitCode = process.exitValue();
-            if (exitCode != 0) {
-                return new PowerShellEnvironmentCheck(
-                    String.format("PowerShell版本检查失败 (退出码: %d): %s", exitCode, powerShellPath),
-                    new RuntimeException("PowerShell version check failed"));
-            }
-            
-            if (version != null) {
-                powerShellVersion = version.trim();
-                check.setVersion(powerShellVersion);
-                check.addDiagnostic("PowerShell版本: " + powerShellVersion);
-            }
-            
         } catch (Exception e) {
             return new PowerShellEnvironmentCheck(
                 "PowerShell版本检测失败: " + e.getMessage(),
@@ -354,27 +376,29 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
     private String checkExecutionPolicy(PowerShellEnvironmentCheck check) {
         try {
             Process process = new ProcessBuilder(powerShellPath, "-Command", "Get-ExecutionPolicy").start();
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()));
-            String policy = reader.readLine();
-            boolean completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
-            
-            if (completed && process.exitValue() == 0 && policy != null) {
-                policy = policy.trim();
-                check.addDiagnostic("执行策略: " + policy);
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String policy = reader.readLine();
+                boolean completed = process.waitFor(EXECUTION_POLICY_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 
-                if ("Bypass".equalsIgnoreCase(policy) || "RemoteSigned".equalsIgnoreCase(policy)) {
-                    return "执行策略检查: 允许";
+                if (completed && process.exitValue() == 0 && policy != null) {
+                    policy = policy.trim();
+                    check.addDiagnostic("执行策略: " + policy);
+                    
+                    if ("Bypass".equalsIgnoreCase(policy) || "RemoteSigned".equalsIgnoreCase(policy)) {
+                        return "执行策略检查: 允许";
+                    } else {
+                        return "执行策略检查: 可能需要调整 (当前: " + policy + ")";
+                    }
                 } else {
-                    return "执行策略检查: 可能需要调整 (当前: " + policy + ")";
+                    if (!completed) {
+                        process.destroyForcibly();
+                    }
+                    return "执行策略检查: 无法确定";
                 }
-            } else {
-                if (!completed) {
-                    process.destroyForcibly();
-                }
-                return "执行策略检查: 无法确定";
             }
         } catch (Exception e) {
+            log.debug("Failed to check execution policy: {}", powerShellPath, e);
             return "执行策略检查: 失败 (" + e.getMessage() + ")";
         }
     }
@@ -429,18 +453,19 @@ public class PowerShellExecutor extends AbstractScriptExecutor {
         for (String psCommand : POWERSHELL_COMMANDS) {
             try {
                 Process process = new ProcessBuilder(psCommand, "-Version").start();
-                boolean completed = process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                boolean completed = process.waitFor(AVAILABILITY_CHECK_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
                 if (completed && process.exitValue() == 0) {
-                    java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(process.getInputStream()));
-                    String version = reader.readLine();
-                    available.add(psCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()))) {
+                        String version = reader.readLine();
+                        available.add(psCommand + " - " + (version != null ? version.trim() : "Unknown"));
+                    }
                 }
                 if (!completed) {
                     process.destroyForcibly();
                 }
             } catch (Exception e) {
-                // 忽略错误
+                log.debug("Failed to list PowerShell interpreter: {}", psCommand, e);
             }
         }
         return available;
