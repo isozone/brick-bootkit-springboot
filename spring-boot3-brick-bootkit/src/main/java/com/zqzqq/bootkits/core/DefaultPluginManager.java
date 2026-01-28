@@ -161,6 +161,10 @@ public class DefaultPluginManager implements PluginManager{
             for (Path path : scanPluginPaths) {
                 try {
                     PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(path);
+                    if (pluginDescriptor == null) {
+                        log.debug("跳过非插件目录: {}", path);
+                        continue;
+                    }
                     PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
                     PluginInfo pluginInfo = new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
                     pluginInfoMap.put(pluginInfo.getPluginId(), pluginInfo);

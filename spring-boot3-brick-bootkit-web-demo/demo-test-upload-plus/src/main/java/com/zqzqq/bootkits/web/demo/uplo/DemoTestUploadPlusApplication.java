@@ -1,4 +1,4 @@
-package com.zqzqq.bootkits.web.demo;
+package com.zqzqq.bootkits.web.demo.uplo;
 
 
 import com.zqzqq.bootkits.bootstrap.SpringPluginBootstrap;

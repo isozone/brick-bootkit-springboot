@@ -48,15 +48,30 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
 
     @Override
     protected PluginMeta getPluginMetaInfo(Path location) throws Exception {
+        // 首先检查标准位置: location/PLUGIN.META
         String pluginMetaPath = FilesUtils.joiningFilePath(location.toString(), PackageStructure.PLUGIN_META_NAME);
         File file = new File(pluginMetaPath);
-        if(!file.exists()){
+
+        // 如果标准位置不存在，检查 Maven 标准结构: location/META-INF/PLUGIN.META
+        if (!file.exists()) {
+            String mavenStylePath = FilesUtils.joiningFilePath(
+                    location.toString(),
+                    PackageStructure.META_INF_NAME,
+                    PackageStructure.PLUGIN_META_NAME
+            );
+            file = new File(mavenStylePath);
+            if (file.exists()) {
+                pluginMetaPath = mavenStylePath;
+            }
+        }
+
+        if (!file.exists()) {
             log.debug("Path: [{}] not exist.", location);
             return null;
         }
         Path path = Paths.get(pluginMetaPath);
         Properties properties = super.getDecryptProperties(Files.newInputStream(path));
-        if(properties == null || properties.isEmpty()){
+        if (properties == null || properties.isEmpty()) {
             log.debug("Load plugin properties is empty from '{}'", path);
             return null;
         }
@@ -72,6 +87,11 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
     protected DefaultInsidePluginDescriptor create(PluginMeta pluginMeta, Path path) throws Exception {
         final DefaultInsidePluginDescriptor descriptor = super.create(pluginMeta, path);
         descriptor.setType(PluginType.DEV);
+
+        // 在 dev 模式下，使用 "classes/" 作为 pluginClassPath（JAR 内部路径）
+        // 这样 NestedPluginJarResourceLoader 才能正确加载类
+        descriptor.setPluginClassPath("classes/");
+
         return descriptor;
     }
 

@@ -89,7 +89,7 @@
                     <mode>dev</mode>
                     <pluginInfo>
                         <id>demoTestUploadPlus</id>
-                        <bootstrapClass>com.zqzqq.bootkits.web.demo.DemoTestUploadPlusApplication</bootstrapClass>
+                        <bootstrapClass>com.zqzqq.bootkits.web.demo.uplo.DemoTestUploadPlusApplication</bootstrapClass>
                         <version>0.0.1</version>
                         <provider>jove</provider>
                         <description>demoTestUploadPlusApplication</description>

@@ -91,10 +91,15 @@ public class PluginResourceLoaderFactoryProxy implements PluginResourceLoaderFac
 
     private void addDirPluginClasspath(InsidePluginDescriptor descriptor) throws Exception {
         String pluginClassPath = descriptor.getPluginClassPath();
-        File existFile = FilesUtils.getExistFile(pluginClassPath);
-        if(existFile != null){
-            addResource(existFile);
-            log.debug("插件[{}]Classpath已被加载: {}", MsgUtils.getPluginUnique(descriptor), existFile.getPath());
+        // dev模式下，pluginClassPath是相对于insidePluginPath的相对路径（如"classes/"）
+        // 需要拼接成完整路径
+        Path insidePluginPath = descriptor.getInsidePluginPath();
+        File classesDir = insidePluginPath.resolve(pluginClassPath.replace("/", "")).toFile();
+        if(classesDir.exists() && classesDir.isDirectory()){
+            addResource(classesDir);
+            log.debug("插件[{}]Classpath已被加载: {}", MsgUtils.getPluginUnique(descriptor), classesDir.getPath());
+        } else {
+            log.warn("插件[{}]未发现Classpath: {}", MsgUtils.getPluginUnique(descriptor), classesDir.getPath());
         }
     }
 

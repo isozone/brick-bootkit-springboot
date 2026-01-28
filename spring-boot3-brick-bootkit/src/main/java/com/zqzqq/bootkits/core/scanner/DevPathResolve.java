@@ -53,13 +53,14 @@ public class DevPathResolve implements PathResolve{
         if (isValidPluginDirectory(path)) {
             return path;
         }
-        
+
         // 检查是否符合旧的target/META-INF结构
         for (String devCompilePackageName : devCompilePackageNames) {
             String compilePackagePathStr = path.toString() + File.separator + devCompilePackageName;
             Path compilePackagePath = Paths.get(compilePackagePathStr);
             if(Files.exists(compilePackagePath)){
-                return compilePackagePath;
+                // 返回 target 目录，让 DevPluginDescriptorLoader 从 target/META-INF/PLUGIN.META 加载
+                return path;
             }
         }
         return null;

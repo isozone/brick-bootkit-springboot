@@ -1,4 +1,4 @@
-package com.zqzqq.bootkits.web.demo.controller;
+package com.zqzqq.bootkits.web.demo.uplo.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
