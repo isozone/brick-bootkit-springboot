@@ -20,7 +20,8 @@ logging:
 
 
 plugin:
-  enable: true
-  main-package: com.zqzqq.bootkits.web.demo.DemoApplication
-  plugin-path:
+  runMode: dev
+  plugin-follow-log: true
+  mainPackage: com.zqzqq.bootkits.web.demo.DemoApplication
+  pluginPath:
     - D:\codes\brick-bootkit-springboot\plugins

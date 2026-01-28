@@ -3,11 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>com.zqzqq</groupId>
-        <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
-        <version>4.0.3</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
     </parent>
     
     <artifactId>spring-boot3-brick-bootkit-web-demo</artifactId>
@@ -17,10 +18,14 @@
     
     <dependencies>
         <!-- Spring Boot Web -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
         
         <!-- Thymeleaf -->
@@ -33,7 +38,7 @@
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-            <version>${project.version}</version>
+            <version>4.0.4</version>
         </dependency>
         
         <!-- Lombok -->
@@ -47,14 +52,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit</artifactId>
-            <version>4.0.3</version>
+            <version>4.0.4</version>
         </dependency>
     </dependencies>
     
@@ -62,17 +66,17 @@
         <plugins>
             <!-- 禁用父pom的javadoc插件 -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <groupId>com.zqzqq</groupId>
+                <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
+                <version>4.0.4</version>
                 <configuration>
-                    <skip>true</skip>
+                    <mode>main</mode>
+                    <mainConfig>
+                        <mainClass>com.zqzqq.bootkits.web.demo.DemoApplication</mainClass>
+                        <packageType>jar</packageType>
+                    </mainConfig>
+                    <!--在此处进行配置-->
                 </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -80,15 +84,9 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
+            
+
         </plugins>
     </build>
 </project>
