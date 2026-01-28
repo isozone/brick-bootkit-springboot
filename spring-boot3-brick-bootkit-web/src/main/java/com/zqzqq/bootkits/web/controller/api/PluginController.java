@@ -3,6 +3,7 @@ package com.zqzqq.bootkits.web.controller.api;
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.web.dto.*;
+import com.zqzqq.bootkits.web.service.DemoPluginService;
 import com.zqzqq.bootkits.web.service.PluginWebService;
 import com.zqzqq.bootkits.web.service.SimplePluginService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,10 +37,15 @@ public class PluginController {
 
     private final ObjectProvider<PluginWebService> pluginWebServiceProvider;
     private final SimplePluginService simplePluginService;
+    private final ObjectProvider<DemoPluginService> demoPluginServiceProvider;
 
-    public PluginController(ObjectProvider<PluginWebService> pluginWebServiceProvider, SimplePluginService simplePluginService) {
+    public PluginController(
+            ObjectProvider<PluginWebService> pluginWebServiceProvider, 
+            SimplePluginService simplePluginService,
+            ObjectProvider<DemoPluginService> demoPluginServiceProvider) {
         this.pluginWebServiceProvider = pluginWebServiceProvider;
         this.simplePluginService = simplePluginService;
+        this.demoPluginServiceProvider = demoPluginServiceProvider;
     }
 
     /**
@@ -56,6 +62,10 @@ public class PluginController {
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.listPlugins(page, size, state, keyword));
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return ApiResult.success(demoService.listPlugins(page, size, state, keyword));
+        }
         return ApiResult.success(simplePluginService.listPlugins(page, size, state, keyword));
     }
 
@@ -69,6 +79,10 @@ public class PluginController {
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.getAllPlugins());
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return ApiResult.success(demoService.getAllPlugins());
+        }
         return ApiResult.success(simplePluginService.getAllPlugins());
     }
 
@@ -81,6 +95,13 @@ public class PluginController {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.getPluginDetail(pluginId));
+        }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            PluginDetailDTO detail = demoService.getDetail(pluginId);
+            if (detail != null) {
+                return ApiResult.success(detail);
+            }
         }
         return ApiResult.success(simplePluginService.getPluginDetail(pluginId));
     }
@@ -97,6 +118,10 @@ public class PluginController {
         if (pluginWebService != null) {
             return pluginWebService.uploadPlugin(file, enable);
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return demoService.uploadPlugin(file, enable);
+        }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
@@ -111,6 +136,10 @@ public class PluginController {
             Path pluginPath = Paths.get(request.getPluginPath());
             return ApiResult.success(pluginWebService.installPlugin(pluginPath));
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return ApiResult.success(demoService.installPlugin(Paths.get(request.getPluginPath())));
+        }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
@@ -123,6 +152,11 @@ public class PluginController {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.startPlugin(pluginId);
+            return ApiResult.success();
+        }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            demoService.startPlugin(pluginId);
             return ApiResult.success();
         }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
@@ -139,6 +173,11 @@ public class PluginController {
             pluginWebService.stopPlugin(pluginId);
             return ApiResult.success();
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            demoService.stopPlugin(pluginId);
+            return ApiResult.success();
+        }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
@@ -153,6 +192,11 @@ public class PluginController {
             pluginWebService.restartPlugin(pluginId);
             return ApiResult.success();
         }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            demoService.restartPlugin(pluginId);
+            return ApiResult.success();
+        }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
@@ -165,6 +209,11 @@ public class PluginController {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.uninstallPlugin(pluginId);
+            return ApiResult.success();
+        }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            demoService.uninstallPlugin(pluginId);
             return ApiResult.success();
         }
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
@@ -198,12 +247,17 @@ public class PluginController {
     @Operation(summary = "验证插件")
     public ApiResult<PluginVerifyResult> verify(@RequestBody PluginVerifyRequest request) {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
-        if (pluginWebService == null) {
-            return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
+        if (pluginWebService != null) {
+            Path pluginPath = Paths.get(request.getPluginPath());
+            boolean valid = pluginWebService.verifyPlugin(pluginPath);
+            return ApiResult.success(new PluginVerifyResult(valid, valid ? "插件验证通过" : "插件验证失败"));
         }
-        Path pluginPath = Paths.get(request.getPluginPath());
-        boolean valid = pluginWebService.verifyPlugin(pluginPath);
-        return ApiResult.success(new PluginVerifyResult(valid, valid ? "插件验证通过" : "插件验证失败"));
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            boolean valid = demoService.verifyPlugin(Paths.get(request.getPluginPath()));
+            return ApiResult.success(new PluginVerifyResult(valid, valid ? "插件验证通过" : "插件验证失败"));
+        }
+        return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
     /**

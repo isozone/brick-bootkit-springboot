@@ -49,6 +49,13 @@
             <artifactId>spring-boot-starter-logging</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit</artifactId>
+            <version>4.0.3</version>
+        </dependency>
     </dependencies>
     
     <build>
