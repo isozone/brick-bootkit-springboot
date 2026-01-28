@@ -1,6 +1,5 @@
 package com.zqzqq.bootkits.web.service;
 
-import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.PageResult;
 import com.zqzqq.bootkits.web.dto.PluginDTO;

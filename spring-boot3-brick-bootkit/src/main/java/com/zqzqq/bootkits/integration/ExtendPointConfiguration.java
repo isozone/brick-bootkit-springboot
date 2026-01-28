@@ -101,7 +101,9 @@ public class ExtendPointConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public com.zqzqq.bootkits.core.PluginManager pluginManager(PluginOperator pluginOperator) {
-        if (pluginOperator instanceof DefaultPluginOperator) {
+        if (pluginOperator instanceof PluginOperatorWrapper) {
+            return ((PluginOperatorWrapper) pluginOperator).getPluginManager();
+        } else if (pluginOperator instanceof DefaultPluginOperator) {
             return ((DefaultPluginOperator) pluginOperator).getPluginManager();
         }
         return null;

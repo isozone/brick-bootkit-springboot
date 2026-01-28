@@ -11,7 +11,7 @@ import com.zqzqq.bootkits.web.dto.PageResult;
 import com.zqzqq.bootkits.web.dto.PluginDTO;
 import com.zqzqq.bootkits.web.dto.PluginDetailDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -31,26 +31,39 @@ import java.util.stream.Collectors;
 
 /**
  * 插件管理服务（完整功能，需要 PluginManager）
+ * 注意：PluginManager 是延迟初始化的（在 ApplicationStartedEvent 时），
+ * 因此使用 ObjectProvider 在运行时动态获取，而不是使用 @ConditionalOnBean
  * 
  * @author brick-bootkit
  */
 @Slf4j
 @Service
-@ConditionalOnBean(PluginManager.class)
 public class PluginWebService {
 
-    private final PluginManager pluginManager;
+    private final ObjectProvider<PluginManager> pluginManagerProvider;
     private final BrickWebProperties properties;
 
-    public PluginWebService(PluginManager pluginManager, BrickWebProperties properties) {
-        this.pluginManager = pluginManager;
+    public PluginWebService(ObjectProvider<PluginManager> pluginManagerProvider, BrickWebProperties properties) {
+        this.pluginManagerProvider = pluginManagerProvider;
         this.properties = properties;
+    }
+
+    /**
+     * 获取 PluginManager 实例
+     */
+    private PluginManager getPluginManager() {
+        PluginManager pluginManager = pluginManagerProvider.getIfAvailable();
+        if (pluginManager == null) {
+            throw new PluginException("插件功能未启用，请确保 plugin.enable=true");
+        }
+        return pluginManager;
     }
 
     /**
      * 获取插件列表
      */
     public PageResult<PluginDTO> listPlugins(int page, int size, String state, String keyword) {
+        PluginManager pluginManager = getPluginManager();
         List<PluginInfo> plugins = pluginManager.getPlugins();
         
         // 过滤
@@ -91,7 +104,7 @@ public class PluginWebService {
      * 获取所有插件列表（不分页）
      */
     public List<PluginDTO> getAllPlugins() {
-        return pluginManager.getPlugins().stream()
+        return getPluginManager().getPlugins().stream()
                 .map(PluginDTO::from)
                 .collect(Collectors.toList());
     }
@@ -100,6 +113,7 @@ public class PluginWebService {
      * 获取插件详情
      */
     public PluginDetailDTO getPluginDetail(String pluginId) {
+        PluginManager pluginManager = getPluginManager();
         PluginInfo pluginInfo = pluginManager.getPlugin(pluginId);
         if (pluginInfo == null) {
             throw new PluginException(ErrorCode.PLUGIN_NOT_FOUND.getMessage());
@@ -166,6 +180,7 @@ public class PluginWebService {
             log.info("Plugin saved to: {}", targetPath);
 
             // 解析插件信息获取描述符信息
+            PluginManager pluginManager = getPluginManager();
             PluginInfo uploadPluginInfo = pluginManager.parse(targetPath);
             if (uploadPluginInfo == null) {
                 throw new PluginException("插件文件校验失败");
@@ -269,6 +284,7 @@ public class PluginWebService {
      */
     private void restoreOldPlugin(Path backupPath, String pluginId, Boolean enableAfterUpload) {
         log.info("尝试恢复旧版本插件: {}", pluginId);
+        PluginManager pluginManager = getPluginManager();
         try {
             // 卸载当前插件（如果有）
             PluginInfo currentPlugin = pluginManager.getPlugin(pluginId);
@@ -350,7 +366,7 @@ public class PluginWebService {
      */
     public PluginDTO installPlugin(Path pluginPath) {
         try {
-            PluginInfo pluginInfo = pluginManager.install(pluginPath);
+            PluginInfo pluginInfo = getPluginManager().install(pluginPath);
             return PluginDTO.from(pluginInfo);
         } catch (PluginException e) {
             throw new PluginException("插件安装失败: " + e.getMessage());
@@ -362,7 +378,7 @@ public class PluginWebService {
      */
     public void startPlugin(String pluginId) {
         try {
-            pluginManager.start(pluginId);
+            getPluginManager().start(pluginId);
         } catch (PluginException e) {
             throw new PluginException("插件启动失败: " + e.getMessage());
         }
@@ -373,7 +389,7 @@ public class PluginWebService {
      */
     public void stopPlugin(String pluginId) {
         try {
-            pluginManager.stop(pluginId);
+            getPluginManager().stop(pluginId);
         } catch (PluginException e) {
             throw new PluginException("插件停止失败: " + e.getMessage());
         }
@@ -384,7 +400,7 @@ public class PluginWebService {
      */
     public void restartPlugin(String pluginId) {
         try {
-            pluginManager.reload(pluginId);
+            getPluginManager().reload(pluginId);
         } catch (PluginException e) {
             throw new PluginException("插件重启失败: " + e.getMessage());
         }
@@ -395,7 +411,7 @@ public class PluginWebService {
      */
     public void uninstallPlugin(String pluginId) {
         try {
-            pluginManager.uninstall(pluginId);
+            getPluginManager().uninstall(pluginId);
         } catch (PluginException e) {
             throw new PluginException("插件卸载失败: " + e.getMessage());
         }
@@ -405,6 +421,7 @@ public class PluginWebService {
      * 获取插件文件资源
      */
     public Resource getPluginResource(String pluginId) {
+        PluginManager pluginManager = getPluginManager();
         PluginInfo pluginInfo = pluginManager.getPlugin(pluginId);
         if (pluginInfo == null) {
             throw new PluginException(ErrorCode.PLUGIN_NOT_FOUND.getMessage());
@@ -428,7 +445,7 @@ public class PluginWebService {
      */
     public boolean verifyPlugin(Path pluginPath) {
         try {
-            return pluginManager.verify(pluginPath);
+            return getPluginManager().verify(pluginPath);
         } catch (Exception e) {
             log.error("Failed to verify plugin: {}", pluginPath, e);
             return false;

@@ -17,6 +17,7 @@
 package com.zqzqq.bootkits.integration.operator;
 
 import com.zqzqq.bootkits.core.PluginInfo;
+import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.listener.PluginInitializerListener;
@@ -170,6 +171,17 @@ public class PluginOperatorWrapper implements PluginOperator{
         // 如果禁用的话, 直接返回
         log.info("插件功能已被禁用!");
         return true;
+    }
+
+    /**
+     * 获取 PluginManager
+     * @return PluginManager
+     */
+    public PluginManager getPluginManager() {
+        if (pluginOperator instanceof DefaultPluginOperator) {
+            return ((DefaultPluginOperator) pluginOperator).getPluginManager();
+        }
+        return null;
     }
 
 }

@@ -16,7 +16,7 @@ public class PluginDisableAutoConfig {
 
 
     static {
-        COMMON_PLUGIN_DISABLE_AUTO_CONFIG.add("com.zqzqq.bootkits.integration.SpringBootPluginStarter");
+        // 不再禁用 SpringBootPluginStarter，通过 plugin.enable 配置控制是否启用
     }
 
     public static Set<String> getCommonPluginDisableAutoConfig() {

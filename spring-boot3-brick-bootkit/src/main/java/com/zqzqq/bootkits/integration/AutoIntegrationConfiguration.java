@@ -50,9 +50,9 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     /**
      * 是否启用插件功能
+     * 通过 plugin.enable 配置控制
      */
-    @Value("${enable:true}")
-    private Boolean enable;
+    private Boolean enable = true;
 
     /**
      * 运行模式

@@ -1,6 +1,6 @@
 package com.zqzqq.bootkits.web.controller.api;
 
-import com.zqzqq.bootkits.core.PluginInfo;
+import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.web.dto.*;
 import com.zqzqq.bootkits.web.service.DemoPluginService;
@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -36,16 +37,30 @@ import java.util.List;
 public class PluginController {
 
     private final ObjectProvider<PluginWebService> pluginWebServiceProvider;
-    private final SimplePluginService simplePluginService;
+    private final ObjectProvider<SimplePluginService> simplePluginServiceProvider;
     private final ObjectProvider<DemoPluginService> demoPluginServiceProvider;
+    private final ApplicationContext applicationContext;
 
     public PluginController(
             ObjectProvider<PluginWebService> pluginWebServiceProvider, 
-            SimplePluginService simplePluginService,
-            ObjectProvider<DemoPluginService> demoPluginServiceProvider) {
+            ObjectProvider<SimplePluginService> simplePluginServiceProvider,
+            ObjectProvider<DemoPluginService> demoPluginServiceProvider,
+            ApplicationContext applicationContext) {
         this.pluginWebServiceProvider = pluginWebServiceProvider;
-        this.simplePluginService = simplePluginService;
+        this.simplePluginServiceProvider = simplePluginServiceProvider;
         this.demoPluginServiceProvider = demoPluginServiceProvider;
+        this.applicationContext = applicationContext;
+    }
+
+    /**
+     * 获取 SimplePluginService 实例
+     */
+    private SimplePluginService getSimplePluginService() {
+        SimplePluginService service = simplePluginServiceProvider.getIfAvailable();
+        if (service == null) {
+            throw new PluginException("插件功能未启用，请在完整brick-bootkit环境中使用");
+        }
+        return service;
     }
 
     /**
@@ -66,7 +81,7 @@ public class PluginController {
         if (demoService != null) {
             return ApiResult.success(demoService.listPlugins(page, size, state, keyword));
         }
-        return ApiResult.success(simplePluginService.listPlugins(page, size, state, keyword));
+        return ApiResult.success(getSimplePluginService().listPlugins(page, size, state, keyword));
     }
 
     /**
@@ -83,7 +98,7 @@ public class PluginController {
         if (demoService != null) {
             return ApiResult.success(demoService.getAllPlugins());
         }
-        return ApiResult.success(simplePluginService.getAllPlugins());
+        return ApiResult.success(getSimplePluginService().getAllPlugins());
     }
 
     /**
@@ -103,7 +118,7 @@ public class PluginController {
                 return ApiResult.success(detail);
             }
         }
-        return ApiResult.success(simplePluginService.getPluginDetail(pluginId));
+        return ApiResult.success(getSimplePluginService().getPluginDetail(pluginId));
     }
 
     /**
@@ -114,14 +129,30 @@ public class PluginController {
     public ApiResult<PluginDTO> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(name = "enable", required = false, defaultValue = "false") Boolean enable) {
+        // 调试日志：检查所有相关bean
+        log.info("=== 插件上传调试 ===");
+        log.info("1. pluginWebServiceProvider bean exists: {}", pluginWebServiceProvider != null);
+        log.info("2. demoPluginServiceProvider bean exists: {}", demoPluginServiceProvider != null);
+        
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
+        log.info("3. PluginWebService bean available: {}", pluginWebService != null);
         if (pluginWebService != null) {
             return pluginWebService.uploadPlugin(file, enable);
         }
         DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        log.info("4. DemoPluginService bean available: {}", demoService != null);
         if (demoService != null) {
             return demoService.uploadPlugin(file, enable);
         }
+        
+        // 检查 PluginManager 是否存在（通过 applicationContext）
+        try {
+            PluginManager pluginManager = applicationContext.getBean(PluginManager.class);
+            log.info("5. PluginManager bean found via applicationContext: {}", pluginManager != null);
+        } catch (Exception e) {
+            log.warn("5. PluginManager bean NOT found via applicationContext: {}", e.getMessage());
+        }
+        
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
