@@ -20,6 +20,7 @@ import com.zqzqq.bootkits.core.checker.ComposePluginLauncherChecker;
 import com.zqzqq.bootkits.core.checker.DefaultPluginLauncherChecker;
 import com.zqzqq.bootkits.core.checker.DependencyPluginLauncherChecker;
 import com.zqzqq.bootkits.core.checker.PluginBasicChecker;
+import com.zqzqq.bootkits.core.descriptor.DefaultInsidePluginDescriptor;
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptorLoader;
@@ -227,6 +228,11 @@ public class DefaultPluginManager implements PluginManager{
                 
                 // 创建插件信息
                 PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
+                
+                // 更新插件路径为复制后的目标路径（解决临时文件被删除后路径失效问题）
+                if (pluginInsideInfo.getPluginDescriptor() instanceof DefaultInsidePluginDescriptor) {
+                    ((DefaultInsidePluginDescriptor) pluginInsideInfo.getPluginDescriptor()).setPluginPath(targetPath);
+                }
                 
                 // 将插件添加到已解析插件列表
                 resolvedPlugins.put(pluginId, pluginInsideInfo);

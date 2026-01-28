@@ -15,8 +15,9 @@ import java.util.Set;
  */
 public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor implements InsidePluginDescriptor {
 
-    private final Path pluginPath;
-    private final String pluginFileName;
+    @Setter
+    private Path pluginPath;
+    private String pluginFileName;
 
     @Setter
     private String pluginClassPath;
@@ -50,6 +51,14 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
         super(pluginId, pluginVersion, pluginClass, pluginPath.toAbsolutePath().toString());
         this.pluginPath = pluginPath;
         this.pluginFileName = pluginPath.toFile().getName();
+    }
+
+    @Override
+    public void setPluginPath(Path pluginPath) {
+        this.pluginPath = pluginPath;
+        this.pluginFileName = pluginPath.toFile().getName();
+        // 更新父类的路径
+        super.setPluginPath(pluginPath.toAbsolutePath().toString());
     }
 
     @Override

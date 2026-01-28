@@ -38,7 +38,7 @@ public class DefaultPluginDescriptor implements PluginDescriptor {
     private final String pluginId;
     private final String pluginVersion;
     private final String pluginBootstrapClass;
-    private final String pluginPath;
+    private String pluginPath;
 
 
     private PluginType type;
@@ -86,6 +86,10 @@ public class DefaultPluginDescriptor implements PluginDescriptor {
 
     void setType(PluginType type) {
         this.type = type;
+    }
+
+    void setPluginPath(String pluginPath) {
+        this.pluginPath = pluginPath;
     }
 
     void setDependencyPlugins(List<DependencyPlugin> dependencyPlugins) {

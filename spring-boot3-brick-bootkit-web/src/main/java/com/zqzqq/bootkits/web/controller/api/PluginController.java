@@ -122,10 +122,48 @@ public class PluginController {
     }
 
     /**
-     * 上传插件
+     * 上传插件（第一阶段：只保存到临时目录）
+     */
+    @PostMapping("/upload/temp")
+    @Operation(summary = "上传插件到临时目录")
+    public ApiResult<String> uploadTemp(@RequestParam("file") MultipartFile file) {
+        PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
+        if (pluginWebService != null) {
+            return pluginWebService.uploadPluginTemp(file);
+        }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return ApiResult.error(500, "Demo环境不支持临时上传");
+        }
+        return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
+    }
+
+    /**
+     * 安装插件（第二阶段：从临时目录安装）
+     */
+    @PostMapping("/install/temp")
+    @Operation(summary = "从临时目录安装插件")
+    public ApiResult<PluginDTO> installFromTemp(@RequestBody PluginInstallRequest request) {
+        if (request.getTempFilePath() == null) {
+            return ApiResult.error(400, "请提供临时文件路径 (tempFilePath)");
+        }
+        
+        PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
+        if (pluginWebService != null) {
+            return pluginWebService.installPluginFromTemp(request.getTempFilePath(), request.getAutoStart());
+        }
+        DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
+        if (demoService != null) {
+            return ApiResult.error(500, "Demo环境不支持临时安装");
+        }
+        return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
+    }
+
+    /**
+     * 上传插件（整合版：上传+安装一次完成）
      */
     @PostMapping("/upload")
-    @Operation(summary = "上传插件")
+    @Operation(summary = "上传并安装插件")
     public ApiResult<PluginDTO> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(name = "autoStart", required = false, defaultValue = "false") Boolean autoStart,
@@ -294,6 +332,10 @@ public class PluginController {
     @Data
     public static class PluginInstallRequest {
         private String pluginPath;
+        /**
+         * 临时文件路径（用于两阶段安装）
+         */
+        private String tempFilePath;
         /**
          * 安装后是否自动启动
          */
