@@ -10,10 +10,13 @@
         <version>3.5.5</version>
         <relativePath/>
     </parent>
+
+    <groupId>com.zqzqq.webDemo</groupId>
     
     <artifactId>spring-boot3-brick-bootkit-web-demo</artifactId>
     <packaging>jar</packaging>
     <name>Brick Web Demo</name>
+    <version>4.0.4</version>
     <description>Brick BootKit Web Management Console Demo</description>
     
     <dependencies>
