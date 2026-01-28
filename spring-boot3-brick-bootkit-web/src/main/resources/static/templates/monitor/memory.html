@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内存监控 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/echarts/js/echarts.min.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/index.html">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>仪表盘</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/index.html">
+                                <i class="bi bi-plug"></i>
+                                <span>插件列表</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/upload.html">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>上传插件</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">系统监控</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/overview.html">
+                                <i class="bi bi-bar-chart-line"></i>
+                                <span>监控概览</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link active" href="/brick-web/monitor/memory.html">
+                                <i class="bi bi-memory"></i>
+                                <span>内存监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/cpu.html">
+                                <i class="bi bi-cpu"></i>
+                                <span>CPU 监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
+                                <i class="bi bi-gear"></i>
+                                <span>线程监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">文档</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/doc.html" target="_blank">
+                                <i class="bi bi-book"></i>
+                                <span>API 文档</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
+                        B
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="brick-main">
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">内存监控</span>
+                    </nav>
+                </div>
+                
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span class="d-none d-sm-inline">刷新</span>
+                    </button>
+                    <div class="brick-time">
+                        <i class="bi bi-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="brick-content" id="app">
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">内存监控</h1>
+                    <p class="brick-page-subtitle">实时监控 JVM 内存使用情况和堆内存分配</p>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="row g-4 mb-4 slide-in-left">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card info">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-hdd"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatBytes(memory.heapUsed || 0) }}</div>
+                            <div class="brick-stat-label">堆内存已使用</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card primary">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-hdd-rack"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatBytes(memory.heapMax || 0) }}</div>
+                            <div class="brick-stat-label">堆内存最大</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card success">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-aspect-ratio"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ heapPercent }}%</div>
+                            <div class="brick-stat-label">堆内存使用率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card warning">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatBytes(memory.nonHeapUsed || 0) }}</div>
+                            <div class="brick-stat-label">非堆内存使用</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图表区域 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-graph-up text-primary"></i>
+                                    内存使用趋势
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="memory-trend-chart" class="brick-chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-pie-chart text-success"></i>
+                                    堆内存分布
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="memory-pie-chart" class="brick-chart-container brick-chart-sm"></div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">已用内存</span>
+                                        <span class="fw-medium">{{ formatBytes(memory.heapUsed || 0) }}</span>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar" :style="{ width: heapPercent + '%' }"
+                                             :class="heapPercent > 80 ? 'progress-bar-danger' : heapPercent > 60 ? 'progress-bar-warning' : ''"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="small text-muted">可用内存</span>
+                                        <span class="small fw-medium">{{ formatBytes((memory.heapMax || 0) - (memory.heapUsed || 0)) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 内存池信息 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-database text-info"></i>
+                                    堆内存池
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="brick-table">
+                                        <thead>
+                                            <tr>
+                                                <th>内存池</th>
+                                                <th>已使用</th>
+                                                <th>最大</th>
+                                                <th>使用率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="pool in heapPools" :key="pool.name">
+                                                <td class="fw-medium">{{ pool.name }}</td>
+                                                <td>{{ formatBytes(pool.used) }}</td>
+                                                <td>{{ formatBytes(pool.max) }}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress" style="width: 80px;">
+                                                            <div class="progress-bar" 
+                                                                 :style="{ width: getPoolPercent(pool) + '%' }"
+                                                                 :class="getPoolPercent(pool) > 80 ? 'progress-bar-danger' : getPoolPercent(pool) > 60 ? 'progress-bar-warning' : ''"></div>
+                                                        </div>
+                                                        <span class="small">{{ getPoolPercent(pool) }}%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="heapPools.length === 0">
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="bi bi-inbox display-6"></i>
+                                                    <p class="mb-0 mt-2">暂无堆内存池数据</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-hdd text-warning"></i>
+                                    非堆内存池
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="brick-table">
+                                        <thead>
+                                            <tr>
+                                                <th>内存池</th>
+                                                <th>已使用</th>
+                                                <th>最大</th>
+                                                <th>使用率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="pool in nonHeapPools" :key="pool.name">
+                                                <td class="fw-medium">{{ pool.name }}</td>
+                                                <td>{{ formatBytes(pool.used) }}</td>
+                                                <td>{{ formatBytes(pool.max) }}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress" style="width: 80px;">
+                                                            <div class="progress-bar" 
+                                                                 :style="{ width: getPoolPercent(pool) + '%' }"
+                                                                 :class="getPoolPercent(pool) > 80 ? 'progress-bar-danger' : getPoolPercent(pool) > 60 ? 'progress-bar-warning' : ''"></div>
+                                                        </div>
+                                                        <span class="small">{{ getPoolPercent(pool) }}%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="nonHeapPools.length === 0">
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="bi bi-inbox display-6"></i>
+                                                    <p class="mb-0 mt-2">暂无非堆内存池数据</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- GC 信息 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-arrow-repeat text-secondary"></i>
+                                    垃圾收集器信息
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="brick-table">
+                                        <thead>
+                                            <tr>
+                                                <th>收集器名称</th>
+                                                <th>收集次数</th>
+                                                <th>总耗时</th>
+                                                <th>平均耗时</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="gc in gcInfo" :key="gc.name">
+                                                <td class="fw-medium">{{ gc.name }}</td>
+                                                <td>{{ gc.count.toLocaleString() }}</td>
+                                                <td>{{ formatDuration(gc.time) }}</td>
+                                                <td>{{ gc.count > 0 ? formatDuration(gc.time / gc.count) : '0ms' }}</td>
+                                            </tr>
+                                            <tr v-if="gcInfo.length === 0">
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="bi bi-inbox display-6"></i>
+                                                    <p class="mb-0 mt-2">暂无 GC 数据</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+        
+        createApp({
+            setup() {
+                const memory = ref({ heapUsed: 0, heapMax: 1, nonHeapUsed: 0 });
+                const heapPools = ref([]);
+                const nonHeapPools = ref([]);
+                const gcInfo = ref([]);
+                
+                let trendChart = null;
+                let pieChart = null;
+                let refreshTimer = null;
+                let memoryHistory = [];
+                
+                const heapPercent = computed(() => {
+                    if (!memory.value.heapMax || memory.value.heapMax <= 0) return 0;
+                    return Math.round((memory.value.heapUsed / memory.value.heapMax) * 100);
+                });
+                
+                const loadMemoryData = async () => {
+                    try {
+                        const response = await BrickWeb.api.get('/monitor/memory');
+                        if (response.code === 200 && response.data) {
+                            memory.value = response.data;
+                            
+                            // 分类内存池
+                            const pools = response.data.memoryPools || [];
+                            heapPools.value = pools.filter(p => p.type === 'HEAP');
+                            nonHeapPools.value = pools.filter(p => p.type !== 'HEAP');
+                            
+                            // GC 信息
+                            gcInfo.value = response.data.gcCollectors || [];
+                            
+                            // 更新历史
+                            memoryHistory.push({
+                                time: new Date().toLocaleTimeString('zh-CN'),
+                                used: response.data.heapUsed || 0,
+                                max: response.data.heapMax || 1
+                            });
+                            
+                            if (memoryHistory.length > 60) memoryHistory.shift();
+                            updateCharts();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load memory data:', error);
+                    }
+                };
+                
+                const updateCharts = () => {
+                    if (trendChart) {
+                        trendChart.setOption({
+                            series: [{
+                                data: memoryHistory.map(item => (item.used / 1024 / 1024).toFixed(2))
+                            }]
+                        });
+                    }
+                    
+                    if (pieChart) {
+                        const used = memory.value.heapUsed || 0;
+                        const max = memory.value.heapMax || 1;
+                        const free = Math.max(0, max - used);
+                        pieChart.setOption({
+                            series: [{
+                                data: [
+                                    { value: used, name: '已使用', itemStyle: { color: '#2563eb' } },
+                                    { value: free, name: '空闲', itemStyle: { color: '#e5e7eb' } }
+                                ]
+                            }]
+                        });
+                    }
+                };
+                
+                const initCharts = () => {
+                    // 趋势图
+                    trendChart = echarts.init(document.getElementById('memory-trend-chart'));
+                    const xData = [];
+                    for (let i = 0; i < 60; i++) xData.push('');
+                    
+                    trendChart.setOption({
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter: function(params) {
+                                const value = params[0].value;
+                                return params[0].axisValueLabel + '<br/>已使用: ' + BrickWeb.formatBytes(value * 1024 * 1024);
+                            }
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '10%',
+                            top: '10%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: xData
+                        },
+                        yAxis: {
+                            type: 'value',
+                            axisLabel: {
+                                formatter: function(value) {
+                                    return (value / 1024).toFixed(0) + ' MB';
+                                }
+                            }
+                        },
+                        series: [{
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'none',
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(37, 99, 235, 0.4)' },
+                                    { offset: 1, color: 'rgba(37, 99, 235, 0.05)' }
+                                ])
+                            },
+                            lineStyle: { color: '#2563eb', width: 2 },
+                            data: []
+                        }]
+                    });
+                    
+                    // 饼图
+                    pieChart = echarts.init(document.getElementById('memory-pie-chart'));
+                    pieChart.setOption({
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}: {c} ({d}%)'
+                        },
+                        series: [{
+                            type: 'pie',
+                            radius: ['50%', '75%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 6,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            label: { show: false },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: 14,
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            data: [
+                                { value: 0, name: '已使用' },
+                                { value: 1, name: '空闲' }
+                            ]
+                        }]
+                    });
+                };
+                
+                const formatBytes = (bytes) => {
+                    return BrickWeb.formatBytes(bytes);
+                };
+                
+                const formatDuration = (ms) => {
+                    if (!ms) return '0ms';
+                    if (ms < 1000) return ms.toFixed(1) + 'ms';
+                    return (ms / 1000).toFixed(2) + 's';
+                };
+                
+                const getPoolPercent = (pool) => {
+                    if (!pool.max || pool.max <= 0) return 0;
+                    return Math.round((pool.used / pool.max) * 100);
+                };
+                
+                onMounted(() => {
+                    initCharts();
+                    loadMemoryData();
+                    refreshTimer = setInterval(loadMemoryData, 3000);
+                    
+                    window.addEventListener('resize', () => {
+                        trendChart?.resize();
+                        pieChart?.resize();
+                    });
+                });
+                
+                onUnmounted(() => {
+                    if (refreshTimer) clearInterval(refreshTimer);
+                    trendChart?.dispose();
+                    pieChart?.dispose();
+                });
+                
+                return {
+                    memory, heapPools, nonHeapPools, gcInfo, heapPercent,
+                    loadMemoryData, formatBytes, formatDuration, getPoolPercent
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

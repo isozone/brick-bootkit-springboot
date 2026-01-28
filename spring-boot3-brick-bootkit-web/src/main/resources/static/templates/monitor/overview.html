@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控概览 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/echarts/js/echarts.min.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <!-- 侧边栏 -->
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/index.html">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>仪表盘</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/index.html">
+                                <i class="bi bi-plug"></i>
+                                <span>插件列表</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/upload.html">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>上传插件</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">系统监控</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link active" href="/brick-web/monitor/overview.html">
+                                <i class="bi bi-bar-chart-line"></i>
+                                <span>监控概览</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/memory.html">
+                                <i class="bi bi-memory"></i>
+                                <span>内存监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/cpu.html">
+                                <i class="bi bi-cpu"></i>
+                                <span>CPU 监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
+                                <i class="bi bi-gear"></i>
+                                <span>线程监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">文档</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/doc.html" target="_blank">
+                                <i class="bi bi-book"></i>
+                                <span>API 文档</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
+                        B
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="brick-main">
+            <!-- 顶部导航 -->
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">监控概览</span>
+                    </nav>
+                </div>
+                
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span class="d-none d-sm-inline">刷新</span>
+                    </button>
+                    <div class="brick-time">
+                        <i class="bi bi-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 页面内容 -->
+            <div class="brick-content" id="app">
+                <!-- 页面标题 -->
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">系统监控</h1>
+                    <p class="brick-page-subtitle">实时监控服务器运行状态和性能指标</p>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="row g-4 mb-4 slide-in-left">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card primary">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-plug"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ overview?.pluginStatistics?.total || 0 }}</div>
+                            <div class="brick-stat-label">插件总数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card info">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ overview?.cpu?.availableProcessors || 0 }}</div>
+                            <div class="brick-stat-label">CPU 核心</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card success">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatNumber(overview?.threads?.total || 0) }}</div>
+                            <div class="brick-stat-label">活跃线程</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card warning">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-memory"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatBytes(overview?.memory?.heapUsed || 0) }}</div>
+                            <div class="brick-stat-label">堆内存使用</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 仪表盘 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-cpu text-primary"></i>
+                                    CPU 使用率
+                                </h5>
+                                <span class="brick-badge brick-badge-primary">{{ (overview?.cpu?.systemPercent || 0).toFixed(1) }}%</span>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="cpu-gauge" class="brick-chart-container brick-chart-sm"></div>
+                                <div class="mt-3 text-center">
+                                    <span class="text-muted">系统负载: </span>
+                                    <span class="fw-medium">{{ (overview?.cpu?.systemLoad || 0).toFixed(2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-memory text-info"></i>
+                                    内存使用率
+                                </h5>
+                                <span class="brick-badge brick-badge-info">{{ memoryPercent }}%</span>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="memory-gauge" class="brick-chart-container brick-chart-sm"></div>
+                                <div class="mt-3 text-center">
+                                    <span class="text-muted">{{ formatBytes(overview?.memory?.heapUsed || 0) }} / {{ formatBytes(overview?.memory?.heapMax || 0) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 信息卡片 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-info-circle text-success"></i>
+                                    系统信息
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-muted" style="width: 40%;">操作系统</td>
+                                                <td class="fw-medium">{{ overview?.system?.osName || '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Java 版本</td>
+                                                <td class="fw-medium">{{ overview?.system?.javaVersion || '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">运行时长</td>
+                                                <td class="fw-medium">{{ formatUptime(overview?.system?.uptime) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">系统架构</td>
+                                                <td class="fw-medium">{{ overview?.system?.osArch || '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">系统版本</td>
+                                                <td class="fw-medium">{{ overview?.system?.osVersion || '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-gear text-warning"></i>
+                                    线程信息
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-muted" style="width: 40%;">当前线程</td>
+                                                <td class="fw-medium">{{ formatNumber(overview?.threads?.total || 0) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">守护线程</td>
+                                                <td class="fw-medium">{{ formatNumber(overview?.threads?.daemon || 0) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">峰值线程</td>
+                                                <td class="fw-medium">{{ formatNumber(overview?.threads?.peak || 0) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">启动线程</td>
+                                                <td class="fw-medium">{{ formatNumber(overview?.threads?.started || 0) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">CPU 时间</td>
+                                                <td class="fw-medium">{{ formatCpuTime(overview?.threads?.cpuTime || 0) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 内存池信息 -->
+                <div class="row" v-if="overview?.memory?.memoryPools && overview.memory.memoryPools.length > 0">
+                    <div class="col-12">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-database text-secondary"></i>
+                                    内存池信息
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="table-responsive">
+                                    <table class="brick-table">
+                                        <thead>
+                                            <tr>
+                                                <th>内存池名称</th>
+                                                <th>类型</th>
+                                                <th>已使用</th>
+                                                <th>最大容量</th>
+                                                <th>使用率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="pool in overview.memory.memoryPools" :key="pool.name">
+                                                <td class="fw-medium">{{ pool.name }}</td>
+                                                <td>
+                                                    <span class="brick-badge" :class="pool.type === 'HEAP' ? 'brick-badge-info' : 'brick-badge-warning'">
+                                                        {{ pool.type }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ formatBytes(pool.used) }}</td>
+                                                <td>{{ formatBytes(pool.max) }}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress" style="width: 100px;">
+                                                            <div class="progress-bar" 
+                                                                 :style="{ width: getPoolPercent(pool) + '%' }"
+                                                                 :class="getPoolPercent(pool) > 80 ? 'progress-bar-danger' : getPoolPercent(pool) > 60 ? 'progress-bar-warning' : ''"></div>
+                                                        </div>
+                                                        <span class="small">{{ getPoolPercent(pool) }}%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 移动端遮罩 -->
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // 侧边栏切换
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        // Vue 应用
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+        
+        createApp({
+            setup() {
+                const overview = ref(null);
+                const memoryPercent = ref(0);
+                
+                let cpuChart = null;
+                let memoryChart = null;
+                let refreshTimer = null;
+                
+                const loadOverview = async () => {
+                    try {
+                        const response = await BrickWeb.api.get('/monitor/overview');
+                        if (response.code === 200 && response.data) {
+                            overview.value = response.data;
+                            updateCharts();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load overview:', error);
+                    }
+                };
+                
+                const updateCharts = () => {
+                    if (!overview.value) return;
+                    
+                    // 使用系统 CPU 负载作为主要指标
+                    const cpuPercent = overview.value.cpu?.systemPercent || 0;
+                    if (cpuChart) {
+                        cpuChart.setOption({
+                            series: [{
+                                data: [{ value: parseFloat(cpuPercent.toFixed(1)) }]
+                            }]
+                        });
+                    }
+                    
+                    const heapUsed = overview.value.memory?.heapUsed || 0;
+                    const heapMax = overview.value.memory?.heapMax || 1;
+                    const memPercent = Math.round((heapUsed / heapMax) * 100);
+                    memoryPercent.value = memPercent;
+                    
+                    if (memoryChart) {
+                        memoryChart.setOption({
+                            series: [{
+                                data: [{ value: memPercent }]
+                            }]
+                        });
+                    }
+                };
+                
+                const initCharts = () => {
+                    // CPU 仪表盘
+                    cpuChart = echarts.init(document.getElementById('cpu-gauge'));
+                    cpuChart.setOption({
+                        series: [{
+                            type: 'gauge',
+                            min: 0,
+                            max: 100,
+                            radius: '90%',
+                            progress: {
+                                show: true,
+                                width: 14,
+                                itemStyle: { color: '#2563eb' }
+                            },
+                            axisLine: {
+                                lineStyle: { width: 14, color: [[1, '#e5e7eb']] }
+                            },
+                            axisTick: { show: false },
+                            splitLine: {
+                                length: 10,
+                                lineStyle: { width: 2, color: '#999' }
+                            },
+                            axisLabel: {
+                                distance: 24,
+                                color: '#6b7280',
+                                fontSize: 12
+                            },
+                            anchor: {
+                                show: true,
+                                size: 22,
+                                itemStyle: { color: '#2563eb', borderWidth: 3 }
+                            },
+                            title: { show: false },
+                            detail: {
+                                valueAnimation: true,
+                                fontSize: 28,
+                                fontWeight: 'bold',
+                                formatter: '{value}%',
+                                offsetCenter: [0, '70%'],
+                                color: '#1f2937'
+                            },
+                            data: [{ value: 0 }]
+                        }]
+                    });
+                    
+                    // 内存仪表盘
+                    memoryChart = echarts.init(document.getElementById('memory-gauge'));
+                    memoryChart.setOption({
+                        series: [{
+                            type: 'gauge',
+                            min: 0,
+                            max: 100,
+                            radius: '90%',
+                            progress: {
+                                show: true,
+                                width: 14,
+                                itemStyle: { color: '#06b6d4' }
+                            },
+                            axisLine: {
+                                lineStyle: { width: 14, color: [[1, '#e5e7eb']] }
+                            },
+                            axisTick: { show: false },
+                            splitLine: {
+                                length: 10,
+                                lineStyle: { width: 2, color: '#999' }
+                            },
+                            axisLabel: {
+                                distance: 24,
+                                color: '#6b7280',
+                                fontSize: 12
+                            },
+                            anchor: {
+                                show: true,
+                                size: 22,
+                                itemStyle: { color: '#06b6d4', borderWidth: 3 }
+                            },
+                            title: { show: false },
+                            detail: {
+                                valueAnimation: true,
+                                fontSize: 28,
+                                fontWeight: 'bold',
+                                formatter: '{value}%',
+                                offsetCenter: [0, '70%'],
+                                color: '#1f2937'
+                            },
+                            data: [{ value: 0 }]
+                        }]
+                    });
+                };
+                
+                const formatBytes = (bytes) => {
+                    return BrickWeb.formatBytes(bytes);
+                };
+                
+                const formatNumber = (num) => {
+                    return num.toLocaleString();
+                };
+                
+                const formatUptime = (millis) => {
+                    if (!millis) return '-';
+                    const seconds = Math.floor(millis / 1000);
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+                    return hours + '小时' + minutes + '分' + secs + '秒';
+                };
+                
+                const formatCpuTime = (nanos) => {
+                    if (!nanos) return '-';
+                    const seconds = Math.floor(nanos / 1000000000);
+                    if (seconds < 60) return seconds + ' 秒';
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return mins + ' 分 ' + secs + ' 秒';
+                };
+                
+                const getPoolPercent = (pool) => {
+                    if (!pool.max || pool.max <= 0) return 0;
+                    return Math.round((pool.used / pool.max) * 100);
+                };
+                
+                onMounted(() => {
+                    initCharts();
+                    loadOverview();
+                    refreshTimer = setInterval(loadOverview, 5000);
+                    
+                    window.addEventListener('resize', () => {
+                        cpuChart?.resize();
+                        memoryChart?.resize();
+                    });
+                });
+                
+                onUnmounted(() => {
+                    if (refreshTimer) clearInterval(refreshTimer);
+                    cpuChart?.dispose();
+                    memoryChart?.dispose();
+                });
+                
+                return {
+                    overview, memoryPercent,
+                    formatBytes, formatNumber, formatUptime, formatCpuTime, getPoolPercent
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

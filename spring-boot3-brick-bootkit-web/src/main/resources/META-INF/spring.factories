@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zqzqq.bootkits.web.config.BrickWebAutoConfiguration

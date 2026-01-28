@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brick Web - 企业级插件管理系统</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    
+    <!-- 自定义 CSS -->
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    
+    <!-- Vue.js -->
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+</head>
+<body>
+    <!-- 移动端遮罩 -->
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="brick-wrapper">
+        <!-- 侧边栏 -->
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/index.html">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>仪表盘</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/index.html">
+                                <i class="bi bi-plug"></i>
+                                <span>插件列表</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/upload.html">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>上传插件</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">系统监控</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/overview.html">
+                                <i class="bi bi-bar-chart-line"></i>
+                                <span>监控概览</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/memory.html">
+                                <i class="bi bi-memory"></i>
+                                <span>内存监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/cpu.html">
+                                <i class="bi bi-cpu"></i>
+                                <span>CPU 监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
+                                <i class="bi bi-gear"></i>
+                                <span>线程监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">文档</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/doc.html" target="_blank">
+                                <i class="bi bi-book"></i>
+                                <span>API 文档</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
+                        B
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="brick-main">
+            <!-- 顶部导航 -->
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active" id="breadcrumb-current">仪表盘</span>
+                    </nav>
+                </div>
+                
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span class="d-none d-sm-inline">刷新</span>
+                    </button>
+                    <div class="brick-time">
+                        <i class="bi bi-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 页面内容 -->
+            <div class="brick-content" id="page-content">
+                <!-- 子模板内容将在这里渲染 -->
+                <slot></slot>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 依赖脚本 -->
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/lib/echarts/js/echarts.min.js"></script>
+    
+    <!-- 通用脚本 -->
+    <script src="/brick-web/static/js/brick-web.js"></script>
+    
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // 侧边栏切换
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        // 更新面包屑
+        function updateBreadcrumb(currentPage) {
+            document.getElementById('breadcrumb-current').textContent = currentPage;
+        }
+    </script>
+</body>
+</html>

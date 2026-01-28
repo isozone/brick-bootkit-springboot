@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  thymeleaf:
+    cache: false
+    mode: HTML
+  autoconfigure:
+    exclude:
+      # 排除 brick-bootkit 自动配置
+      - com.zqzqq.bootkits.integration.SpringBootPluginStarter
+      # 排除不需要的自动配置
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+logging:
+  level:
+    com.zqzqq.bootkits: DEBUG
+    org.springframework.web: INFO
+    org.springframework.boot: DEBUG
+
+# Brick Web 配置
+brick:
+  web:
+    enabled: true

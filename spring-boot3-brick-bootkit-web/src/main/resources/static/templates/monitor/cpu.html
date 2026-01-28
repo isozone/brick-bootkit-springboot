@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 监控 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/echarts/js/echarts.min.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/index.html">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>仪表盘</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/index.html">
+                                <i class="bi bi-plug"></i>
+                                <span>插件列表</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/upload.html">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>上传插件</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">系统监控</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/overview.html">
+                                <i class="bi bi-bar-chart-line"></i>
+                                <span>监控概览</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/memory.html">
+                                <i class="bi bi-memory"></i>
+                                <span>内存监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link active" href="/brick-web/monitor/cpu.html">
+                                <i class="bi bi-cpu"></i>
+                                <span>CPU 监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
+                                <i class="bi bi-gear"></i>
+                                <span>线程监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">文档</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/doc.html" target="_blank">
+                                <i class="bi bi-book"></i>
+                                <span>API 文档</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
+                        B
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="brick-main">
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">CPU 监控</span>
+                    </nav>
+                </div>
+                
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span class="d-none d-sm-inline">刷新</span>
+                    </button>
+                    <div class="brick-time">
+                        <i class="bi bi-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="brick-content" id="app">
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">CPU 监控</h1>
+                    <p class="brick-page-subtitle">实时监控处理器使用情况和系统负载</p>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="row g-4 mb-4 slide-in-left">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card primary">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ cpuInfo.availableProcessors || 0 }}</div>
+                            <div class="brick-stat-label">CPU 核心数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card success">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-activity"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ (cpuInfo.systemPercent || 0).toFixed(1) }}%</div>
+                            <div class="brick-stat-label">系统 CPU 使用率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card warning">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-bar-chart"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ (cpuInfo.systemLoad || 0).toFixed(2) }}</div>
+                            <div class="brick-stat-label">系统负载</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="brick-stat-card info">
+                            <div class="brick-stat-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="brick-stat-value">{{ formatCpuTime(cpuInfo.processCpuTime || 0) }}</div>
+                            <div class="brick-stat-label">进程 CPU 时间</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CPU 使用率图表 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-graph-up text-primary"></i>
+                                    CPU 使用率趋势
+                                </h5>
+                                <div class="d-flex gap-2">
+                                    <select class="form-control form-control-sm" style="width: auto;" v-model="timeRange" @change="loadCpuData">
+                                        <option value="60">最近 1 分钟</option>
+                                        <option value="300">最近 5 分钟</option>
+                                        <option value="600">最近 10 分钟</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="cpu-trend-chart" class="brick-chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-speedometer2 text-success"></i>
+                                    实时 CPU 负载
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div id="cpu-gauge" class="brick-chart-container brick-chart-sm"></div>
+                                <div class="mt-3 text-center">
+                                    <div class="d-flex justify-content-center gap-4">
+                                        <div>
+                                            <div class="h4 mb-0 text-primary">{{ (cpuInfo.processPercent || 0).toFixed(1) }}%</div>
+                                            <small class="text-muted">进程</small>
+                                        </div>
+                                        <div>
+                                            <div class="h4 mb-0 text-success">{{ (cpuInfo.systemPercent || 0).toFixed(1) }}%</div>
+                                            <small class="text-muted">系统</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CPU 核心信息 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-cpu text-warning"></i>
+                                    CPU 核心详情
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6 col-lg-4 col-xl-3" v-for="(core, index) in cpuCores" :key="index">
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="fw-medium">核心 {{ index + 1 }}</span>
+                                                <span class="brick-badge" :class="core.usage > 80 ? 'brick-badge-danger' : core.usage > 60 ? 'brick-badge-warning' : 'brick-badge-success'">
+                                                    {{ core.usage.toFixed(1) }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar" 
+                                                     :style="{ width: core.usage + '%' }"
+                                                     :class="core.usage > 80 ? 'progress-bar-danger' : core.usage > 60 ? 'progress-bar-warning' : ''"></div>
+                                            </div>
+                                            <small class="text-muted">{{ core.taskCount }} 任务</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 col-xl-3" v-if="cpuCores.length === 0">
+                                        <div class="border rounded p-3 text-center text-muted">
+                                            <i class="bi bi-info-circle display-6"></i>
+                                            <p class="mb-0 mt-2">暂无核心数据</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        const { createApp, ref, onMounted, onUnmounted } = Vue;
+        
+        createApp({
+            setup() {
+                const cpuInfo = ref({ availableProcessors: 0, processPercent: 0, systemPercent: 0, processCpuTime: 0 });
+                const cpuCores = ref([]);
+                const timeRange = ref(60);
+                
+                let trendChart = null;
+                let gaugeChart = null;
+                let refreshTimer = null;
+                let cpuHistory = [];
+                
+                const loadCpuData = async () => {
+                    try {
+                        const response = await BrickWeb.api.get('/monitor/cpu');
+                        if (response.code === 200 && response.data) {
+                            cpuInfo.value = response.data;
+                            
+                            // 更新历史数据
+                            cpuHistory.push({
+                                time: new Date().toLocaleTimeString('zh-CN'),
+                                process: response.data.processPercent || 0,
+                                system: response.data.systemPercent || 0
+                            });
+                            
+                            if (cpuHistory.length > parseInt(timeRange.value)) {
+                                cpuHistory.shift();
+                            }
+                            
+                            updateCharts();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load CPU data:', error);
+                    }
+                };
+                
+                const updateCharts = () => {
+                    if (trendChart) {
+                        trendChart.setOption({
+                            series: [{
+                                name: '系统 CPU',
+                                data: cpuHistory.map(item => item.system)
+                            }]
+                        });
+                    }
+                    
+                    if (gaugeChart) {
+                        // 使用系统 CPU 负载
+                        gaugeChart.setOption({
+                            series: [{
+                                data: [{ value: (cpuInfo.value.systemPercent || 0).toFixed(1) }]
+                            }]
+                        });
+                    }
+                };
+                
+                const initCharts = () => {
+                    // 趋势图
+                    trendChart = echarts.init(document.getElementById('cpu-trend-chart'));
+                    const xData = [];
+                    for (let i = 0; i < parseInt(timeRange.value); i++) {
+                        xData.push('');
+                    }
+                    
+                    trendChart.setOption({
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: { type: 'cross' }
+                        },
+                        legend: {
+                            data: ['进程 CPU', '系统 CPU'],
+                            bottom: 0
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '15%',
+                            top: '10%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: xData
+                        },
+                        yAxis: {
+                            type: 'value',
+                            min: 0,
+                            max: 100,
+                            axisLabel: {
+                                formatter: '{value}%'
+                            }
+                        },
+                        series: [{
+                            name: '进程 CPU',
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'none',
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(37, 99, 235, 0.3)' },
+                                    { offset: 1, color: 'rgba(37, 99, 235, 0.05)' }
+                                ])
+                            },
+                            lineStyle: { color: '#2563eb', width: 2 },
+                            data: []
+                        }, {
+                            name: '系统 CPU',
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'none',
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                                    { offset: 1, color: 'rgba(16, 185, 129, 0.05)' }
+                                ])
+                            },
+                            lineStyle: { color: '#10b981', width: 2 },
+                            data: []
+                        }]
+                    });
+                    
+                    // 仪表盘
+                    gaugeChart = echarts.init(document.getElementById('cpu-gauge'));
+                    gaugeChart.setOption({
+                        series: [{
+                            type: 'gauge',
+                            min: 0,
+                            max: 100,
+                            radius: '90%',
+                            progress: {
+                                show: true,
+                                width: 14,
+                                itemStyle: { color: '#2563eb' }
+                            },
+                            axisLine: {
+                                lineStyle: { width: 14, color: [[1, '#e5e7eb']] }
+                            },
+                            axisTick: { show: false },
+                            splitLine: {
+                                length: 10,
+                                lineStyle: { width: 2, color: '#999' }
+                            },
+                            axisLabel: {
+                                distance: 24,
+                                color: '#6b7280',
+                                fontSize: 12
+                            },
+                            anchor: {
+                                show: true,
+                                size: 22,
+                                itemStyle: { color: '#2563eb', borderWidth: 3 }
+                            },
+                            title: { show: false },
+                            detail: {
+                                valueAnimation: true,
+                                fontSize: 28,
+                                fontWeight: 'bold',
+                                formatter: '{value}%',
+                                offsetCenter: [0, '70%'],
+                                color: '#1f2937'
+                            },
+                            data: [{ value: 0 }]
+                        }]
+                    });
+                };
+                
+                const formatCpuTime = (nanos) => {
+                    if (!nanos) return '0s';
+                    const seconds = Math.floor(nanos / 1000000000);
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    if (minutes > 0) {
+                        return minutes + 'm ' + secs + 's';
+                    }
+                    return secs + 's';
+                };
+                
+                onMounted(() => {
+                    initCharts();
+                    loadCpuData();
+                    refreshTimer = setInterval(loadCpuData, 2000);
+                    
+                    window.addEventListener('resize', () => {
+                        trendChart?.resize();
+                        gaugeChart?.resize();
+                    });
+                });
+                
+                onUnmounted(() => {
+                    if (refreshTimer) clearInterval(refreshTimer);
+                    trendChart?.dispose();
+                    gaugeChart?.dispose();
+                });
+                
+                return { cpuInfo, cpuCores, timeRange, loadCpuData, formatCpuTime };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

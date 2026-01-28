@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传插件 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/index.html">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>仪表盘</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/plugins/index.html">
+                                <i class="bi bi-plug"></i>
+                                <span>插件列表</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link active" href="/brick-web/plugins/upload.html">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>上传插件</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">系统监控</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/overview.html">
+                                <i class="bi bi-bar-chart-line"></i>
+                                <span>监控概览</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/memory.html">
+                                <i class="bi bi-memory"></i>
+                                <span>内存监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/cpu.html">
+                                <i class="bi bi-cpu"></i>
+                                <span>CPU 监控</span>
+                            </a>
+                        </li>
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
+                                <i class="bi bi-gear"></i>
+                                <span>线程监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">文档</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item">
+                            <a class="brick-nav-link" href="/doc.html" target="_blank">
+                                <i class="bi bi-book"></i>
+                                <span>API 文档</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
+                        B
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="brick-main">
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">上传插件</span>
+                    </nav>
+                </div>
+                
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span class="d-none d-sm-inline">刷新</span>
+                    </button>
+                    <div class="brick-time">
+                        <i class="bi bi-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="brick-content" id="app">
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">上传插件</h1>
+                    <p class="brick-page-subtitle">上传并安装新的插件扩展系统功能</p>
+                </div>
+                
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- 上传区域 -->
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-cloud-upload text-primary"></i>
+                                    插件文件
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="upload-zone" 
+                                     :class="{ 'dragover': isDragging, 'uploading': uploading }"
+                                     @dragover.prevent="isDragging = true"
+                                     @dragleave.prevent="isDragging = false"
+                                     @drop.prevent="handleDrop">
+                                    
+                                    <input type="file" 
+                                           ref="fileInput"
+                                           class="d-none" 
+                                           accept=".jar,.zip"
+                                           @change="handleFileSelect">
+                                    
+                                    <div v-if="!selectedFile && !uploading">
+                                        <div class="upload-icon">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </div>
+                                        <div class="upload-text">拖拽文件到此处，或</div>
+                                        <button class="btn btn-primary mt-3" @click="$refs.fileInput.click()">
+                                            <i class="bi bi-folder2-open"></i> 选择文件
+                                        </button>
+                                        <div class="upload-hint">
+                                            支持 .jar 和 .zip 格式，单个文件不超过 50MB
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-else-if="uploading" class="uploading-content">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="fw-medium">{{ uploadingFileName }}</div>
+                                            <div class="progress mt-2" style="width: 200px;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                     :style="{ width: uploadProgress + '%' }"></div>
+                                            </div>
+                                            <div class="text-muted small mt-2">{{ uploadProgress }}%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-else class="selected-file">
+                                        <div class="file-info">
+                                            <div class="file-icon">
+                                                <i class="bi bi-file-earmark-zip"></i>
+                                            </div>
+                                            <div class="file-details">
+                                                <div class="file-name">{{ selectedFile.name }}</div>
+                                                <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+                                            </div>
+                                            <button class="btn btn-outline-secondary btn-sm" @click="clearFile">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 插件信息（上传后显示） -->
+                                <div v-if="pluginInfo" class="plugin-info mt-4">
+                                    <div class="alert alert-success d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <div>
+                                            插件 <strong>{{ pluginInfo.name }}</strong> (v{{ pluginInfo.version }}) 上传成功！
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="plugin-meta mt-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">插件 ID</span>
+                                                    <span class="meta-value">{{ pluginInfo.pluginId }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">作者</span>
+                                                    <span class="meta-value">{{ pluginInfo.author || '未知' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">描述</span>
+                                                    <span class="meta-value">{{ pluginInfo.description || '无描述' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">依赖</span>
+                                                    <span class="meta-value">{{ pluginInfo.dependencies?.length > 0 ? pluginInfo.dependencies.join(', ') : '无' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 上传选项 -->
+                                <div class="upload-options mt-4">
+                                    <h6 class="mb-3">上传选项</h6>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="autoStart" v-model="autoStart">
+                                        <label class="form-check-label" for="autoStart">
+                                            上传后自动启动
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="overwrite" v-model="overwrite">
+                                        <label class="form-check-label" for="overwrite">
+                                            覆盖已存在的同名插件
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="d-flex gap-3 mt-4">
+                                    <button class="btn btn-primary btn-lg" 
+                                            :disabled="!selectedFile || uploading"
+                                            @click="uploadPlugin">
+                                        <i class="bi bi-cloud-upload"></i> 上传插件
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-lg" 
+                                            :disabled="uploading"
+                                            @click="clearFile">
+                                        <i class="bi bi-x-circle"></i> 取消
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 上传历史 -->
+                        <div class="brick-card fade-in mt-4">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-clock-history text-secondary"></i>
+                                    上传历史
+                                </h5>
+                            </div>
+                            <div class="brick-card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="brick-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>插件名称</th>
+                                                <th>版本</th>
+                                                <th>大小</th>
+                                                <th>状态</th>
+                                                <th>时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="item in uploadHistory" :key="item.id">
+                                                <td class="fw-medium">{{ item.name }}</td>
+                                                <td>{{ item.version || '-' }}</td>
+                                                <td>{{ formatFileSize(item.size) }}</td>
+                                                <td>
+                                                    <span class="brick-badge" :class="getHistoryStatusClass(item.status)">
+                                                        {{ getHistoryStatusText(item.status) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted small">{{ formatDateTime(item.time) }}</td>
+                                            </tr>
+                                            <tr v-if="uploadHistory.length === 0">
+                                                <td colspan="5" class="text-center py-4 text-muted">
+                                                    <i class="bi bi-inbox display-6"></i>
+                                                    <p class="mb-0 mt-2">暂无上传记录</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧信息 -->
+                    <div class="col-lg-4">
+                        <div class="brick-card fade-in">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-info-circle text-info"></i>
+                                    上传说明
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="upload-guide">
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <i class="bi bi-file-earmark-code"></i>
+                                        </div>
+                                        <div class="guide-content">
+                                            <div class="guide-title">支持格式</div>
+                                            <div class="guide-text">.jar 和 .zip 格式的插件文件</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <i class="bi bi-hdd"></i>
+                                        </div>
+                                        <div class="guide-content">
+                                            <div class="guide-title">文件大小</div>
+                                            <div class="guide-text">单个文件不超过 50MB</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <i class="bi bi-box-seam"></i>
+                                        </div>
+                                        <div class="guide-content">
+                                            <div class="guide-title">插件结构</div>
+                                            <div class="guide-text">插件需包含正确的 metadata 描述文件</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <div class="guide-content">
+                                            <div class="guide-title">安全提示</div>
+                                            <div class="guide-text">仅上传来源可信的插件文件</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="brick-card fade-in mt-4">
+                            <div class="brick-card-header">
+                                <h5 class="brick-card-title">
+                                    <i class="bi bi-question-circle text-warning"></i>
+                                    常见问题
+                                </h5>
+                            </div>
+                            <div class="brick-card-body">
+                                <div class="accordion brick-accordion" id="faqAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                                上传失败怎么办？
+                                            </button>
+                                        </h2>
+                                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                            <div class="accordion-body text-muted small">
+                                                请检查文件格式和大小是否正确，确保插件文件完整未损坏。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                                插件启动失败？
+                                            </button>
+                                        </h2>
+                                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                            <div class="accordion-body text-muted small">
+                                                检查插件依赖是否满足，查看系统日志获取详细错误信息。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        const { createApp, ref, onMounted } = Vue;
+        
+        createApp({
+            setup() {
+                const fileInput = ref(null);
+                const selectedFile = ref(null);
+                const isDragging = ref(false);
+                const uploading = ref(false);
+                const uploadProgress = ref(0);
+                const uploadingFileName = ref('');
+                const autoStart = ref(false);
+                const overwrite = ref(false);
+                const pluginInfo = ref(null);
+                const uploadHistory = ref([]);
+                
+                const handleFileSelect = (event) => {
+                    const file = event.target.files[0];
+                    if (file) validateAndSetFile(file);
+                };
+                
+                const handleDrop = (event) => {
+                    isDragging.value = false;
+                    const file = event.dataTransfer.files[0];
+                    if (file) validateAndSetFile(file);
+                };
+                
+                const validateAndSetFile = (file) => {
+                    const validTypes = ['.jar', '.zip', 'application/java-archive', 'application/zip'];
+                    const ext = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    if (!validTypes.includes(ext) && !file.type.startsWith('application')) {
+                        BrickWeb.toast('error', '不支持的文件格式，请上传 .jar 或 .zip 文件');
+                        return;
+                    }
+                    
+                    if (file.size > 50 * 1024 * 1024) {
+                        BrickWeb.toast('error', '文件大小超过 50MB 限制');
+                        return;
+                    }
+                    
+                    selectedFile.value = file;
+                    pluginInfo.value = null;
+                    uploadProgress.value = 0;
+                };
+                
+                const clearFile = () => {
+                    selectedFile.value = null;
+                    pluginInfo.value = null;
+                    uploadProgress.value = 0;
+                    if (fileInput.value) fileInput.value.value = '';
+                };
+                
+                const uploadPlugin = async () => {
+                    if (!selectedFile.value) return;
+                    
+                    uploading.value = true;
+                    uploadProgress.value = 0;
+                    uploadingFileName.value = selectedFile.value.name;
+                    
+                    const formData = new FormData();
+                    formData.append('file', selectedFile.value);
+                    formData.append('autoStart', autoStart.value);
+                    formData.append('overwrite', overwrite.value);
+                    
+                    try {
+                        const response = await axios.post('/brick-web/api/plugins/upload', formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' },
+                            onUploadProgress: (progressEvent) => {
+                                uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            }
+                        });
+                        
+                        if (response.data.code === 200) {
+                            pluginInfo.value = response.data.data;
+                            uploadHistory.value.unshift({
+                                id: Date.now(),
+                                name: selectedFile.value.name,
+                                version: pluginInfo.value?.version,
+                                size: selectedFile.value.size,
+                                status: 'success',
+                                time: new Date()
+                            });
+                            BrickWeb.toast('success', '插件上传成功！');
+                        } else {
+                            uploadHistory.value.unshift({
+                                id: Date.now(),
+                                name: selectedFile.value.name,
+                                version: null,
+                                size: selectedFile.value.size,
+                                status: 'failed',
+                                time: new Date()
+                            });
+                            BrickWeb.toast('error', response.data.message || '上传失败');
+                        }
+                    } catch (error) {
+                        uploadHistory.value.unshift({
+                            id: Date.now(),
+                            name: selectedFile.value.name,
+                            version: null,
+                            size: selectedFile.value.size,
+                            status: 'failed',
+                            time: new Date()
+                        });
+                        BrickWeb.toast('error', '上传失败，请重试');
+                    } finally {
+                        uploading.value = false;
+                    }
+                };
+                
+                const formatFileSize = (bytes) => {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                };
+                
+                const formatDateTime = (date) => {
+                    return date.toLocaleString('zh-CN');
+                };
+                
+                const getHistoryStatusClass = (status) => {
+                    return status === 'success' ? 'brick-badge-success' : 'brick-badge-danger';
+                };
+                
+                const getHistoryStatusText = (status) => {
+                    return status === 'success' ? '成功' : '失败';
+                };
+                
+                onMounted(() => {
+                    // 模拟上传历史数据
+                    uploadHistory.value = [
+                        { id: 1, name: 'example-plugin-1.0.0.jar', version: '1.0.0', size: 1024000, status: 'success', time: new Date(Date.now() - 3600000) },
+                        { id: 2, name: 'demo-plugin-2.0.0.jar', version: '2.0.0', size: 2048000, status: 'success', time: new Date(Date.now() - 86400000) }
+                    ];
+                });
+                
+                return {
+                    fileInput, selectedFile, isDragging, uploading, uploadProgress, uploadingFileName,
+                    autoStart, overwrite, pluginInfo, uploadHistory,
+                    handleFileSelect, handleDrop, clearFile, uploadPlugin,
+                    formatFileSize, formatDateTime, getHistoryStatusClass, getHistoryStatusText
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -24,6 +24,7 @@
 + 可以完美解决插件包与插件包、插件包与主程序因为同一框架的不同版本冲突问题了。各个插件可以定义同一依赖的不同版本框架。
 + 无需重启主程序，可以自由实现插件包的动态安装部署，来动态扩展系统的功能。
 + 插件也可以不依赖主程序独立集成微服务模块。
++ **内置 Web 管理控制台**：可视化插件管理和系统监控界面，支持插件上传、启动、停止、重启、卸载等操作。
 + 您可以丰富想象该框架给您带来哪些迫切的需求和扩展，以实现系统的低耦合、高内聚、可扩展的优点。
 
 ### 特性 | Features
@@ -55,7 +56,8 @@
 - **团队协作开发**：不同团队独立开发插件，降低耦合度
 
 ### 🔧 技术特性
-- **🏗️ 多模块架构**：7个核心模块，职责清晰，易于维护
+- **🏗️ 多模块架构**：8个核心模块，职责清晰，易于维护
+- **🌐 Web 管理控制台**：内置可视化插件管理和系统监控界面
 - **🔒 类加载隔离**：自定义类加载器，完全隔离插件依赖
 - **🔄 热插拔支持**：运行时动态安装、卸载、启动、停止插件
 - **🛡️ 安全管控**：完整的权限控制和代码安全扫描机制
@@ -80,6 +82,11 @@
 │  │   插件 A     │  │   插件 B     │  │   插件 C     │         │
 │  │ (隔离模式)    │  │ (共享模式)    │  │ (隔离模式)    │        │
 │  └─────────────┘  └─────────────┘  └─────────────┘          │
+├─────────────────────────────────────────────────────────────┤
+│                 Web 管理控制台 (可选)                         │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  插件管理  |  系统监控  |  API 文档  |  配置管理        │    │
+│  └─────────────────────────────────────────────────────┘    │
 ├─────────────────────────────────────────────────────────────┤
 │                    插件管理层 (Plugin Management)             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
@@ -134,6 +141,61 @@
 - **SecurityViolationType**：安全违规类型枚举（17种违规）
 - **PluginSecurityAuditLogger**：安全审计日志
 
+### 2. spring-boot3-brick-bootkit-web (Web 管理控制台)
+**职责**：提供可视化的插件管理和系统监控 Web 界面
+
+#### 🎯 功能特性
+- **插件管理**：可视化插件列表、上传、安装、启动、停止、重启、卸载
+- **系统监控**：实时监控 JVM 内存、CPU 使用率、线程状态
+- **API 文档**：集成 Knife4j 自动生成 REST API 文档
+- **响应式设计**：支持 PC 和移动端访问
+
+#### 📊 监控指标
+- **内存监控**：堆内存、非堆内存使用情况及趋势图
+- **CPU 监控**：系统负载、进程 CPU 使用率
+- **线程监控**：当前线程数、守护线程、峰值线程
+- **插件统计**：插件总数、运行中、已停止、异常状态
+
+#### 🔧 技术栈
+- **前端框架**：Thymeleaf + Vue 3 + Bootstrap 5
+- **图表库**：ECharts 实现数据可视化
+- **API 文档**：Knife4j (OpenAPI 3)
+- **监控指标**：Micrometer 集成
+
+#### 📖 使用方式
+1. 在主应用中引入依赖：
+```xml
+<dependency>
+    <groupId>com.zqzqq</groupId>
+    <artifactId>spring-boot3-brick-bootkit-web</artifactId>
+    <version>4.0.3</version>
+</dependency>
+```
+
+2. 在启动类上添加注解：
+```java
+@SpringBootApplication
+@EnableBrickWeb
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+3. 配置参数（可选）：
+```yaml
+brick:
+  web:
+    enabled: true
+    enable-ui: true
+    api-prefix: /brick-web/api
+    page-prefix: /brick-web
+    monitor-refresh-interval: 5
+```
+
+4. 访问管理控制台：`http://localhost:8080/brick-web/index`
+
 
 
 ## 如何引入
@@ -145,6 +207,17 @@
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
+<version>4.0.3</version>
+</dependency>
+
+```
+
+Web 管理控制台（可选）
+
+```
+<dependency>
+<groupId>com.zqzqq</groupId>
+<artifactId>spring-boot3-brick-bootkit-web</artifactId>
 <version>4.0.3</version>
 </dependency>
 
