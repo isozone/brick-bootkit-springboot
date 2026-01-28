@@ -2,7 +2,6 @@ package com.zqzqq.bootkits.web.demo.config;
 
 import lombok.Data;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.util.ArrayList;
@@ -11,10 +10,9 @@ import java.util.List;
 /**
  * Demo 环境的简化集成配置
  * 提供基本的插件上传支持
- * 
+ *
  * @author brick-bootkit
  */
-@Configuration
 public class DemoIntegrationConfiguration {
 
     /**

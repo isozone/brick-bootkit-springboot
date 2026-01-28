@@ -6,6 +6,7 @@ import com.zqzqq.bootkits.web.annotation.EnableBrickWeb;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -15,9 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @author brick-bootkit
  */
 @SpringBootApplication
-@ComponentScan(basePackages = {
-    "com.zqzqq.bootkits.web.demo",
-     "com.zqzqq.bootkits.**"
+@ServletComponentScan(basePackages = {"com.zqzqq.bootkits.**"
 })
 @EnableBrickWeb
 public class DemoApplication  implements SpringBootstrap {
@@ -25,22 +24,22 @@ public class DemoApplication  implements SpringBootstrap {
     public static void main(String[] args) {
 
 
-        SpringMainBootstrap.launch(DemoApplication.class, args);
-//        try {
-//            ApplicationContext context = SpringApplication.run(DemoApplication.class, args);
-//            System.out.println("========================================");
-//            System.out.println("应用启动成功！");
-//            System.out.println("访问地址: http://localhost:8080/brick-web/index.html");
-//            System.out.println("========================================");
-//        } catch (Throwable e) {
-//            System.err.println("应用启动失败: " + e.getMessage());
-//            e.printStackTrace();
-//            System.exit(1);
-//        }
+       // SpringMainBootstrap.launch(DemoApplication.class, args);
+        try {
+            ApplicationContext context = SpringApplication.run(DemoApplication.class, args);
+            System.out.println("========================================");
+            System.out.println("应用启动成功！");
+            System.out.println("访问地址: http://localhost:8080/brick-web/index.html");
+            System.out.println("========================================");
+        } catch (Throwable e) {
+            System.err.println("应用启动失败: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     @Override
-    public void run(String[] args) throws Exception {
+    public void run(String[] args){
         SpringApplication application = new SpringApplicationBuilder(DemoApplication.class).build(args);
         application.run(args);
     }
