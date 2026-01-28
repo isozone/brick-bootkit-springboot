@@ -3,6 +3,7 @@ package com.zqzqq.bootkits.web.service;
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 import com.zqzqq.bootkits.web.config.BrickWebProperties;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.ErrorCode;
@@ -122,40 +123,224 @@ public class PluginWebService {
 
     /**
      * 上传插件
+     * 插件ID基于文件名生成（去掉.jar扩展名），与上传文件名保持一致
+     * 版本号必须大于旧版本，否则报错
      */
     public ApiResult<PluginDTO> uploadPlugin(MultipartFile file, Boolean enableAfterUpload) {
         if (file.isEmpty()) {
             throw new PluginException("上传文件不能为空");
         }
-        
-        String filename = file.getOriginalFilename();
-        if (filename == null || !filename.endsWith(".jar")) {
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !originalFilename.endsWith(".jar")) {
             throw new PluginException("只能上传 JAR 格式的插件文件");
         }
-        
+
+        Path backupPath = null;
+        Path targetPath = null;
+        String pluginId = null;
+
         try {
-            // 保存到临时目录
+            // 基于原始文件名生成pluginId（去掉.jar扩展名），与上传文件名保持一致
+            pluginId = originalFilename;
+            if (pluginId.endsWith(".jar")) {
+                pluginId = pluginId.substring(0, pluginId.length() - 4);
+            }
+            log.info("插件ID基于文件名生成: {}", pluginId);
+
+            // 保存到临时目录，使用原始文件名
             Path uploadPath = Paths.get(properties.getUploadTempPath());
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
-            
-            Path targetPath = uploadPath.resolve(filename);
+
+            // 使用原始文件名，避免被添加前缀
+            targetPath = uploadPath.resolve(originalFilename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            
+
             log.info("Plugin uploaded to: {}", targetPath);
-            
-            // 如果需要，立即安装
-            if (enableAfterUpload != null && enableAfterUpload) {
-                PluginInfo pluginInfo = pluginManager.install(targetPath);
-                return ApiResult.success(PluginDTO.from(pluginInfo));
+
+            // 解析插件信息获取描述符信息
+            PluginInfo uploadPluginInfo = pluginManager.parse(targetPath);
+            if (uploadPluginInfo == null) {
+                throw new PluginException("插件文件校验失败");
             }
-            
-            return ApiResult.success();
-            
+
+            String newVersion = uploadPluginInfo.getPluginDescriptor().getPluginVersion();
+            log.info("上传插件版本: {}", newVersion);
+
+            // 检查是否已存在同名插件
+            PluginInfo existingPlugin = pluginManager.getPlugin(pluginId);
+            if (existingPlugin != null) {
+                String oldVersion = existingPlugin.getPluginDescriptor().getPluginVersion();
+                log.info("发现已存在的同名插件: {}, 当前版本: {}, 新版本: {}", pluginId, oldVersion, newVersion);
+
+                // 比较版本号：新版本必须大于旧版本
+                if (!isVersionGreaterThan(newVersion, oldVersion)) {
+                    throw new PluginException(String.format(
+                            "上传失败：新版本号 %s 必须大于旧版本号 %s", newVersion, oldVersion));
+                }
+
+                // 如果旧插件正在运行，先停止
+                EnhancedPluginState state = (EnhancedPluginState) existingPlugin.getPluginState();
+                if (state == EnhancedPluginState.STARTED) {
+                    log.info("停止旧插件: {}", pluginId);
+                    pluginManager.stop(pluginId);
+                }
+
+                // 备份旧插件
+                String oldPluginPath = existingPlugin.getPluginPath();
+                Path oldPluginFile = Paths.get(oldPluginPath);
+                if (Files.exists(oldPluginFile)) {
+                    // 创建备份目录：upload_backup/pluginId/timestamp
+                    String backupDirName = "upload_backup_" + System.currentTimeMillis();
+                    Path backupDir = uploadPath.resolve(backupDirName).resolve(pluginId);
+                    Files.createDirectories(backupDir);
+
+                    backupPath = backupDir.resolve(oldPluginFile.getFileName());
+                    Files.copy(oldPluginFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
+                    log.info("旧插件已备份到: {}", backupPath);
+                }
+
+                // 卸载旧插件
+                log.info("卸载旧插件: {}", pluginId);
+                pluginManager.uninstall(pluginId);
+            }
+
+            // 安装新插件
+            PluginInfo pluginInfo = pluginManager.install(targetPath);
+            log.info("插件安装成功: {}", pluginId);
+
+            // 如果需要自动启动
+            if (enableAfterUpload != null && enableAfterUpload) {
+                log.info("自动启动插件: {}", pluginId);
+                pluginManager.start(pluginId);
+                pluginInfo = pluginManager.getPlugin(pluginId);
+                log.info("新插件启动成功: {}", pluginId);
+
+                // 启动成功后，删除旧版本备份
+                if (backupPath != null && Files.exists(backupPath)) {
+                    Files.deleteIfExists(backupPath);
+                    log.info("旧版本备份已删除: {}", backupPath);
+                }
+            }
+
+            return ApiResult.success(PluginDTO.from(pluginInfo));
+
         } catch (IOException e) {
-            log.error("Failed to upload plugin", e);
+            log.error("插件上传失败", e);
+            // 如果上传失败，尝试恢复旧版本
+            if (backupPath != null && Files.exists(backupPath)) {
+                try {
+                    restoreOldPlugin(backupPath, pluginId, enableAfterUpload);
+                } catch (Exception restoreEx) {
+                    log.error("恢复旧版本失败", restoreEx);
+                }
+            }
             throw new PluginException("插件上传失败: " + e.getMessage());
+        } catch (PluginException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("插件上传异常", e);
+            // 如果发生异常，尝试恢复旧版本
+            if (backupPath != null && Files.exists(backupPath)) {
+                try {
+                    restoreOldPlugin(backupPath, pluginId, enableAfterUpload);
+                } catch (Exception restoreEx) {
+                    log.error("恢复旧版本失败", restoreEx);
+                }
+            }
+            throw new PluginException("插件上传异常: " + e.getMessage());
+        } finally {
+            // 清理临时文件
+            if (targetPath != null && Files.exists(targetPath)) {
+                try {
+                    Files.deleteIfExists(targetPath);
+                } catch (IOException e) {
+                    log.warn("删除临时文件失败: {}", targetPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * 恢复旧版本插件
+     */
+    private void restoreOldPlugin(Path backupPath, String pluginId, Boolean enableAfterUpload) {
+        log.info("尝试恢复旧版本插件: {}", pluginId);
+        try {
+            // 卸载当前插件（如果有）
+            PluginInfo currentPlugin = pluginManager.getPlugin(pluginId);
+            if (currentPlugin != null) {
+                EnhancedPluginState state = (EnhancedPluginState) currentPlugin.getPluginState();
+                if (state == EnhancedPluginState.STARTED) {
+                    pluginManager.stop(pluginId);
+                }
+                pluginManager.uninstall(pluginId);
+            }
+
+            // 恢复旧版本
+            PluginInfo restoredPlugin = pluginManager.install(backupPath);
+            log.info("旧版本已恢复: {}", pluginId);
+
+            // 如果需要自动启动，恢复后启动
+            if (enableAfterUpload != null && enableAfterUpload) {
+                pluginManager.start(pluginId);
+                log.info("旧版本已启动: {}", pluginId);
+            }
+
+            log.info("旧版本插件已成功恢复: {}", pluginId);
+        } catch (Exception e) {
+            log.error("恢复旧版本插件失败: {}", pluginId, e);
+            throw new RuntimeException("恢复旧版本失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 比较版本号：判断新版本是否大于旧版本
+     * 支持语义化版本号 (x.y.z) 和简单的数字版本号
+     */
+    private boolean isVersionGreaterThan(String newVersion, String oldVersion) {
+        if (newVersion == null || oldVersion == null) {
+            return false;
+        }
+
+        String[] newParts = newVersion.split("[.\\-_]");
+        String[] oldParts = oldVersion.split("[.\\-_]");
+
+        int maxLength = Math.max(newParts.length, oldParts.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            int newPart = i < newParts.length ? parseVersionPart(newParts[i]) : 0;
+            int oldPart = i < oldParts.length ? parseVersionPart(oldParts[i]) : 0;
+
+            if (newPart > oldPart) {
+                return true;
+            } else if (newPart < oldPart) {
+                return false;
+            }
+        }
+
+        // 版本号完全相同
+        return false;
+    }
+
+    /**
+     * 解析版本号的单个部分为整数
+     */
+    private int parseVersionPart(String part) {
+        if (part == null || part.isEmpty()) {
+            return 0;
+        }
+        try {
+            // 移除可能的非数字字符前缀（如 v、release- 等）
+            String numericPart = part.replaceAll("^[^0-9]*", "");
+            if (numericPart.isEmpty()) {
+                return 0;
+            }
+            return Integer.parseInt(numericPart);
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 

@@ -113,7 +113,7 @@ public class PluginController {
     @Operation(summary = "上传插件")
     public ApiResult<PluginDTO> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(required = false, defaultValue = "false") Boolean enable) {
+            @RequestParam(name = "enable", required = false, defaultValue = "false") Boolean enable) {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return pluginWebService.uploadPlugin(file, enable);

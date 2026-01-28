@@ -83,6 +83,14 @@ public class DefaultPluginOperator implements PluginOperator {
         this.pluginInitializerListenerFactory = new PluginInitializerListenerFactory(applicationContext);
     }
 
+    /**
+     * 获取 PluginManager
+     * @return PluginManager 实例
+     */
+    public PluginManager getPluginManager() {
+        return pluginManager;
+    }
+
     @Override
     public synchronized boolean initPlugins(PluginInitializerListener pluginInitializerListener) throws PluginException {
         if(IS_INIT.get()){

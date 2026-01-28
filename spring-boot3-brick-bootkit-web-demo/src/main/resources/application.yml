@@ -2,6 +2,10 @@ server:
   port: 8080
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   thymeleaf:
     cache: false
     mode: HTML
@@ -14,13 +18,13 @@ spring:
 
 logging:
   level:
-    com.zqzqq.bootkits: DEBUG
+    com.zqzqq.bootkits: INFO
     org.springframework.web: INFO
-    org.springframework.boot: DEBUG
+    org.springframework.boot: INFO
 
 
 plugin:
-  runMode: dev
+  runMode: prod
   plugin-follow-log: true
   mainPackage: com.zqzqq.bootkits.web.demo.DemoApplication
   pluginPath:

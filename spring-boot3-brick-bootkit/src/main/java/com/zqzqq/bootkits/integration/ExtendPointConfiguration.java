@@ -98,5 +98,14 @@ public class ExtendPointConfiguration {
         return new DefaultPluginDescriptorDecrypt(applicationContext, configuration);
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public com.zqzqq.bootkits.core.PluginManager pluginManager(PluginOperator pluginOperator) {
+        if (pluginOperator instanceof DefaultPluginOperator) {
+            return ((DefaultPluginOperator) pluginOperator).getPluginManager();
+        }
+        return null;
+    }
+
 }
 
