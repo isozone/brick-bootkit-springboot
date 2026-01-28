@@ -2,6 +2,7 @@ package com.zqzqq.bootkits.web.controller.api;
 
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO;
+import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
 import com.zqzqq.bootkits.web.service.MonitorWebService;
 import com.zqzqq.bootkits.web.service.SimpleMonitorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,7 +72,7 @@ public class MonitorController {
     }
 
     /**
-     * 获取线程信息
+     * 获取线程信息（简化版）
      */
     @GetMapping("/threads")
     @Operation(summary = "获取线程信息")
@@ -81,6 +82,19 @@ public class MonitorController {
             return ApiResult.success(monitorWebService.getThreadInfo());
         }
         return ApiResult.success(simpleMonitorService.getThreadInfo());
+    }
+
+    /**
+     * 获取线程详细信息（包含线程列表和死锁检测）
+     */
+    @GetMapping("/threads/detail")
+    @Operation(summary = "获取线程详细信息")
+    public ApiResult<ThreadDetailDTO> threadDetail() {
+        MonitorWebService monitorWebService = monitorWebServiceProvider.getIfAvailable();
+        if (monitorWebService != null) {
+            return ApiResult.success(monitorWebService.getThreadDetail());
+        }
+        return ApiResult.success(simpleMonitorService.getThreadDetail());
     }
 
     /**

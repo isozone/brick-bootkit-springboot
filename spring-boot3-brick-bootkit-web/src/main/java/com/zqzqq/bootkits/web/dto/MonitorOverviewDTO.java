@@ -53,6 +53,11 @@ public class MonitorOverviewDTO implements Serializable {
     private List<PluginPerformanceDTO> pluginPerformances;
     
     /**
+     * GC 收集器信息列表
+     */
+    private List<GCInfo> gcCollectors;
+    
+    /**
      * 插件统计
      */
     @Data
@@ -158,9 +163,36 @@ public class MonitorOverviewDTO implements Serializable {
     @AllArgsConstructor
     public static class ThreadInfo implements Serializable {
         private static final long serialVersionUID = 1L;
+
+        /** 当前活动线程总数 */
         private int total;
+
+        /** 守护线程数 */
         private int daemon;
+
+        /** 历史峰值线程数 */
         private int peak;
+
+        /** 自启动以来累计启动的线程总数 */
+        private long started;
+
+        /** NEW 状态线程数 */
+        private int newCount;
+
+        /** RUNNABLE 状态线程数 */
+        private int runnableCount;
+
+        /** BLOCKED 状态线程数 */
+        private int blockedCount;
+
+        /** WAITING 状态线程数 */
+        private int waitingCount;
+
+        /** TIMED_WAITING 状态线程数 */
+        private int timedWaitingCount;
+
+        /** TERMINATED 状态线程数 */
+        private int terminatedCount;
     }
     
     /**
@@ -174,6 +206,7 @@ public class MonitorOverviewDTO implements Serializable {
         private static final long serialVersionUID = 1L;
         private String osName;
         private String osVersion;
+        private String osArch;
         private String javaVersion;
         private long uptime;
     }
@@ -193,5 +226,24 @@ public class MonitorOverviewDTO implements Serializable {
         private long memoryUsage;
         private int threadCount;
         private long startTime;
+    }
+    
+    /**
+     * GC 收集器信息
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GCInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
+        /** 收集器名称 */
+        private String name;
+        /** 收集次数 */
+        private long count;
+        /** 总耗时（毫秒） */
+        private long time;
+        /** 最大单次耗时（毫秒） */
+        private long maxTime;
     }
 }

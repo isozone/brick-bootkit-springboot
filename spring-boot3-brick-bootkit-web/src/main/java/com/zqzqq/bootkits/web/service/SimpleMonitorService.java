@@ -1,16 +1,19 @@
 package com.zqzqq.bootkits.web.service;
 
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO;
+import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +61,16 @@ public class SimpleMonitorService {
         // 系统信息
         MonitorOverviewDTO.SystemInfo systemInfo = getSystemInfo();
         
+        // GC 收集器信息
+        List<MonitorOverviewDTO.GCInfo> gcCollectors = getGCCollectors();
+        
         return MonitorOverviewDTO.builder()
                 .pluginStatistics(stats)
                 .memory(memoryInfo)
                 .cpu(cpuInfo)
                 .threads(threadInfo)
                 .system(systemInfo)
+                .gcCollectors(gcCollectors)
                 .pluginPerformances(new ArrayList<>())
                 .build();
     }
@@ -234,13 +241,125 @@ public class SimpleMonitorService {
     }
 
     /**
-     * 获取线程信息
+     * 获取线程信息（包含状态统计）
      */
     public MonitorOverviewDTO.ThreadInfo getThreadInfo() {
+        int total = threadMXBean.getThreadCount();
+        int daemon = threadMXBean.getDaemonThreadCount();
+        int peak = threadMXBean.getPeakThreadCount();
+
+        // 获取所有线程信息以统计各状态数量
+        ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(false, false);
+        int newCount = 0;
+        int runnableCount = 0;
+        int blockedCount = 0;
+        int waitingCount = 0;
+        int timedWaitingCount = 0;
+        int terminatedCount = 0;
+
+        for (ThreadInfo info : threadInfos) {
+            if (info == null) continue;
+            Thread.State state = info.getThreadState();
+            switch (state) {
+                case NEW:
+                    newCount++;
+                    break;
+                case RUNNABLE:
+                    runnableCount++;
+                    break;
+                case BLOCKED:
+                    blockedCount++;
+                    break;
+                case WAITING:
+                    waitingCount++;
+                    break;
+                case TIMED_WAITING:
+                    timedWaitingCount++;
+                    break;
+                case TERMINATED:
+                    terminatedCount++;
+                    break;
+            }
+        }
+
         return MonitorOverviewDTO.ThreadInfo.builder()
-                .total(threadMXBean.getThreadCount())
-                .daemon(threadMXBean.getDaemonThreadCount())
-                .peak(threadMXBean.getPeakThreadCount())
+                .total(total)
+                .daemon(daemon)
+                .peak(peak)
+                .started(threadMXBean.getTotalStartedThreadCount())
+                .newCount(newCount)
+                .runnableCount(runnableCount)
+                .blockedCount(blockedCount)
+                .waitingCount(waitingCount)
+                .timedWaitingCount(timedWaitingCount)
+                .terminatedCount(terminatedCount)
+                .build();
+    }
+
+    /**
+     * 获取线程详细信息（包含线程列表和死锁检测）
+     */
+    public ThreadDetailDTO getThreadDetail() {
+        MonitorOverviewDTO.ThreadInfo threadInfo = getThreadInfo();
+
+        // 获取所有线程信息
+        ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(false, false);
+        List<ThreadDetailDTO.ThreadDetail> threads = new ArrayList<>();
+
+        for (ThreadInfo info : threadInfos) {
+            if (info == null) continue;
+
+            ThreadDetailDTO.ThreadDetail detail = ThreadDetailDTO.ThreadDetail.builder()
+                    .threadId(info.getThreadId())
+                    .threadName(info.getThreadName())
+                    .priority(info.getPriority())
+                    .threadState(info.getThreadState().name())
+                    .daemon(info.isDaemon())
+                    .cpuTime(threadMXBean.getThreadCpuTime(info.getThreadId()))
+                    .blockedCount(info.getBlockedCount())
+                    .blockedTime(info.getBlockedTime())
+                    .waitedCount(info.getWaitedCount())
+                    .waitedTime(info.getWaitedTime())
+                    .lockName(info.getLockName())
+                    .lockOwnerId(info.getLockOwnerId())
+                    .lockOwnerName(info.getLockOwnerName())
+                    .build();
+
+            threads.add(detail);
+        }
+
+        // 检测死锁线程
+        List<ThreadDetailDTO.DeadlockedThread> deadlockedThreads = new ArrayList<>();
+        long[] deadlockedIds = threadMXBean.findDeadlockedThreads();
+        if (deadlockedIds != null && deadlockedIds.length > 0) {
+            ThreadInfo[] deadlockedInfos = threadMXBean.getThreadInfo(deadlockedIds, true, true);
+            for (ThreadInfo info : deadlockedInfos) {
+                if (info == null) continue;
+
+                ThreadDetailDTO.DeadlockedThread deadlocked = ThreadDetailDTO.DeadlockedThread.builder()
+                        .threadId(info.getThreadId())
+                        .threadName(info.getThreadName())
+                        .threadState(info.getThreadState().name())
+                        .priority(info.getPriority())
+                        .daemon(info.isDaemon())
+                        .cpuTime(threadMXBean.getThreadCpuTime(info.getThreadId()))
+                        .lockName(info.getLockName())
+                        .lockWaitingName(info.getLockName())
+                        .lockOwnerId(info.getLockOwnerId())
+                        .lockOwnerName(info.getLockOwnerName())
+                        .stackTrace(Arrays.stream(info.getStackTrace())
+                                .map(StackTraceElement::toString)
+                                .toArray(String[]::new))
+                        .build();
+
+                deadlockedThreads.add(deadlocked);
+            }
+        }
+
+        return ThreadDetailDTO.builder()
+                .threadInfo(threadInfo)
+                .threads(threads)
+                .deadlockedThreads(deadlockedThreads)
                 .build();
     }
 
@@ -254,9 +373,29 @@ public class SimpleMonitorService {
         return MonitorOverviewDTO.SystemInfo.builder()
                 .osName(System.getProperty("os.name"))
                 .osVersion(System.getProperty("os.version"))
+                .osArch(System.getProperty("os.arch"))
                 .javaVersion(System.getProperty("java.version"))
                 .uptime(uptime.toMillis())
                 .build();
+    }
+
+    /**
+     * 获取 GC 收集器信息
+     */
+    public List<MonitorOverviewDTO.GCInfo> getGCCollectors() {
+        List<MonitorOverviewDTO.GCInfo> gcInfos = new ArrayList<>();
+        
+        for (java.lang.management.GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
+            MonitorOverviewDTO.GCInfo gcInfo = MonitorOverviewDTO.GCInfo.builder()
+                    .name(gc.getName())
+                    .count(gc.getCollectionCount())
+                    .time(gc.getCollectionTime())
+                    .maxTime(0) // 简化实现，不计算最大单次时间
+                    .build();
+            gcInfos.add(gcInfo);
+        }
+        
+        return gcInfos;
     }
 
     /**

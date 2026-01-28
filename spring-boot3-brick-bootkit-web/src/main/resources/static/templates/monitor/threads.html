@@ -366,7 +366,7 @@
                 
                 const loadThreadData = async () => {
                     try {
-                        const response = await BrickWeb.api.get('/monitor/threads');
+                        const response = await BrickWeb.api.get('/monitor/threads/detail');
                         if (response.code === 200 && response.data) {
                             threadInfo.value = response.data.threadInfo || {};
                             threads.value = response.data.threads || [];
@@ -383,12 +383,12 @@
                         barChart.setOption({
                             series: [{
                                 data: [
-                                    { value: threadInfo.value.new || 0, name: 'NEW' },
-                                    { value: threadInfo.value.runnable || 0, name: 'RUNNABLE' },
-                                    { value: threadInfo.value.blocked || 0, name: 'BLOCKED' },
-                                    { value: threadInfo.value.waiting || 0, name: 'WAITING' },
-                                    { value: threadInfo.value.timedWaiting || 0, name: 'TIMED_WAITING' },
-                                    { value: threadInfo.value.terminated || 0, name: 'TERMINATED' }
+                                    { value: threadInfo.value.newCount || 0, name: 'NEW' },
+                                    { value: threadInfo.value.runnableCount || 0, name: 'RUNNABLE' },
+                                    { value: threadInfo.value.blockedCount || 0, name: 'BLOCKED' },
+                                    { value: threadInfo.value.waitingCount || 0, name: 'WAITING' },
+                                    { value: threadInfo.value.timedWaitingCount || 0, name: 'TIMED_WAITING' },
+                                    { value: threadInfo.value.terminatedCount || 0, name: 'TERMINATED' }
                                 ]
                             }]
                         });
@@ -398,11 +398,11 @@
                         pieChart.setOption({
                             series: [{
                                 data: [
-                                    { value: threadInfo.value.runnable || 0, name: '运行中', itemStyle: { color: '#10b981' } },
-                                    { value: threadInfo.value.blocked || 0, name: '阻塞', itemStyle: { color: '#ef4444' } },
-                                    { value: threadInfo.value.waiting || 0, name: '等待', itemStyle: { color: '#f59e0b' } },
-                                    { value: threadInfo.value.timedWaiting || 0, name: '定时等待', itemStyle: { color: '#06b6d4' } },
-                                    { value: (threadInfo.value.new || 0) + (threadInfo.value.terminated || 0), name: '其他', itemStyle: { color: '#6b7280' } }
+                                    { value: threadInfo.value.runnableCount || 0, name: '运行中', itemStyle: { color: '#10b981' } },
+                                    { value: threadInfo.value.blockedCount || 0, name: '阻塞', itemStyle: { color: '#ef4444' } },
+                                    { value: threadInfo.value.waitingCount || 0, name: '等待', itemStyle: { color: '#f59e0b' } },
+                                    { value: threadInfo.value.timedWaitingCount || 0, name: '定时等待', itemStyle: { color: '#06b6d4' } },
+                                    { value: (threadInfo.value.newCount || 0) + (threadInfo.value.terminatedCount || 0), name: '其他', itemStyle: { color: '#6b7280' } }
                                 ]
                             }]
                         });
