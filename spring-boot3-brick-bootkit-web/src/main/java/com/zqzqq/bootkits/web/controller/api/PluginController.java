@@ -128,31 +128,21 @@ public class PluginController {
     @Operation(summary = "上传插件")
     public ApiResult<PluginDTO> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(name = "enable", required = false, defaultValue = "false") Boolean enable) {
-        // 调试日志：检查所有相关bean
-        log.info("=== 插件上传调试 ===");
-        log.info("1. pluginWebServiceProvider bean exists: {}", pluginWebServiceProvider != null);
-        log.info("2. demoPluginServiceProvider bean exists: {}", demoPluginServiceProvider != null);
-        
+            @RequestParam(name = "autoStart", required = false, defaultValue = "false") Boolean autoStart,
+            @RequestParam(name = "overwrite", required = false, defaultValue = "true") Boolean overwrite) {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
-        log.info("3. PluginWebService bean available: {}", pluginWebService != null);
         if (pluginWebService != null) {
-            return pluginWebService.uploadPlugin(file, enable);
+            ApiResult<PluginDTO> result = pluginWebService.uploadPlugin(file, autoStart);
+            // 如果 overwrite 为 false 且上传失败，返回错误
+            if (!overwrite && result.getCode() != 200) {
+                return result;
+            }
+            return result;
         }
         DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
-        log.info("4. DemoPluginService bean available: {}", demoService != null);
         if (demoService != null) {
-            return demoService.uploadPlugin(file, enable);
+            return demoService.uploadPlugin(file, autoStart);
         }
-        
-        // 检查 PluginManager 是否存在（通过 applicationContext）
-        try {
-            PluginManager pluginManager = applicationContext.getBean(PluginManager.class);
-            log.info("5. PluginManager bean found via applicationContext: {}", pluginManager != null);
-        } catch (Exception e) {
-            log.warn("5. PluginManager bean NOT found via applicationContext: {}", e.getMessage());
-        }
-        
         return ApiResult.error(500, "插件功能未启用，请在完整brick-bootkit环境中使用");
     }
 
@@ -165,7 +155,14 @@ public class PluginController {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             Path pluginPath = Paths.get(request.getPluginPath());
-            return ApiResult.success(pluginWebService.installPlugin(pluginPath));
+            PluginDTO pluginDTO = pluginWebService.installPlugin(pluginPath);
+            
+            // 如果 autoStart 为 true，安装后自动启动
+            if (Boolean.TRUE.equals(request.getAutoStart())) {
+                pluginWebService.startPlugin(pluginDTO.getPluginId());
+                log.info("插件已自动启动: {}", pluginDTO.getPluginId());
+            }
+            return ApiResult.success(pluginDTO);
         }
         DemoPluginService demoService = demoPluginServiceProvider.getIfAvailable();
         if (demoService != null) {
@@ -297,6 +294,14 @@ public class PluginController {
     @Data
     public static class PluginInstallRequest {
         private String pluginPath;
+        /**
+         * 安装后是否自动启动
+         */
+        private Boolean autoStart;
+        /**
+         * 是否覆盖已存在的插件（用于上传场景）
+         */
+        private Boolean overwrite;
     }
 
     /**
