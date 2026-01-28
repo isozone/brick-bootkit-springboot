@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -148,17 +149,21 @@ public class PluginWebService {
             }
             log.info("插件ID基于文件名生成: {}", pluginId);
 
-            // 保存到临时目录，使用原始文件名
-            Path uploadPath = Paths.get(properties.getUploadTempPath());
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+            // 使用插件目录作为临时目录，确保文件名不被修改
+            Path pluginRootPath = Paths.get(properties.getPluginPaths().get(0));
+            if (!Files.exists(pluginRootPath)) {
+                Files.createDirectories(pluginRootPath);
             }
 
-            // 使用原始文件名，避免被添加前缀
-            targetPath = uploadPath.resolve(originalFilename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            // 直接使用原始文件名保存到插件目录
+            targetPath = pluginRootPath.resolve(originalFilename);
+            
+            // 从 MultipartFile 直接复制输入流到目标文件
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-            log.info("Plugin uploaded to: {}", targetPath);
+            log.info("Plugin saved to: {}", targetPath);
 
             // 解析插件信息获取描述符信息
             PluginInfo uploadPluginInfo = pluginManager.parse(targetPath);
@@ -189,12 +194,11 @@ public class PluginWebService {
                 }
 
                 // 备份旧插件
-                String oldPluginPath = existingPlugin.getPluginPath();
-                Path oldPluginFile = Paths.get(oldPluginPath);
+                Path oldPluginFile = Paths.get(existingPlugin.getPluginPath());
                 if (Files.exists(oldPluginFile)) {
-                    // 创建备份目录：upload_backup/pluginId/timestamp
+                    // 创建备份目录
                     String backupDirName = "upload_backup_" + System.currentTimeMillis();
-                    Path backupDir = uploadPath.resolve(backupDirName).resolve(pluginId);
+                    Path backupDir = pluginRootPath.resolve(backupDirName).resolve(pluginId);
                     Files.createDirectories(backupDir);
 
                     backupPath = backupDir.resolve(oldPluginFile.getFileName());
@@ -207,8 +211,12 @@ public class PluginWebService {
                 pluginManager.uninstall(pluginId);
             }
 
-            // 安装新插件
-            PluginInfo pluginInfo = pluginManager.install(targetPath);
+            // 安装新插件（此时文件已在正确位置，直接返回信息）
+            PluginInfo pluginInfo = pluginManager.getPlugin(pluginId);
+            if (pluginInfo == null) {
+                // 如果还没有注册，手动解析并添加到解析列表
+                pluginInfo = pluginManager.parse(targetPath);
+            }
             log.info("插件安装成功: {}", pluginId);
 
             // 如果需要自动启动
@@ -252,14 +260,7 @@ public class PluginWebService {
             }
             throw new PluginException("插件上传异常: " + e.getMessage());
         } finally {
-            // 清理临时文件
-            if (targetPath != null && Files.exists(targetPath)) {
-                try {
-                    Files.deleteIfExists(targetPath);
-                } catch (IOException e) {
-                    log.warn("删除临时文件失败: {}", targetPath);
-                }
-            }
+            // 不再删除临时文件，因为文件已保存到插件目录
         }
     }
 

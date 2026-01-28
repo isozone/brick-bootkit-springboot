@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Import;
  * @author starBlues
  * @version 3.0.0
  */
-@ConditionalOnExpression("${" + AutoIntegrationConfiguration.ENABLE_STARTER_KEY + ":true}")
+@ConditionalOnExpression("${" + AutoIntegrationConfiguration.ENABLE_KEY + ":true}")
 @Import(AutoPluginApplication.class)
 @AutoConfiguration // 添加杩欎釜注解
 @EnableConfigurationProperties(AutoIntegrationConfiguration.class)
