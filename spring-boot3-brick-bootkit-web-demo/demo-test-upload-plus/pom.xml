@@ -42,6 +42,7 @@
             <groupId>com.zqzqq.webDemo</groupId>
             <artifactId>spring-boot3-brick-bootkit-web-demo</artifactId>
             <version>4.0.4</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.zqzqq</groupId>
@@ -82,13 +83,13 @@
             <plugin>
                 <groupId>com.zqzqq</groupId>
                 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-                <version>4.0.0</version>
+                <version>4.0.4</version>
                 <configuration>
                     <!--                    dev / prod-->
-                    <mode>prod</mode>
+                    <mode>dev</mode>
                     <pluginInfo>
                         <id>demoTestUploadPlus</id>
-                        <bootstrapClass>com.zqzqq.bootkits.web.demo.test.demoTestUploadPlusApplication</bootstrapClass>
+                        <bootstrapClass>com.zqzqq.bootkits.web.demo.DemoTestUploadPlusApplication</bootstrapClass>
                         <version>0.0.1</version>
                         <provider>jove</provider>
                         <description>demoTestUploadPlusApplication</description>
