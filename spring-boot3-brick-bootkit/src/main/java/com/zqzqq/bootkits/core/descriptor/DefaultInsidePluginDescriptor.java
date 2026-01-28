@@ -53,7 +53,6 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
         this.pluginFileName = pluginPath.toFile().getName();
     }
 
-    @Override
     public void setPluginPath(Path pluginPath) {
         this.pluginPath = pluginPath;
         this.pluginFileName = pluginPath.toFile().getName();
