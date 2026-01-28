@@ -65,14 +65,23 @@ public class PluginResourceLoaderFactoryProxy implements PluginResourceLoaderFac
     @Override
     public void addResource(InsidePluginDescriptor descriptor) throws Exception {
         PluginType pluginType = descriptor.getType();
+        log.debug("插件[{}]类型: {}, isNested: {}, isOuter: {}, isDir: {}",
+                MsgUtils.getPluginUnique(descriptor),
+                pluginType,
+                PluginType.isNestedPackage(pluginType),
+                PluginType.isOuterPackage(pluginType),
+                PluginType.isDirPackage(pluginType));
         if(PluginType.isNestedPackage(pluginType)){
+            log.debug("使用 NestedPluginJarResourceLoader 加载插件[{}]", MsgUtils.getPluginUnique(descriptor));
             NestedPluginJarResourceLoader resourceLoader =
                     new NestedPluginJarResourceLoader(descriptor, target, parent);
             target.addResource(resourceLoader);
         } else if(PluginType.isOuterPackage(pluginType)){
+            log.debug("使用 addOuterPluginClasspath 加载插件[{}]", MsgUtils.getPluginUnique(descriptor));
             addOuterPluginClasspath(descriptor);
             addLibFile(descriptor);
         } else {
+            log.debug("使用 addDirPluginClasspath 加载插件[{}]", MsgUtils.getPluginUnique(descriptor));
             addDirPluginClasspath(descriptor);
             addLibFile(descriptor);
         }
@@ -94,12 +103,21 @@ public class PluginResourceLoaderFactoryProxy implements PluginResourceLoaderFac
         // dev模式下，pluginClassPath是相对于insidePluginPath的相对路径（如"classes/"）
         // 需要拼接成完整路径
         Path insidePluginPath = descriptor.getInsidePluginPath();
+        String pluginUnique = MsgUtils.getPluginUnique(descriptor);
+
+        log.debug("插件[{}]的insidePluginPath: {}", pluginUnique, insidePluginPath);
+        log.debug("插件[{}]的pluginClassPath: {}", pluginUnique, pluginClassPath);
+
         File classesDir = insidePluginPath.resolve(pluginClassPath.replace("/", "")).toFile();
+
+        log.debug("插件[{}]的classesDir路径: {}, exists: {}, isDirectory: {}",
+                pluginUnique, classesDir.getPath(), classesDir.exists(), classesDir.isDirectory());
+
         if(classesDir.exists() && classesDir.isDirectory()){
             addResource(classesDir);
-            log.debug("插件[{}]Classpath已被加载: {}", MsgUtils.getPluginUnique(descriptor), classesDir.getPath());
+            log.debug("插件[{}]Classpath已被加载: {}", pluginUnique, classesDir.getPath());
         } else {
-            log.warn("插件[{}]未发现Classpath: {}", MsgUtils.getPluginUnique(descriptor), classesDir.getPath());
+            log.warn("插件[{}]未发现Classpath: {}", pluginUnique, classesDir.getPath());
         }
     }
 
