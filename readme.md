@@ -185,7 +185,7 @@ public class Application {
 
 3. 配置参数（可选）：
 ```yaml
-brick:
+plugin:
   web:
     enabled: true
     enable-ui: true

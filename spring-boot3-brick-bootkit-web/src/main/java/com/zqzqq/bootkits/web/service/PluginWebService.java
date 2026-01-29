@@ -1,5 +1,6 @@
 package com.zqzqq.bootkits.web.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -140,10 +142,10 @@ public class PluginWebService {
         
         // 格式化启动和停止时间
         if (pluginInfo.getStartTime() > 0) {
-            builder.startTime(java.time.LocalDateTime.ofEpochSecond(pluginInfo.getStartTime() / 1000, 0, java.time.ZoneOffset.UTC).toString());
+            builder.startTime(DateUtil.format(DateUtil.date(pluginInfo.getStartTime()), "yyyy-MM-dd HH:mm:ss"));
         }
         if (pluginInfo.getStopTime() > 0) {
-            builder.stopTime(java.time.LocalDateTime.ofEpochSecond(pluginInfo.getStopTime() / 1000, 0, java.time.ZoneOffset.UTC).toString());
+            builder.stopTime(DateUtil.format(DateUtil.date(pluginInfo.getStartTime()), "yyyy-MM-dd HH:mm:ss"));
         }
         
         if (pluginInfo.getPluginDescriptor() != null) {

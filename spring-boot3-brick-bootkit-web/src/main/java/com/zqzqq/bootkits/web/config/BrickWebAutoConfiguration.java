@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Slf4j
 @Configuration
+@Order(Ordered.LOWEST_PRECEDENCE)  // 确保在 SpringDoc 之后加载，避免覆盖其配置
 @ConditionalOnProperty(prefix = "brick.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(BrickWebProperties.class)
 public class BrickWebAutoConfiguration implements WebMvcConfigurer {
@@ -90,6 +93,16 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Knife4j API 文档资源
+        registry.addResourceHandler("/doc.html")
+                .addResourceLocations("classpath:/META-INF/resources/")
+                .resourceChain(true);
+        
+        // webjars 资源（Swagger UI 使用）
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/")
+                .resourceChain(true);
+        
         // 静态资源（CSS、JS、库文件）
         registry.addResourceHandler("/brick-web/static/**")
                 .addResourceLocations("classpath:/static/")

@@ -71,6 +71,13 @@ public class DefaultPluginInsideInfo implements PluginInsideInfo {
     @Override
     public void setPluginState(EnhancedPluginState state) {
         this.pluginState = state;
+        
+        // 记录时间戳
+        if (state == EnhancedPluginState.STARTED) {
+            this.startTime = new Date();
+        } else if (state == EnhancedPluginState.STOPPED) {
+            this.stopTime = new Date();
+        }
     }
 
     @Override

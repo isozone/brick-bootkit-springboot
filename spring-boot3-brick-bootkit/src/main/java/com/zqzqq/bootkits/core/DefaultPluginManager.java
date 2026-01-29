@@ -501,7 +501,8 @@ public class DefaultPluginManager implements PluginManager{
             if (insideInfo == null) {
                 insideInfo = resolvedPlugins.get(pluginId);
             }
-            return insideInfo != null ? new DefaultPluginInfo(insideInfo.getPluginDescriptor()) : null;
+            // 直接返回 PluginInsideInfo 对象，包含完整的运行时信息
+            return insideInfo;
         });
     }
 
