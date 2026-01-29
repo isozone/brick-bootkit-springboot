@@ -1016,12 +1016,7 @@ Copyright 2024-2025 huzhenjie
 
 ## 联系我们
 
-
 **我唯一官方微信号为 worker_680**
-
-![微信二维码](./docs/me.jpg)
-
-
 **邮箱联系我们：huzhenjie@rjnetwork.net.cn**
 
 ---
@@ -1039,3 +1034,22 @@ Copyright 2024-2025 huzhenjie
 感谢原作者 [starblues](https://gitee.com/starblues) 提供的优秀框架基础。
 
 感谢所有贡献者和使用者的支持！
+
+---
+
+
+<div align="center">
+
+**🏢 商业合作**
+
+本公司专业解决各种系统疑难杂症，如有商业合作需求，可直接添加下述微信详谈。
+
+【软件开发业务 | 系统二开业务 | ...】
+
+遇财（杭州）科技有限公司为您提供技术支撑。
+<div style="width: 200px">
+
+![微信二维码](./docs/me.jpg)
+
+</div>
+</div>
