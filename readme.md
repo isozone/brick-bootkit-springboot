@@ -1016,9 +1016,13 @@ Copyright 2024-2025 huzhenjie
 
 ## 联系我们
 
-[点击加我微信入群](http://wechat.zqzqq.com/)
 
-邮箱联系我们：huzhenjie@rjnetwork.net.cn
+**我唯一官方微信号为 worker_680**
+
+![微信二维码](./docs/me.jpg)
+
+
+**邮箱联系我们：huzhenjie@rjnetwork.net.cn**
 
 ---
 
