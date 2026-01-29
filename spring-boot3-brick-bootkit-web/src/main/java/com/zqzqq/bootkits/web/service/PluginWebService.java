@@ -58,6 +58,7 @@ public class PluginWebService {
      */
     private PluginManager getPluginManager() {
         PluginManager pluginManager = pluginManagerProvider.getIfAvailable();
+        log.info("PluginManagerProvider 返回: {}", pluginManager != null ? pluginManager.getClass().getName() : "null");
         if (pluginManager == null) {
             throw new PluginException("插件功能未启用，请确保 plugin.enable=true");
         }
@@ -69,7 +70,9 @@ public class PluginWebService {
      */
     public PageResult<PluginDTO> listPlugins(int page, int size, String state, String keyword) {
         PluginManager pluginManager = getPluginManager();
+        log.info("获取插件列表，PluginManager 实例: {}", pluginManager.getClass().getName());
         List<PluginInfo> plugins = pluginManager.getPlugins();
+        log.info("从 PluginManager 获取到 {} 个插件", plugins.size());
         
         // 过滤
         List<PluginDTO> filtered = plugins.stream()
@@ -91,6 +94,8 @@ public class PluginWebService {
                     return true;
                 })
                 .collect(Collectors.toList());
+        
+        log.info("过滤后有 {} 个插件", filtered.size());
         
         // 分页
         int fromIndex = (page - 1) * size;

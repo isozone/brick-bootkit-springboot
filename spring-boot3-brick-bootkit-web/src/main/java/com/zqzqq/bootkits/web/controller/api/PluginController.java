@@ -75,8 +75,8 @@ public class PluginController {
     @GetMapping
     @Operation(summary = "获取插件列表")
     public ApiResult<PageResult<PluginDTO>> list(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "all") String state,
             @RequestParam(required = false) String keyword) {
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();

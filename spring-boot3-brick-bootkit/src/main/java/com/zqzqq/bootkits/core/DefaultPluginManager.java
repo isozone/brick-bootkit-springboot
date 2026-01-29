@@ -343,7 +343,7 @@ public class DefaultPluginManager implements PluginManager{
                 
                 start(pluginInsideInfo);
                 startedPlugins.put(pluginId, pluginInsideInfo);
-                log.info("插件启动成功: {}", pluginId);
+                log.info("插件启动成功: {}, startedPlugins 大小: {}", pluginId, startedPlugins.size());
             } catch (Exception e) {
                 throw new PluginException("启动插件失败: " + pluginId, e);
             }
@@ -503,9 +503,24 @@ public class DefaultPluginManager implements PluginManager{
     @Override
     public List<PluginInfo> getPlugins() {
         return withGlobalReadLock(() -> {
-            List<PluginInfo> plugins = new ArrayList<>();
-            startedPlugins.values().forEach(info -> plugins.add(new DefaultPluginInfo(info.getPluginDescriptor())));
-            resolvedPlugins.values().forEach(info -> plugins.add(new DefaultPluginInfo(info.getPluginDescriptor())));
+            // 使用 LinkedHashMap 保持插入顺序并去重
+            Map<String, PluginInfo> pluginMap = new LinkedHashMap<>();
+            
+            // 优先添加已启动的插件
+            startedPlugins.values().forEach(info -> {
+                pluginMap.put(info.getPluginId(), info);
+            });
+            
+            // 添加已解析但未启动的插件（不覆盖已启动的插件）
+            resolvedPlugins.values().forEach(info -> {
+                if (!pluginMap.containsKey(info.getPluginId())) {
+                    pluginMap.put(info.getPluginId(), info);
+                }
+            });
+            
+            List<PluginInfo> plugins = new ArrayList<>(pluginMap.values());
+            log.info("getPlugins() 调用，startedPlugins 大小: {}, resolvedPlugins 大小: {}, 返回插件数量: {}", 
+                     startedPlugins.size(), resolvedPlugins.size(), plugins.size());
             return plugins;
         });
     }
