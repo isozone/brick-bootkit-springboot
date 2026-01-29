@@ -37,9 +37,9 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
     protected final Map<String, List<Resource>> resourceStorage = new ConcurrentHashMap<>();
     
     /**
-     * 最大缓存条目数，默认为1000，超过时淘汰最早的条目
+     * 最大缓存条目数，默认为10000，超过时淘汰最早的条目
      */
-    private static final int MAX_CACHE_SIZE = 1000;
+    private static final int MAX_CACHE_SIZE = 10000;
     
     /**
      * 记录资源添加顺序，用于LRU淘汰
@@ -50,7 +50,8 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
     public void addResource(Resource resource) throws Exception {
         resource.resolveByte();
         String name = formatResourceName(resource.getName());
-        
+        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] addResource - original: " + resource.getName() + ", formatted: " + name + ", url: " + resource.getUrl());
+
         // 检查是否超过最大容量
         if (resourceStorage.size() >= MAX_CACHE_SIZE && !resourceStorage.containsKey(name)) {
             // 淘汰最早的条目
@@ -58,7 +59,7 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
             resourceStorage.remove(oldestKey);
             accessOrder.remove(oldestKey);
         }
-        
+
         List<Resource> resources = resourceStorage.computeIfAbsent(name, k -> new ArrayList<>());
         resources.add(resource);
         accessOrder.put(name, System.currentTimeMillis());
@@ -78,8 +79,12 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
         if(ObjectUtils.isEmpty(name)){
             return null;
         }
+        String originalName = name;
         name = formatResourceName(name);
+        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] getFirst - original: " + originalName + ", formatted: " + name);
+        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] resourceStorage size: " + resourceStorage.size());
         List<Resource> resources = resourceStorage.get(name);
+        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] getFirst result: " + (resources != null && !resources.isEmpty()));
         if(ObjectUtils.isEmpty(resources)){
             return null;
         }

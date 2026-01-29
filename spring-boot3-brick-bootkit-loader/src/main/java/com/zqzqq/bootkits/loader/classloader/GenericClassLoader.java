@@ -391,20 +391,34 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
         Class<?> aClass;
         String formatClassName = formatClassName(name);
 
+        System.out.println("[GenericClassLoader] Attempting to load class: " + name + ", formatted: " + formatClassName);
+
         aClass = pluginClassCache.get(formatClassName);
         if (aClass != null) {
+            System.out.println("[GenericClassLoader] Class found in cache: " + name);
             return aClass;
         }
 
         Resource resource = resourceLoaderFactory.findFirstResource(formatClassName);
+        System.out.println("[GenericClassLoader] Resource found: " + (resource != null));
+        if(resource != null){
+            System.out.println("[GenericClassLoader] Resource URL: " + resource.getUrl());
+        }
+
         byte[] bytes = null;
         if(resource != null){
+            try {
+                resource.resolveByte();  // 先解析字节码
+            } catch (Exception e) {
+                log.error("Failed to resolve resource bytes for: " + formatClassName, e);
+            }
             bytes = resource.getBytes();
         }
         if(bytes == null || bytes.length == 0){
             bytes = getClassByte(formatClassName);
         }
         if(bytes == null || bytes.length == 0){
+            System.out.println("[GenericClassLoader] Failed to load class bytes for: " + name);
             return null;
         }
         aClass = super.defineClass(name, bytes, 0, bytes.length );

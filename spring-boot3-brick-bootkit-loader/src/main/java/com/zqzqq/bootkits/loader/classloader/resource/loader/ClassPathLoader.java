@@ -87,7 +87,14 @@ public class ClassPathLoader extends AbstractResourceLoader {
     }
 
     private void addResource(ResourceStorage resourceStorage, File file, String packageName) throws Exception {
-        CacheResource cacheResource = new CacheResource(packageName, url, new URL(url.toString() + packageName));
+        String fullUrl = url.toString();
+        // 确保 baseUrl 和 packageName 之间有路径分隔符
+        if (!fullUrl.endsWith("/") && !packageName.startsWith("/")) {
+            fullUrl += "/";
+        }
+        URL resourceUrl = new URL(fullUrl + packageName);
+        System.out.println("[ClassPathLoader] Adding resource - baseUrl: " + url + ", packageName: " + packageName + ", resourceUrl: " + resourceUrl);
+        CacheResource cacheResource = new CacheResource(packageName, url, resourceUrl);
         cacheResource.setBytes(()->{
             if(file.exists() && file.isFile()){
                 return getClassBytes(file.getPath(), Files.newInputStream(file.toPath()), true);

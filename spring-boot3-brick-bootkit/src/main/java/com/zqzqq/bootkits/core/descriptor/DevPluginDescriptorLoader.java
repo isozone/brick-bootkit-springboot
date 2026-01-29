@@ -88,9 +88,9 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
         final DefaultInsidePluginDescriptor descriptor = super.create(pluginMeta, path);
         descriptor.setType(PluginType.DEV);
 
-        // 在 dev 模式下，使用 "classes/" 作为 pluginClassPath（JAR 内部路径）
-        // 这样 NestedPluginJarResourceLoader 才能正确加载类
-        descriptor.setPluginClassPath("classes/");
+        // 在 dev 模式下，使用 "classes" 作为 pluginClassPath（目录相对路径）
+        // 这样 addDirPluginClasspath 才能正确构建类目录路径
+        descriptor.setPluginClassPath("classes");
 
         return descriptor;
     }
