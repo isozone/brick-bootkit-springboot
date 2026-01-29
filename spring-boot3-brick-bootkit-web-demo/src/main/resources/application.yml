@@ -25,9 +25,10 @@ logging:
 
 plugin:
   enable: true
-  runMode: dev
+  runMode: prod
   plugin-follow-log: true
   mainPackage: com.zqzqq.bootkits.web.demo.DemoApplication
   pluginPath:
-    - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
+    - D:\codes\brick-bootkit-springboot\plugins
+ #   - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
 

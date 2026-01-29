@@ -139,7 +139,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         Set<URL> searchUrl = new HashSet<>();
         URL matchBaseUrl = null;
         URL matchExistUrl = null;
-        System.out.println("[AbstractResourceStorage] searchResource - name: " + name);
+
         // TODO 还需要优化
         while (true){
             URL baseUrl = hotUrls.pollFirst();
@@ -160,12 +160,12 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
 
         if(matchBaseUrl == null){
             List<URL> baseUrls = getBaseUrl();
-            System.out.println("[AbstractResourceStorage] Checking baseUrls, count: " + baseUrls.size());
+
             for (URL baseUrl : baseUrls) {
                 if(searchUrl.contains(baseUrl)){
                     continue;
                 }
-                System.out.println("[AbstractResourceStorage] Checking base URL: " + baseUrl);
+
                 URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
                 System.out.println("[AbstractResourceStorage] getExistUrl result: " + (existUrl != null));
                 if(existUrl != null){

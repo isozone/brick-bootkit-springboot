@@ -239,8 +239,16 @@ public class PluginWebService {
                 // 备份旧插件
                 Path oldPluginFile = Paths.get(existingPlugin.getPluginPath());
                 if (Files.exists(oldPluginFile)) {
-                    String backupDirName = "upload_backup_" + System.currentTimeMillis();
-                    Path backupDir = pluginRootPath.resolve(backupDirName).resolve(pluginId);
+                    // 使用备份文件的文件名（去掉 .jar 后缀）作为目录名
+                    String oldFilename = oldPluginFile.getFileName().toString();
+                    String backupDirName = oldFilename.endsWith(".jar") ? oldFilename.substring(0, oldFilename.length() - 4) : oldFilename;
+                    // 备份目录放在插件根目录的上级目录(即项目根目录下的 plugins-backup 目录)
+                    Path projectRoot = pluginRootPath.getParent();
+                    if (projectRoot == null) {
+                        projectRoot = Paths.get(".");
+                    }
+                    Path backupRootDir = projectRoot.resolve("plugins-backup");
+                    Path backupDir = backupRootDir.resolve(backupDirName);
                     Files.createDirectories(backupDir);
 
                     backupPath = backupDir.resolve(oldPluginFile.getFileName());
@@ -255,6 +263,15 @@ public class PluginWebService {
 
             // 复制文件到插件目录
             Path targetPath = pluginRootPath.resolve(originalFilename);
+
+            // 如果旧版本和新版本的文件名不同，删除旧版本的 .jar 文件
+            if (existingPlugin != null) {
+                Path oldPluginFile = Paths.get(existingPlugin.getPluginPath());
+                if (Files.exists(oldPluginFile) && !oldPluginFile.getFileName().toString().equals(originalFilename)) {
+                    Files.deleteIfExists(oldPluginFile);
+                    log.info("旧版本文件已删除: {}", oldPluginFile);
+                }
+            }
             Files.copy(tempPath, targetPath, StandardCopyOption.REPLACE_EXISTING);
             log.info("文件已复制到插件目录: {}", targetPath);
 
@@ -278,10 +295,9 @@ public class PluginWebService {
                 pluginInfo = pluginManager.getPlugin(actualPluginId);
                 log.info("插件启动成功: {}", actualPluginId);
 
-                // 启动成功后，删除旧版本备份
+                // 启动成功后，保留备份文件（不删除）以备后续恢复需要
                 if (backupPath != null && Files.exists(backupPath)) {
-                    Files.deleteIfExists(backupPath);
-                    log.info("旧版本备份已删除: {}", backupPath);
+                    log.info("旧版本备份已保留: {}", backupPath);
                 }
             }
 
@@ -325,7 +341,6 @@ public class PluginWebService {
 
         Path backupPath = null;
         Path tempPath = null;
-        Path targetPath = null;
         String pluginId = null;
 
         try {
@@ -339,13 +354,6 @@ public class PluginWebService {
                 Files.createDirectories(uploadTempPath);
             }
 
-            // 生成pluginId
-            pluginId = originalFilename;
-            if (pluginId.endsWith(".jar")) {
-                pluginId = pluginId.substring(0, pluginId.length() - 4);
-            }
-            log.info("插件ID: {}", pluginId);
-
             // 保存到临时目录
             tempPath = uploadTempPath.resolve(originalFilename);
             try (InputStream inputStream = file.getInputStream()) {
@@ -355,13 +363,14 @@ public class PluginWebService {
 
             PluginManager pluginManager = getPluginManager();
 
-            // 解析插件信息
+            // 解析插件信息以获取 pluginId
             PluginInfo uploadPluginInfo = pluginManager.parse(tempPath);
             if (uploadPluginInfo == null) {
                 throw new PluginException("插件文件校验失败");
             }
+            pluginId = uploadPluginInfo.getPluginId();
             String newVersion = uploadPluginInfo.getPluginDescriptor().getPluginVersion();
-            log.info("插件版本: {}", newVersion);
+            log.info("插件ID: {}, 版本: {}", pluginId, newVersion);
 
             // 目标插件目录
             Path pluginRootPath = Paths.get(properties.getPluginPaths().get(0));
@@ -376,44 +385,43 @@ public class PluginWebService {
                 String oldVersion = existingPlugin.getPluginDescriptor().getPluginVersion();
                 log.info("发现已存在的同名插件: {}, 当前版本: {}, 新版本: {}", pluginId, oldVersion, newVersion);
 
-                // 比较版本号
-                if (!isVersionGreaterThan(newVersion, oldVersion)) {
-                    throw new PluginException(String.format(
-                            "上传失败：新版本号 %s 必须大于旧版本号 %s", newVersion, oldVersion));
-                }
-
-                // 如果旧插件正在运行，先停止
-                EnhancedPluginState state = (EnhancedPluginState) existingPlugin.getPluginState();
-                if (state == EnhancedPluginState.STARTED) {
-                    log.info("停止旧插件: {}", pluginId);
-                    pluginManager.stop(pluginId);
-                }
-
-                // 备份旧插件
+                // 备份旧插件（在升级之前备份）
                 Path oldPluginFile = Paths.get(existingPlugin.getPluginPath());
                 if (Files.exists(oldPluginFile)) {
-                    String backupDirName = "upload_backup_" + System.currentTimeMillis();
-                    Path backupDir = pluginRootPath.resolve(backupDirName).resolve(pluginId);
+                    // 使用备份文件的文件名（去掉 .jar 后缀）作为目录名
+                    String oldFilename = oldPluginFile.getFileName().toString();
+                    String backupDirName = oldFilename.endsWith(".jar") ? oldFilename.substring(0, oldFilename.length() - 4) : oldFilename;
+                    // 备份目录放在插件根目录的上级目录(即项目根目录下的 plugins-backup 目录)
+                    Path projectRoot = pluginRootPath.getParent();
+                    if (projectRoot == null) {
+                        projectRoot = Paths.get(".");
+                    }
+                    Path backupRootDir = projectRoot.resolve("plugins-backup");
+                    Path backupDir = backupRootDir.resolve(backupDirName);
                     Files.createDirectories(backupDir);
 
                     backupPath = backupDir.resolve(oldPluginFile.getFileName());
                     Files.copy(oldPluginFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
                     log.info("旧插件已备份到: {}", backupPath);
                 }
-
-                // 卸载旧插件
-                log.info("卸载旧插件: {}", pluginId);
-                pluginManager.uninstall(pluginId);
             }
 
-            // 直接调用 install()，它会处理文件复制和插件注册
-            // 注意：install() 内部会将文件复制到 pluginRootPath
+            // 调用 install() 方法，它会处理版本检查、停止旧插件、卸载旧插件、安装新插件
             log.info("开始安装插件: {}", pluginId);
             PluginInfo pluginInfo = pluginManager.install(tempPath);
-            
+
             // 删除临时文件
             Files.deleteIfExists(tempPath);
             log.info("临时文件已删除");
+
+            // 如果旧版本和新版本的文件名不同，删除旧版本的 .jar 文件
+            if (existingPlugin != null) {
+                Path oldPluginFile = Paths.get(existingPlugin.getPluginPath());
+                if (Files.exists(oldPluginFile) && !oldPluginFile.getFileName().toString().equals(originalFilename)) {
+                    Files.deleteIfExists(oldPluginFile);
+                    log.info("旧版本文件已删除: {}", oldPluginFile);
+                }
+            }
 
             if (pluginInfo == null) {
                 throw new PluginException("插件安装失败: " + pluginId);
@@ -429,10 +437,9 @@ public class PluginWebService {
                 pluginInfo = pluginManager.getPlugin(actualPluginId);
                 log.info("插件启动成功: {}", actualPluginId);
 
-                // 启动成功后，删除旧版本备份
+                // 启动成功后，保留备份文件（不删除）以备后续恢复需要
                 if (backupPath != null && Files.exists(backupPath)) {
-                    Files.deleteIfExists(backupPath);
-                    log.info("旧版本备份已删除: {}", backupPath);
+                    log.info("旧版本备份已保留: {}", backupPath);
                 }
             }
 
@@ -440,12 +447,9 @@ public class PluginWebService {
 
         } catch (IOException e) {
             log.error("插件上传失败", e);
-            // 清理临时文件和目标文件
+            // 清理临时文件
             if (tempPath != null && Files.exists(tempPath)) {
                 try { Files.deleteIfExists(tempPath); } catch (Exception ignored) {}
-            }
-            if (targetPath != null && Files.exists(targetPath)) {
-                try { Files.deleteIfExists(targetPath); } catch (Exception ignored) {}
             }
             // 恢复旧版本
             if (backupPath != null && Files.exists(backupPath)) {

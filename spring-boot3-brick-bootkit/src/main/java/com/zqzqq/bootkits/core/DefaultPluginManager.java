@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -220,10 +221,30 @@ public class DefaultPluginManager implements PluginManager{
                 // 加载插件描述符
                 PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(actualPath);
                 String pluginId = pluginDescriptor.getPluginId();
+                String newVersion = pluginDescriptor.getPluginVersion();
                 
                 // 检查插件是否已存在
-                if (getPlugin(pluginId) != null) {
-                    throw new PluginException("插件已存在: " + pluginId);
+                PluginInfo existingPlugin = getPlugin(pluginId);
+                if (existingPlugin != null) {
+                    String oldVersion = existingPlugin.getPluginDescriptor().getPluginVersion();
+                    log.info("发现已存在的同名插件: {}, 当前版本: {}, 新版本: {}", pluginId, oldVersion, newVersion);
+                    
+                    // 比较版本号：新版本必须大于旧版本
+                    if (!isVersionGreaterThan(newVersion, oldVersion)) {
+                        throw new PluginException(String.format(
+                                "安装失败：新版本号 %s 必须大于旧版本号 %s", newVersion, oldVersion));
+                    }
+                    
+                    // 如果旧插件正在运行，先停止
+                    PluginInsideInfo existingInsideInfo = resolvedPlugins.get(pluginId);
+                    if (existingInsideInfo != null && existingInsideInfo.getPluginState() == EnhancedPluginState.STARTED) {
+                        log.info("停止旧插件: {}", pluginId);
+                        stop(pluginId);
+                    }
+                    
+                    // 从已解析列表中移除旧插件
+                    resolvedPlugins.remove(pluginId);
+                    log.info("旧插件已卸载: {}", pluginId);
                 }
                 
                 // 复制插件到插件目录
@@ -241,7 +262,7 @@ public class DefaultPluginManager implements PluginManager{
                 // 将插件添加到已解析插件列表
                 resolvedPlugins.put(pluginId, pluginInsideInfo);
                 
-                log.info("插件安装成功: {}", pluginId);
+                log.info("插件安装成功: {}, 版本: {}", pluginId, newVersion);
                 return new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
             } catch (IOException e) {
                 throw new PluginException("插件安装失败", e);
@@ -249,6 +270,61 @@ public class DefaultPluginManager implements PluginManager{
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    /**
+     * 比较版本号：判断新版本是否大于旧版本
+     * 支持语义化版本号 (x.y.z) 和简单的数字版本号
+     * 
+     * @param newVersion 新版本号
+     * @param oldVersion 旧版本号
+     * @return true 如果新版本大于旧版本
+     */
+    private boolean isVersionGreaterThan(String newVersion, String oldVersion) {
+        if (newVersion == null || oldVersion == null) {
+            return false;
+        }
+
+        String[] newParts = newVersion.split("[.\\-_]");
+        String[] oldParts = oldVersion.split("[.\\-_]");
+
+        int maxLength = Math.max(newParts.length, oldParts.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            int newPart = i < newParts.length ? parseVersionPart(newParts[i]) : 0;
+            int oldPart = i < oldParts.length ? parseVersionPart(oldParts[i]) : 0;
+
+            if (newPart > oldPart) {
+                return true;
+            } else if (newPart < oldPart) {
+                return false;
+            }
+        }
+
+        // 版本号完全相同
+        return false;
+    }
+
+    /**
+     * 解析版本号的单个部分为整数
+     * 
+     * @param part 版本号部分
+     * @return 整数值
+     */
+    private int parseVersionPart(String part) {
+        if (part == null || part.isEmpty()) {
+            return 0;
+        }
+        try {
+            // 移除可能的非数字字符前缀（如 v、release- 等）
+            String numericPart = part.replaceAll("^[^0-9]*", "");
+            if (numericPart.isEmpty()) {
+                return 0;
+            }
+            return Integer.parseInt(numericPart);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     @Override
@@ -388,10 +464,21 @@ public class DefaultPluginManager implements PluginManager{
                 // 卸载插件
                 stop(pluginInsideInfo, PluginCloseType.UNINSTALL);
                 resolvedPlugins.remove(pluginId);
-                
+
                 // 删除插件文件
                 Path pluginPath = Path.of(pluginInsideInfo.getPluginDescriptor().getPluginPath());
-                FileUtils.deleteDirectory(pluginPath.toFile());
+                File pluginFile = pluginPath.toFile();
+                if (pluginFile.exists()) {
+                    if (pluginFile.isDirectory()) {
+                        // 如果是目录,使用 deleteDirectory
+                        FileUtils.deleteDirectory(pluginFile);
+                        log.info("插件目录已删除: {}", pluginPath);
+                    } else {
+                        // 如果是文件(如 .jar 文件),直接删除
+                        Files.delete(pluginPath);
+                        log.info("插件文件已删除: {}", pluginPath);
+                    }
+                }
                 
                 log.info("插件卸载成功: {}", pluginId);
             } catch (IOException e) {

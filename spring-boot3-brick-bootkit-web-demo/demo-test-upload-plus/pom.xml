@@ -86,11 +86,11 @@
                 <version>4.0.4</version>
                 <configuration>
                     <!--                    dev / prod-->
-                    <mode>dev</mode>
+                    <mode>prod</mode>
                     <pluginInfo>
                         <id>demoTestUploadPlus</id>
                         <bootstrapClass>com.zqzqq.bootkits.web.demo.uplo.DemoTestUploadPlusApplication</bootstrapClass>
-                        <version>0.0.1</version>
+                        <version>0.0.3</version>
                         <provider>jove</provider>
                         <description>demoTestUploadPlusApplication</description>
 
