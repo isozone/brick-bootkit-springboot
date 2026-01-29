@@ -186,16 +186,49 @@
                                             <div class="brick-info-value">{{ plugin.pluginId }}</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">插件名称</label>
+                                            <div class="brick-info-value">{{ plugin.name || '-' }}</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
                                             <label class="brick-info-label">版本</label>
                                             <div class="brick-info-value">{{ plugin.version || '-' }}</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">作者</label>
+                                            <div class="brick-info-value">{{ plugin.author || '-' }}</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">插件类型</label>
+                                            <div class="brick-info-value">{{ plugin.pluginType || '-' }}</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">主类</label>
+                                            <div class="brick-info-value">{{ plugin.mainClass || '-' }}</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">插件路径</label>
+                                            <div class="brick-info-value" style="word-break: break-all;">
+                                                <small>{{ plugin.pluginPath || '-' }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="brick-info-label">状态</label>
+                                            <div class="brick-info-value">
+                                                <span class="brick-badge" :class="getStateClass(plugin.state)">
+                                                    {{ getStateText(plugin.state) }}
+                                                </span>
+                                                <span v-if="plugin.stateDescription" class="ms-2 text-muted small">
+                                                    ({{ plugin.stateDescription }})
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
                                             <label class="brick-info-label">启动时间</label>
-                                            <div class="brick-info-value">{{ formatTime(plugin.startTime) }}</div>
+                                            <div class="brick-info-value">{{ formatDateTime(plugin.startTime) || '-' }}</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="brick-info-label">停止时间</label>
-                                            <div class="brick-info-value">{{ formatTime(plugin.stopTime) || '-' }}</div>
+                                            <div class="brick-info-value">{{ formatDateTime(plugin.stopTime) || '-' }}</div>
                                         </div>
                                         <div class="col-12 mb-3">
                                             <label class="brick-info-label">描述</label>
@@ -210,6 +243,7 @@
                                 <div class="brick-card-header">
                                     <h5 class="mb-0">
                                         <i class="bi bi-diagram-3 me-2"></i>依赖插件
+                                        <span class="badge bg-secondary ms-2">{{ plugin.dependentPlugins.length }}</span>
                                     </h5>
                                 </div>
                                 <div class="brick-card-body p-0">
@@ -234,6 +268,26 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 扩展信息 -->
+                            <div class="brick-card fade-in" v-if="plugin.extensionInfo && Object.keys(plugin.extensionInfo).length > 0">
+                                <div class="brick-card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-puzzle me-2"></i>扩展信息
+                                        <span class="badge bg-secondary ms-2">{{ Object.keys(plugin.extensionInfo).length }}</span>
+                                    </h5>
+                                </div>
+                                <div class="brick-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2" v-for="(value, key) in plugin.extensionInfo" :key="key">
+                                            <label class="brick-info-label">{{ key }}</label>
+                                            <div class="brick-info-value">
+                                                <code class="small">{{ formatValue(value) }}</code>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -467,12 +521,34 @@
                     return BrickWeb.formatTime(time);
                 };
                 
-                const formatBytes = (bytes) => {
-                    if (!bytes) return '0 B';
-                    const k = 1024;
-                    const sizes = ['B', 'KB', 'MB', 'GB'];
-                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                const formatDateTime = (time) => {
+                    if (!time) return null;
+                    try {
+                        const date = new Date(time);
+                        return date.toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                    } catch (e) {
+                        return time;
+                    }
+                };
+                
+                const formatValue = (value) => {
+                    if (value === null || value === undefined) {
+                        return '-';
+                    }
+                    if (typeof value === 'object') {
+                        return JSON.stringify(value, null, 2);
+                    }
+                    if (typeof value === 'boolean') {
+                        return value ? '是' : '否';
+                    }
+                    return String(value);
                 };
                 
                 onMounted(() => {
@@ -482,7 +558,7 @@
                 return {
                     loading, plugin, pluginId,
                     loadPluginDetail, startPlugin, stopPlugin, restartPlugin, uninstallPlugin,
-                    getStateText, getStateClass, formatTime, formatBytes
+                    getStateText, getStateClass, formatTime, formatDateTime, formatValue
                 };
             }
         }).mount('#app');

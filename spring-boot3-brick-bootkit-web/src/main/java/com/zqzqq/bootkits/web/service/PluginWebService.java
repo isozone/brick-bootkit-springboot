@@ -122,6 +122,8 @@ public class PluginWebService {
     /**
      * 获取插件详情
      */
+
+
     public PluginDetailDTO getPluginDetail(String pluginId) {
         PluginManager pluginManager = getPluginManager();
         PluginInfo pluginInfo = pluginManager.getPlugin(pluginId);
@@ -134,13 +136,39 @@ public class PluginWebService {
                 .state(pluginInfo.getPluginState() != null ? pluginInfo.getPluginState().name() : null)
                 .stateDescription(pluginInfo.getPluginState() != null ? pluginInfo.getPluginState().getDescription() : null)
                 .pluginPath(pluginInfo.getPluginPath())
-                .extensionInfo(pluginInfo.getExtensionInfo());
+                .extensionInfo(pluginInfo.getExtensionInfo() != null ? pluginInfo.getExtensionInfo() : java.util.Collections.emptyMap());
+        
+        // 格式化启动和停止时间
+        if (pluginInfo.getStartTime() > 0) {
+            builder.startTime(java.time.LocalDateTime.ofEpochSecond(pluginInfo.getStartTime() / 1000, 0, java.time.ZoneOffset.UTC).toString());
+        }
+        if (pluginInfo.getStopTime() > 0) {
+            builder.stopTime(java.time.LocalDateTime.ofEpochSecond(pluginInfo.getStopTime() / 1000, 0, java.time.ZoneOffset.UTC).toString());
+        }
         
         if (pluginInfo.getPluginDescriptor() != null) {
             builder.name(pluginInfo.getPluginDescriptor().getName())
                    .version(pluginInfo.getPluginDescriptor().getPluginVersion())
                    .description(pluginInfo.getPluginDescriptor().getDescription())
-                   .mainClass(pluginInfo.getPluginDescriptor().getMainClass());
+                   .mainClass(pluginInfo.getPluginDescriptor().getMainClass())
+                   .author(pluginInfo.getPluginDescriptor().getProvider())
+                   .pluginType(pluginInfo.getPluginDescriptor().getType() != null ? 
+                            pluginInfo.getPluginDescriptor().getType().name() : null);
+            
+            // 处理依赖插件
+            java.util.List<com.zqzqq.bootkits.common.DependencyPlugin> dependencies = 
+                pluginInfo.getPluginDescriptor().getDependencyPlugin();
+            if (dependencies != null && !dependencies.isEmpty()) {
+                java.util.List<PluginDetailDTO.DependencyPluginDTO> dependencyDTOs = 
+                    dependencies.stream()
+                        .map(dep -> PluginDetailDTO.DependencyPluginDTO.builder()
+                                .pluginId(dep.getId())
+                                .pluginName(dep.getId())
+                                .version(dep.getVersion())
+                                .build())
+                        .collect(java.util.stream.Collectors.toList());
+                builder.dependentPlugins(dependencyDTOs);
+            }
         }
         
         return builder.build();
