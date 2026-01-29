@@ -387,38 +387,30 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
         }
     }
 
-    protected Class<?> findClassFromLocal(String name) {
+protected Class<?> findClassFromLocal(String name) {
         Class<?> aClass;
         String formatClassName = formatClassName(name);
 
-        System.out.println("[GenericClassLoader] Attempting to load class: " + name + ", formatted: " + formatClassName);
-
         aClass = pluginClassCache.get(formatClassName);
         if (aClass != null) {
-            System.out.println("[GenericClassLoader] Class found in cache: " + name);
             return aClass;
         }
 
         Resource resource = resourceLoaderFactory.findFirstResource(formatClassName);
-        System.out.println("[GenericClassLoader] Resource found: " + (resource != null));
-        if(resource != null){
-            System.out.println("[GenericClassLoader] Resource URL: " + resource.getUrl());
-        }
 
         byte[] bytes = null;
         if(resource != null){
             try {
                 resource.resolveByte();  // 先解析字节码
+                bytes = resource.getBytes();
             } catch (Exception e) {
-                log.error("Failed to resolve resource bytes for: " + formatClassName, e);
+                // 忽略异常，继续尝试其他方式
             }
-            bytes = resource.getBytes();
         }
         if(bytes == null || bytes.length == 0){
             bytes = getClassByte(formatClassName);
         }
         if(bytes == null || bytes.length == 0){
-            System.out.println("[GenericClassLoader] Failed to load class bytes for: " + name);
             return null;
         }
         aClass = super.defineClass(name, bytes, 0, bytes.length );
@@ -428,8 +420,9 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
         if (aClass.getPackage() == null) {
             int lastDotIndex = name.lastIndexOf( '.' );
             String packageName = (lastDotIndex >= 0) ? name.substring( 0, lastDotIndex) : "";
-            super.definePackage(packageName, null, null, null,
-                    null, null, null, null );
+            super.definePackage(packageName, null, null,
+                    null, null, null, null,
+                    null);
         }
         pluginClassCache.put(name, aClass);
         return aClass;

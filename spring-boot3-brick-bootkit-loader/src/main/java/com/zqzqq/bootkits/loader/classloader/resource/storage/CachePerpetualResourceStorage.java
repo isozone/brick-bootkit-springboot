@@ -37,9 +37,9 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
     protected final Map<String, List<Resource>> resourceStorage = new ConcurrentHashMap<>();
     
     /**
-     * 最大缓存条目数，默认为10000，超过时淘汰最早的条目
+     * 最大缓存条目数，默认为5000，超过时淘汰最早的条目
      */
-    private static final int MAX_CACHE_SIZE = 10000;
+    private static final int MAX_CACHE_SIZE = 5000;
     
     /**
      * 记录资源添加顺序，用于LRU淘汰
@@ -50,19 +50,37 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
     public void addResource(Resource resource) throws Exception {
         resource.resolveByte();
         String name = formatResourceName(resource.getName());
-        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] addResource - original: " + resource.getName() + ", formatted: " + name + ", url: " + resource.getUrl());
 
         // 检查是否超过最大容量
         if (resourceStorage.size() >= MAX_CACHE_SIZE && !resourceStorage.containsKey(name)) {
-            // 淘汰最早的条目
-            String oldestKey = accessOrder.keySet().iterator().next();
-            resourceStorage.remove(oldestKey);
-            accessOrder.remove(oldestKey);
+            // 优先淘汰非类文件（配置文件、资源文件等），保留类文件
+            String oldestNonClassKey = findOldestNonClassKey();
+            if (oldestNonClassKey != null) {
+                resourceStorage.remove(oldestNonClassKey);
+                accessOrder.remove(oldestNonClassKey);
+            } else {
+                // 如果没有非类文件可淘汰，才淘汰最早的条目
+                String oldestKey = accessOrder.keySet().iterator().next();
+                resourceStorage.remove(oldestKey);
+                accessOrder.remove(oldestKey);
+            }
         }
 
         List<Resource> resources = resourceStorage.computeIfAbsent(name, k -> new ArrayList<>());
         resources.add(resource);
         accessOrder.put(name, System.currentTimeMillis());
+    }
+
+    /**
+     * 找到最早的非类文件条目进行淘汰
+     */
+    private String findOldestNonClassKey() {
+        for (String key : accessOrder.keySet()) {
+            if (!key.endsWith(".class")) {
+                return key;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -79,12 +97,8 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
         if(ObjectUtils.isEmpty(name)){
             return null;
         }
-        String originalName = name;
         name = formatResourceName(name);
-        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] getFirst - original: " + originalName + ", formatted: " + name);
-        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] resourceStorage size: " + resourceStorage.size());
         List<Resource> resources = resourceStorage.get(name);
-        System.out.println("[CachePerpetualResourceStorage#" + this.hashCode() + "] getFirst result: " + (resources != null && !resources.isEmpty()));
         if(ObjectUtils.isEmpty(resources)){
             return null;
         }

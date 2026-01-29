@@ -83,17 +83,12 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
         if(ObjectUtils.isEmpty(name)){
             return null;
         }
-        String originalName = name;
         name = formatResourceName(name);
-        System.out.println("[CacheFastResourceStorage] getFirst - original: " + originalName + ", formatted: " + name);
         Resource firstResource = resourceStorage.getFirst(name);
-        System.out.println("[CacheFastResourceStorage] getFirst result from cache: " + (firstResource != null));
         if(firstResource != null){
             return firstResource;
         }
-        Resource searchResult = searchResource(name);
-        System.out.println("[CacheFastResourceStorage] getFirst result from search: " + (searchResult != null));
-        return searchResult;
+        return searchResource(name);
     }
 
     @Override

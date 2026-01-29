@@ -53,7 +53,7 @@ public class CacheResource extends DefaultResource {
 
     @Override
     public void resolveByte() throws Exception{
-        if(byteGetter != null){
+        if(byteGetter != null && bytes == null){
             bytes = byteGetter.get();
         }
     }
