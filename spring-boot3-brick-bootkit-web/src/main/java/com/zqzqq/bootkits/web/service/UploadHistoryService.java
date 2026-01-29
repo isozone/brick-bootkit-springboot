@@ -273,13 +273,29 @@ public class UploadHistoryService {
                 return;
             }
             
-            // 简单的 JSON 解析（实际项目中可以使用 Jackson 或 Gson）
-            // 这里为了保持轻量级，使用手动解析
-            if (content.startsWith("[") && content.endsWith("]")) {
-                // JSON 数组格式
-                // 注意：这里只是简单示例，实际需要更完善的 JSON 解析
-                log.info("加载 {} 条上传历史记录", records.size());
+            // 使用 Hutool 的 JSONUtil 解析 JSON
+            cn.hutool.json.JSONArray jsonArray = cn.hutool.json.JSONUtil.parseArray(content);
+            
+            for (int i = 0; i < jsonArray.size(); i++) {
+                cn.hutool.json.JSONObject jsonObject = jsonArray.getJSONObject(i);
+                PluginUploadHistory history = new PluginUploadHistory();
+                
+                history.setUploadId(jsonObject.getStr("uploadId"));
+                history.setPluginId(jsonObject.getStr("pluginId"));
+                history.setPluginName(jsonObject.getStr("pluginName"));
+                history.setVersion(jsonObject.getStr("version"));
+                history.setUploadTime(jsonObject.get("uploadTime", LocalDateTime.class));
+                history.setStatus(PluginUploadHistory.UploadStatus.valueOf(jsonObject.getStr("status")));
+                history.setFilePath(jsonObject.getStr("filePath"));
+                history.setFileSize(jsonObject.getLong("fileSize"));
+                history.setAutoStart(jsonObject.getBool("autoStart"));
+                history.setBackupPath(jsonObject.getStr("backupPath"));
+                history.setErrorMessage(jsonObject.getStr("errorMessage"));
+                
+                records.add(history);
             }
+            
+            log.info("加载 {} 条上传历史记录", records.size());
             
         } catch (Exception e) {
             log.error("加载上传历史失败", e);

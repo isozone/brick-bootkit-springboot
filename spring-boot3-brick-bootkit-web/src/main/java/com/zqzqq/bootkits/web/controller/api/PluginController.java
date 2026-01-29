@@ -376,12 +376,12 @@ public class PluginController {
     @GetMapping("/upload-history")
     @Operation(summary = "获取插件上传历史")
     public ApiResult<PageResult<PluginUploadHistory>> getUploadHistory(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String pluginId,
-            @RequestParam(required = false) PluginUploadHistory.UploadStatus status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "pluginId", required = false) String pluginId,
+            @RequestParam(value = "status", required = false) PluginUploadHistory.UploadStatus status,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         PageResult<PluginUploadHistory> result = uploadHistoryService.queryHistory(
                 page, size, pluginId, status, startDate, endDate);
         return ApiResult.success(result);
