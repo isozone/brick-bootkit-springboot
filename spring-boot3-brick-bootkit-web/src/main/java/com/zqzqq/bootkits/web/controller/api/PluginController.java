@@ -6,6 +6,7 @@ import com.zqzqq.bootkits.web.dto.*;
 import com.zqzqq.bootkits.web.service.DemoPluginService;
 import com.zqzqq.bootkits.web.service.PluginWebService;
 import com.zqzqq.bootkits.web.service.SimplePluginService;
+import com.zqzqq.bootkits.web.service.UploadHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,16 +14,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -40,6 +43,9 @@ public class PluginController {
     private final ObjectProvider<SimplePluginService> simplePluginServiceProvider;
     private final ObjectProvider<DemoPluginService> demoPluginServiceProvider;
     private final ApplicationContext applicationContext;
+    
+    @Autowired
+    private UploadHistoryService uploadHistoryService;
 
     public PluginController(
             ObjectProvider<PluginWebService> pluginWebServiceProvider, 
@@ -362,5 +368,80 @@ public class PluginController {
     public static class PluginVerifyResult {
         private boolean valid;
         private String message;
+    }
+
+    /**
+     * 获取上传历史列表
+     */
+    @GetMapping("/upload-history")
+    @Operation(summary = "获取插件上传历史")
+    public ApiResult<PageResult<PluginUploadHistory>> getUploadHistory(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String pluginId,
+            @RequestParam(required = false) PluginUploadHistory.UploadStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        PageResult<PluginUploadHistory> result = uploadHistoryService.queryHistory(
+                page, size, pluginId, status, startDate, endDate);
+        return ApiResult.success(result);
+    }
+
+    /**
+     * 获取所有上传历史
+     */
+    @GetMapping("/upload-history/all")
+    @Operation(summary = "获取所有上传历史")
+    public ApiResult<List<PluginUploadHistory>> getAllUploadHistory() {
+        List<PluginUploadHistory> history = uploadHistoryService.getAllHistory();
+        return ApiResult.success(history);
+    }
+
+    /**
+     * 根据上传ID获取历史记录
+     */
+    @GetMapping("/upload-history/{uploadId}")
+    @Operation(summary = "根据上传ID获取历史记录")
+    public ApiResult<PluginUploadHistory> getUploadHistoryById(@PathVariable String uploadId) {
+        PluginUploadHistory history = uploadHistoryService.getHistoryById(uploadId);
+        if (history == null) {
+            return ApiResult.error(404, "上传历史记录不存在");
+        }
+        return ApiResult.success(history);
+    }
+
+    /**
+     * 删除指定的上传历史记录
+     */
+    @DeleteMapping("/upload-history/{uploadId}")
+    @Operation(summary = "删除上传历史记录")
+    public ApiResult<Void> deleteUploadHistory(@PathVariable String uploadId) {
+        boolean deleted = uploadHistoryService.deleteHistory(uploadId);
+        if (!deleted) {
+            return ApiResult.error(404, "上传历史记录不存在");
+        }
+        return ApiResult.success();
+    }
+
+    /**
+     * 批量删除指定日期之前的上传历史记录
+     */
+    @DeleteMapping("/upload-history")
+    @Operation(summary = "批量删除上传历史记录")
+    public ApiResult<Integer> deleteUploadHistoryBefore(
+            @Parameter(description = "删除指定日期之前的记录") 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate) {
+        int deletedCount = uploadHistoryService.deleteHistoryBefore(beforeDate);
+        return ApiResult.success(deletedCount);
+    }
+
+    /**
+     * 清空所有上传历史记录
+     */
+    @DeleteMapping("/upload-history/all")
+    @Operation(summary = "清空所有上传历史")
+    public ApiResult<Void> clearAllUploadHistory() {
+        uploadHistoryService.clearAllHistory();
+        return ApiResult.success();
     }
 }

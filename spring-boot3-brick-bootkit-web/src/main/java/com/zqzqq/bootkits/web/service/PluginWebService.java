@@ -10,15 +10,15 @@ import com.zqzqq.bootkits.web.dto.ErrorCode;
 import com.zqzqq.bootkits.web.dto.PageResult;
 import com.zqzqq.bootkits.web.dto.PluginDTO;
 import com.zqzqq.bootkits.web.dto.PluginDetailDTO;
+import com.zqzqq.bootkits.web.dto.PluginUploadHistory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,10 @@ public class PluginWebService {
 
     private final ObjectProvider<PluginManager> pluginManagerProvider;
     private final BrickWebProperties properties;
+
+
+    @Autowired
+    UploadHistoryService uploadHistoryService;
 
     public PluginWebService(ObjectProvider<PluginManager> pluginManagerProvider, BrickWebProperties properties) {
         this.pluginManagerProvider = pluginManagerProvider;
@@ -301,6 +306,24 @@ public class PluginWebService {
                 }
             }
 
+            // 记录上传历史（成功）
+            PluginUploadHistory history = PluginUploadHistory.builder()
+                    .uploadId(UploadHistoryService.generateUploadId())
+                    .pluginId(actualPluginId)
+                    .pluginName(pluginInfo.getPluginDescriptor() != null ?
+                               pluginInfo.getPluginDescriptor().getName() : actualPluginId)
+                    .version(pluginInfo.getPluginDescriptor() != null ?
+                             pluginInfo.getPluginDescriptor().getPluginVersion() : null)
+                    .uploadTime(LocalDateTime.now())
+                    .status(PluginUploadHistory.UploadStatus.SUCCESS)
+                    .filePath(targetPath.toString())
+                    .fileSize(targetPath != null && Files.exists(targetPath) ? targetPath.toFile().length() : null)
+                    .autoStart(autoStart)
+                    .backupPath(backupPath != null ? backupPath.toString() : null)
+                    .errorMessage(null)
+                    .build();
+            uploadHistoryService.recordUpload(history);
+
             return ApiResult.success(PluginDTO.from(pluginInfo));
 
         } catch (IOException e) {
@@ -313,11 +336,17 @@ public class PluginWebService {
                     log.error("恢复旧版本失败", restoreEx);
                 }
             }
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, autoStart);
             throw new PluginException("插件安装失败: " + e.getMessage());
         } catch (PluginException e) {
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, autoStart);
             throw e;
         } catch (Exception e) {
             log.error("插件安装异常", e);
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, autoStart);
             throw new PluginException("插件安装异常: " + e.getMessage());
         }
     }
@@ -443,6 +472,24 @@ public class PluginWebService {
                 }
             }
 
+            // 记录上传历史（成功）
+            PluginUploadHistory history = PluginUploadHistory.builder()
+                    .uploadId(UploadHistoryService.generateUploadId())
+                    .pluginId(actualPluginId)
+                    .pluginName(pluginInfo.getPluginDescriptor() != null ? 
+                               pluginInfo.getPluginDescriptor().getName() : actualPluginId)
+                    .version(pluginInfo.getPluginDescriptor() != null ? 
+                             pluginInfo.getPluginDescriptor().getPluginVersion() : null)
+                    .uploadTime(LocalDateTime.now())
+                    .status(PluginUploadHistory.UploadStatus.SUCCESS)
+                    .filePath(tempPath.toString())
+                    .fileSize(tempPath != null && Files.exists(tempPath) ? tempPath.toFile().length() : null)
+                    .autoStart(enableAfterUpload)
+                    .backupPath(backupPath != null ? backupPath.toString() : null)
+                    .errorMessage(null)
+                    .build();
+            uploadHistoryService.recordUpload(history);
+
             return ApiResult.success(PluginDTO.from(pluginInfo));
 
         } catch (IOException e) {
@@ -459,11 +506,17 @@ public class PluginWebService {
                     log.error("恢复旧版本失败", restoreEx);
                 }
             }
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
             throw new PluginException("插件上传失败: " + e.getMessage());
         } catch (PluginException e) {
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
             throw e;
         } catch (Exception e) {
             log.error("插件上传异常", e);
+            // 记录上传历史（失败）
+            recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
             throw new PluginException("插件上传异常: " + e.getMessage());
         }
     }
@@ -499,6 +552,31 @@ public class PluginWebService {
         } catch (Exception e) {
             log.error("恢复旧版本插件失败: {}", pluginId, e);
             throw new RuntimeException("恢复旧版本失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 记录失败的上传历史
+     */
+    private void recordFailedHistory(String pluginId, String filename, String errorMessage, 
+                                     Path tempPath, Boolean autoStart) {
+        try {
+            PluginUploadHistory history = PluginUploadHistory.builder()
+                    .uploadId(UploadHistoryService.generateUploadId())
+                    .pluginId(pluginId != null ? pluginId : filename)
+                    .pluginName(pluginId)
+                    .version(null)
+                    .uploadTime(LocalDateTime.now())
+                    .status(PluginUploadHistory.UploadStatus.FAILED)
+                    .filePath(tempPath != null ? tempPath.toString() : filename)
+                    .fileSize(tempPath != null && Files.exists(tempPath) ? tempPath.toFile().length() : null)
+                    .autoStart(autoStart)
+                    .backupPath(null)
+                    .errorMessage(errorMessage)
+                    .build();
+            uploadHistoryService.recordUpload(history);
+        } catch (Exception e) {
+            log.error("记录失败历史时发生错误", e);
         }
     }
 

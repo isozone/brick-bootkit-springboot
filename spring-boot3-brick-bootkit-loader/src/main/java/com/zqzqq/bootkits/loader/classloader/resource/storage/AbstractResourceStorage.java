@@ -147,9 +147,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
                 break;
             }
             searchUrl.add(baseUrl);
-            System.out.println("[AbstractResourceStorage] Checking hot URL: " + baseUrl);
             URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
-            System.out.println("[AbstractResourceStorage] getExistUrl result: " + (existUrl != null));
             if(existUrl != null){
                 matchBaseUrl = baseUrl;
                 matchExistUrl = existUrl;
@@ -167,7 +165,6 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
                 }
 
                 URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
-                System.out.println("[AbstractResourceStorage] getExistUrl result: " + (existUrl != null));
                 if(existUrl != null){
                     matchBaseUrl = baseUrl;
                     matchExistUrl = existUrl;

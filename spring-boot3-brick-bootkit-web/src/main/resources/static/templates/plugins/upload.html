@@ -291,33 +291,82 @@
                                     <i class="bi bi-clock-history text-secondary"></i>
                                     上传历史
                                 </h5>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-danger btn-sm" @click="clearAllHistory" :disabled="uploadHistory.length === 0">
+                                        <i class="bi bi-trash3"></i> 清空全部
+                                    </button>
+                                </div>
                             </div>
                             <div class="brick-card-body p-0">
+                                <!-- 筛选器 -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               v-model="filterPluginId" 
+                                               placeholder="插件ID" 
+                                               @keyup.enter="applyFilter">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select form-select-sm" v-model="filterStatus" @change="applyFilter">
+                                            <option value="">全部状态</option>
+                                            <option value="SUCCESS">成功</option>
+                                            <option value="FAILED">失败</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5 text-end">
+                                        <button class="btn btn-secondary btn-sm me-2" @click="applyFilter">
+                                            <i class="bi bi-search"></i> 筛选
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" @click="clearFilter" v-if="filterPluginId || filterStatus">
+                                            <i class="bi bi-x-circle"></i> 清除
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 表格 -->
                                 <div class="table-responsive">
                                     <table class="brick-table mb-0">
                                         <thead>
                                             <tr>
+                                                <th>插件ID</th>
                                                 <th>插件名称</th>
                                                 <th>版本</th>
                                                 <th>大小</th>
                                                 <th>状态</th>
-                                                <th>时间</th>
+                                                <th>上传时间</th>
+                                                <th style="width: 80px;">操作</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="item in uploadHistory" :key="item.id">
-                                                <td class="fw-medium">{{ item.name }}</td>
-                                                <td>{{ item.version || '-' }}</td>
-                                                <td>{{ formatFileSize(item.size) }}</td>
+                                            <tr v-if="historyLoading">
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">正在加载...</p>
+                                                </td>
+                                            </tr>
+                                            <tr v-for="item in uploadHistory" :key="item.uploadId">
+                                                <td class="fw-medium small">{{ item.pluginId }}</td>
+                                                <td>{{ item.pluginName || '-' }}</td>
+                                                <td><span class="badge bg-light text-dark">{{ item.version || '-' }}</span></td>
+                                                <td>{{ formatFileSize(item.fileSize) }}</td>
                                                 <td>
                                                     <span class="brick-badge" :class="getHistoryStatusClass(item.status)">
                                                         {{ getHistoryStatusText(item.status) }}
                                                     </span>
                                                 </td>
-                                                <td class="text-muted small">{{ formatDateTime(item.time) }}</td>
+                                                <td class="text-muted small">{{ formatDateTime(item.uploadTime) }}</td>
+                                                <td>
+                                                    <button class="btn btn-outline-danger btn-sm" 
+                                                            @click="deleteHistoryItem(item.uploadId)"
+                                                            title="删除">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
                                             </tr>
-                                            <tr v-if="uploadHistory.length === 0">
-                                                <td colspan="5" class="text-center py-4 text-muted">
+                                            <tr v-if="!historyLoading && uploadHistory.length === 0">
+                                                <td colspan="7" class="text-center py-4 text-muted">
                                                     <i class="bi bi-inbox display-6"></i>
                                                     <p class="mb-0 mt-2">暂无上传记录</p>
                                                 </td>
@@ -325,6 +374,29 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                
+                                <!-- 分页 -->
+                                <nav aria-label="Page navigation" class="mt-3" v-if="totalPages > 1">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                        <li class="page-item" v-for="page in Math.min(5, totalPages)" :key="page" 
+                                            :class="{ active: page === currentPage }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                                        </li>
+                                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <div class="text-center text-muted small mt-2">
+                                        共 {{ totalCount }} 条记录，第 {{ currentPage }} / {{ totalPages }} 页
+                                    </div>
+                                </nav>
                             </div>
                         </div>
                     </div>
@@ -462,6 +534,13 @@
                 const overwrite = ref(false);
                 const pluginInfo = ref(null);
                 const uploadHistory = ref([]);
+                const historyLoading = ref(false);
+                const currentPage = ref(1);
+                const pageSize = ref(10);
+                const totalPages = ref(1);
+                const totalCount = ref(0);
+                const filterPluginId = ref('');
+                const filterStatus = ref('');
                 
                 const handleFileSelect = (event) => {
                     const file = event.target.files[0];
@@ -522,74 +601,138 @@
                         
                         if (response.data.code === 200) {
                             pluginInfo.value = response.data.data;
-                            uploadHistory.value.unshift({
-                                id: Date.now(),
-                                name: selectedFile.value.name,
-                                version: pluginInfo.value?.version,
-                                size: selectedFile.value.size,
-                                status: 'success',
-                                time: new Date()
-                            });
                             BrickWeb.toast('success', '插件上传成功！');
+                            loadUploadHistory();
                         } else {
-                            uploadHistory.value.unshift({
-                                id: Date.now(),
-                                name: selectedFile.value.name,
-                                version: null,
-                                size: selectedFile.value.size,
-                                status: 'failed',
-                                time: new Date()
-                            });
                             BrickWeb.toast('error', response.data.message || '上传失败');
                         }
                     } catch (error) {
-                        uploadHistory.value.unshift({
-                            id: Date.now(),
-                            name: selectedFile.value.name,
-                            version: null,
-                            size: selectedFile.value.size,
-                            status: 'failed',
-                            time: new Date()
-                        });
                         BrickWeb.toast('error', '上传失败，请重试');
                     } finally {
                         uploading.value = false;
                     }
                 };
                 
+                const loadUploadHistory = async () => {
+                    historyLoading.value = true;
+                    try {
+                        const params = {
+                            page: currentPage.value,
+                            size: pageSize.value
+                        };
+                        if (filterPluginId.value) {
+                            params.pluginId = filterPluginId.value;
+                        }
+                        if (filterStatus.value) {
+                            params.status = filterStatus.value;
+                        }
+                        
+                        const response = await BrickWeb.api.get('/plugins/upload-history', params);
+                        if (response.code === 200 && response.data) {
+                            uploadHistory.value = response.data.records || [];
+                            totalPages.value = response.data.pages || 1;
+                            totalCount.value = response.data.total || 0;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load upload history:', error);
+                    } finally {
+                        historyLoading.value = false;
+                    }
+                };
+                
+                const deleteHistoryItem = (uploadId) => {
+                    BrickWeb.confirm('删除历史记录', '确定要删除这条上传历史记录吗？', async () => {
+                        try {
+                            const response = await BrickWeb.api.delete('/plugins/upload-history/' + uploadId);
+                            if (response.code === 200) {
+                                BrickWeb.toast('success', '删除成功');
+                                loadUploadHistory();
+                            } else {
+                                BrickWeb.toast('error', response.message || '删除失败');
+                            }
+                        } catch (error) {
+                            BrickWeb.toast('error', '删除失败');
+                        }
+                    });
+                };
+                
+                const clearAllHistory = () => {
+                    BrickWeb.dangerConfirm('清空历史记录', '确定要清空所有上传历史记录吗？此操作不可恢复！', async () => {
+                        try {
+                            const response = await BrickWeb.api.delete('/plugins/upload-history/all');
+                            if (response.code === 200) {
+                                BrickWeb.toast('success', '清空成功');
+                                loadUploadHistory();
+                            } else {
+                                BrickWeb.toast('error', response.message || '清空失败');
+                            }
+                        } catch (error) {
+                            BrickWeb.toast('error', '清空失败');
+                        }
+                    });
+                };
+                
+                const changePage = (page) => {
+                    if (page >= 1 && page <= totalPages.value) {
+                        currentPage.value = page;
+                        loadUploadHistory();
+                    }
+                };
+                
                 const formatFileSize = (bytes) => {
-                    if (bytes === 0) return '0 Bytes';
+                    if (!bytes) return '0 Bytes';
                     const k = 1024;
                     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
                     const i = Math.floor(Math.log(bytes) / Math.log(k));
                     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                 };
                 
-                const formatDateTime = (date) => {
+                const formatDateTime = (dateStr) => {
+                    if (!dateStr) return '-';
+                    const date = new Date(dateStr);
                     return date.toLocaleString('zh-CN');
                 };
                 
                 const getHistoryStatusClass = (status) => {
-                    return status === 'success' ? 'brick-badge-success' : 'brick-badge-danger';
+                    const classMap = {
+                        'SUCCESS': 'brick-badge-success',
+                        'FAILED': 'brick-badge-danger'
+                    };
+                    return classMap[status] || 'brick-badge-secondary';
                 };
                 
                 const getHistoryStatusText = (status) => {
-                    return status === 'success' ? '成功' : '失败';
+                    const textMap = {
+                        'SUCCESS': '成功',
+                        'FAILED': '失败'
+                    };
+                    return textMap[status] || status || '未知';
+                };
+                
+                const applyFilter = () => {
+                    currentPage.value = 1;
+                    loadUploadHistory();
+                };
+                
+                const clearFilter = () => {
+                    filterPluginId.value = '';
+                    filterStatus.value = '';
+                    currentPage.value = 1;
+                    loadUploadHistory();
                 };
                 
                 onMounted(() => {
-                    // 模拟上传历史数据
-                    uploadHistory.value = [
-                        { id: 1, name: 'example-plugin-1.0.0.jar', version: '1.0.0', size: 1024000, status: 'success', time: new Date(Date.now() - 3600000) },
-                        { id: 2, name: 'demo-plugin-2.0.0.jar', version: '2.0.0', size: 2048000, status: 'success', time: new Date(Date.now() - 86400000) }
-                    ];
+                    loadUploadHistory();
                 });
                 
                 return {
                     fileInput, selectedFile, isDragging, uploading, uploadProgress, uploadingFileName,
-                    autoStart, overwrite, pluginInfo, uploadHistory,
+                    autoStart, overwrite, pluginInfo, uploadHistory, historyLoading,
+                    currentPage, pageSize, totalPages, totalCount, filterPluginId, filterStatus,
                     handleFileSelect, handleDrop, clearFile, uploadPlugin,
-                    formatFileSize, formatDateTime, getHistoryStatusClass, getHistoryStatusText
+                    loadUploadHistory, deleteHistoryItem, clearAllHistory, changePage,
+                    formatFileSize, formatDateTime, getHistoryStatusClass, getHistoryStatusText,
+                    applyFilter, clearFilter
                 };
             }
         }).mount('#app');
