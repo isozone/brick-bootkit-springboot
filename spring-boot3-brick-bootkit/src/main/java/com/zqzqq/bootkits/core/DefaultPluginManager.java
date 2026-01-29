@@ -451,18 +451,23 @@ public class DefaultPluginManager implements PluginManager{
     public void uninstall(String pluginId) throws PluginException {
         withGlobalWriteLock(() -> {
             try {
-                // 先停止插件
-                if (startedPlugins.containsKey(pluginId)) {
-                    stop(pluginId);
+                // 从 startedPlugins 或 resolvedPlugins 中获取插件信息
+                PluginInsideInfo pluginInsideInfo = startedPlugins.get(pluginId);
+                if (pluginInsideInfo == null) {
+                    pluginInsideInfo = resolvedPlugins.get(pluginId);
                 }
                 
-                PluginInsideInfo pluginInsideInfo = resolvedPlugins.get(pluginId);
                 if (pluginInsideInfo == null) {
                     throw new PluginException("插件不存在: " + pluginId);
                 }
                 
-                // 卸载插件
-                stop(pluginInsideInfo, PluginCloseType.UNINSTALL);
+                // 只在插件已启动时才调用 stop()，如果插件已经停止则跳过
+                if (startedPlugins.containsKey(pluginId)) {
+                    stop(pluginInsideInfo, PluginCloseType.UNINSTALL);
+                }
+                
+                // 从两个 Map 中移除插件
+                startedPlugins.remove(pluginId);
                 resolvedPlugins.remove(pluginId);
 
                 // 删除插件文件
@@ -570,10 +575,13 @@ public class DefaultPluginManager implements PluginManager{
         withPluginLock(pluginId, () -> {
             try {
                 boolean wasStarted = startedPlugins.containsKey(pluginId);
+                log.info("重启插件: {}, 原始状态: {}", pluginId, wasStarted ? "已启动" : "已停止");
                 
-                // 先停止插件
+                // 先停止插件（如果已启动）
                 if (wasStarted) {
+                    log.info("停止插件: {}", pluginId);
                     stop(pluginId);
+                    log.info("插件已停止: {}, startedPlugins 大小: {}", pluginId, startedPlugins.size());
                 }
                 
                 PluginInsideInfo pluginInsideInfo = resolvedPlugins.get(pluginId);
@@ -585,17 +593,22 @@ public class DefaultPluginManager implements PluginManager{
                 Path pluginPath = Path.of(pluginInsideInfo.getPluginDescriptor().getPluginPath());
                 PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(pluginPath);
                 PluginInsideInfo newPluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
+                // 设置插件状态为已停止
+                newPluginInsideInfo.setPluginState(EnhancedPluginState.STOPPED);
+                log.info("创建新的 PluginInsideInfo: {}, 状态: STOPPED", pluginId);
                 
                 // 更新插件信息
                 resolvedPlugins.put(pluginId, newPluginInsideInfo);
                 
-                // 如果之前是启动状态，则重新启动
-                if (wasStarted) {
-                    start(pluginId);
-                }
+                // 重启插件：总是尝试启动插件
+                log.info("重新启动插件: {}", pluginId);
+                start(pluginId);
+                log.info("插件重新启动完成: {}, 当前状态: {}", pluginId, 
+                    startedPlugins.containsKey(pluginId) ? "已启动" : "未启动");
                 
                 log.info("插件重新加载成功: {}", pluginId);
             } catch (Exception e) {
+                log.error("重新加载插件失败: {}", pluginId, e);
                 throw new PluginException("重新加载插件失败: " + pluginId, e);
             }
         });
