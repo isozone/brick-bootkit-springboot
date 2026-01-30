@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>执行记录 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+    <style>
+        .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+        .status-success { background: #dcfce7; color: #15803d; }
+        .status-failed { background: #fee2e2; color: #dc2626; }
+        .status-running { background: #dbeafe; color: #2563eb; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .log-viewer { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; font-size: 0.875rem; max-height: 400px; overflow: auto; padding: 1rem; border-radius: 0.25rem; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon"><i class="bi bi-box-seam"></i></div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/index.html"><i class="bi bi-speedometer2"></i><span>仪表盘</span></a></li>
+                    </ul>
+                </div>
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/plugins/index.html"><i class="bi bi-plug"></i><span>插件列表</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/plugins/upload.html"><i class="bi bi-cloud-upload"></i><span>上传插件</span></a></li>
+                    </ul>
+                </div>
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">脚本管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/index.html"><i class="bi bi-file-earmark-code"></i><span>脚本列表</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/templates.html"><i class="bi bi-grid-3x3"></i><span>模板管理</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link active" href="/brick-web/templates/scripts/executions.html"><i class="bi bi-clock-history"></i><span>执行记录</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/scheduler.html"><i class="bi bi-clock"></i><span>调度任务</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">B</div>
+                    <div style="flex: 1;"><div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div><div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div></div>
+                </div>
+            </div>
+        </aside>
+        <main class="brick-main">
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <a href="/brick-web/templates/scripts/executions.html">脚本管理</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">执行记录</span>
+                    </nav>
+                </div>
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()"><i class="bi bi-arrow-clockwise"></i><span class="d-none d-sm-inline">刷新</span></button>
+                </div>
+            </header>
+            <div class="brick-content" id="app">
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">执行记录</h1>
+                    <p class="brick-page-subtitle">查看脚本执行历史和日志</p>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="brick-stat-card primary"><div class="brick-stat-icon"><i class="bi bi-list-ul"></i></div><div class="brick-stat-value">{{ executions.length }}</div><div class="brick-stat-label">总记录数</div></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="brick-stat-card success"><div class="brick-stat-icon"><i class="bi bi-check-circle"></i></div><div class="brick-stat-value">{{ successCount }}</div><div class="brick-stat-label">成功</div></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="brick-stat-card danger"><div class="brick-stat-icon"><i class="bi bi-x-circle"></i></div><div class="brick-stat-value">{{ failedCount }}</div><div class="brick-stat-label">失败</div></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="brick-stat-card warning"><div class="brick-stat-icon"><i class="bi bi-clock"></i></div><div class="brick-stat-value">{{ runningCount }}</div><div class="brick-stat-label">运行中</div></div>
+                    </div>
+                </div>
+                <div class="brick-card fade-in">
+                    <div class="brick-card-header">
+                        <h5 class="brick-card-title"><i class="bi bi-clock-history text-primary"></i>执行历史</h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" v-model="filterStatus" style="width: auto;">
+                                <option value="">全部状态</option>
+                                <option value="SUCCESS">成功</option>
+                                <option value="FAILED">失败</option>
+                                <option value="RUNNING">运行中</option>
+                            </select>
+                            <input type="text" class="form-control form-control-sm" placeholder="搜索脚本..." v-model="searchKeyword" style="width: 150px;">
+                        </div>
+                    </div>
+                    <div class="brick-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>执行ID</th>
+                                        <th>脚本名称</th>
+                                        <th>状态</th>
+                                        <th>开始时间</th>
+                                        <th>耗时</th>
+                                        <th>执行人</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="exec in filteredExecutions" :key="exec.executionId">
+                                        <td><code class="small">{{ exec.executionId?.substring(0, 8) }}...</code></td>
+                                        <td><i class="bi bi-file-earmark-code text-primary"></i> {{ exec.scriptName }}</td>
+                                        <td><span class="status-badge" :class="'status-' + exec.status?.toLowerCase()">{{ exec.status }}</span></td>
+                                        <td>{{ formatDate(exec.startTime) }}</td>
+                                        <td>{{ formatDuration(exec.executionTimeMs) }}</td>
+                                        <td>{{ exec.submittedBy || '-' }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" @click="viewDetail(exec)"><i class="bi bi-eye"></i></button>
+                                                <button class="btn btn-outline-secondary" @click="viewLogs(exec)"><i class="bi bi-text-left"></i></button>
+                                                <button class="btn btn-outline-success" @click="reRun(exec)" v-if="exec.status === 'SUCCESS'"><i class="bi bi-arrow-repeat"></i></button>
+                                                <button class="btn btn-outline-danger" @click="deleteRecord(exec)" v-if="exec.status !== 'RUNNING'"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="filteredExecutions.length === 0">
+                                        <td colspan="7" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            暂无执行记录
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- 详情模态框 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">执行详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" v-if="selectedExecution">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6"><strong>执行ID：</strong><code>{{ selectedExecution.executionId }}</code></div>
+                        <div class="col-md-6"><strong>脚本名称：</strong>{{ selectedExecution.scriptName }}</div>
+                        <div class="col-md-6"><strong>状态：</strong><span class="status-badge" :class="'status-' + selectedExecution.status?.toLowerCase()">{{ selectedExecution.status }}</span></div>
+                        <div class="col-md-6"><strong>退出码：</strong>{{ selectedExecution.exitCode ?? '-' }}</div>
+                        <div class="col-md-6"><strong>开始时间：</strong>{{ formatDate(selectedExecution.startTime) }}</div>
+                        <div class="col-md-6"><strong>结束时间：</strong>{{ formatDate(selectedExecution.endTime) }}</div>
+                        <div class="col-md-6"><strong>耗时：</strong>{{ formatDuration(selectedExecution.executionTimeMs) }}</div>
+                        <div class="col-md-6"><strong>执行人：</strong>{{ selectedExecution.submittedBy || '-' }}</div>
+                    </div>
+                    <div v-if="selectedExecution.output">
+                        <h6>输出：</h6>
+                        <pre class="log-viewer">{{ selectedExecution.output }}</pre>
+                    </div>
+                    <div v-if="selectedExecution.errorMessage">
+                        <h6 class="text-danger mt-3">错误信息：</h6>
+                        <pre class="log-viewer text-danger">{{ selectedExecution.errorMessage }}</pre>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 日志模态框 -->
+    <div class="modal fade" id="logModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">执行日志 - {{ selectedExecution?.executionId?.substring(0, 8) }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="log-viewer" v-if="executionLogs.length > 0">{{ executionLogs.join('\n') }}</div>
+                    <div class="p-4 text-center text-muted" v-else>暂无日志</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        createApp({
+            setup() {
+                const executions = ref([]);
+                const filterStatus = ref('');
+                const searchKeyword = ref('');
+                const selectedExecution = ref(null);
+                const executionLogs = ref([]);
+                const loading = ref(true);
+                let detailModal = null, logModal = null;
+                
+                const successCount = computed(() => executions.value.filter(e => e.status === 'SUCCESS').length);
+                const failedCount = computed(() => executions.value.filter(e => e.status === 'FAILED').length);
+                const runningCount = computed(() => executions.value.filter(e => e.status === 'RUNNING').length);
+                
+                const filteredExecutions = computed(() => {
+                    let result = executions.value;
+                    if (filterStatus.value) result = result.filter(e => e.status === filterStatus.value);
+                    if (searchKeyword.value) {
+                        const keyword = searchKeyword.value.toLowerCase();
+                        result = result.filter(e => e.scriptName?.toLowerCase().includes(keyword));
+                    }
+                    return result;
+                });
+                
+                const loadExecutions = async () => {
+                    loading.value = true;
+                    try {
+                        const resp = await axios.get('/brick-web/api/scripts/executions');
+                        if (resp.data.code === 200) executions.value = resp.data.data || [];
+                    } catch (e) { console.error('加载执行记录失败:', e); }
+                    loading.value = false;
+                };
+                
+                const formatDate = (date) => date ? new Date(date).toLocaleString('zh-CN') : '-';
+                const formatDuration = (ms) => ms ? (ms < 1000 ? ms + 'ms' : (ms < 60000 ? (ms/1000).toFixed(1) + 's' : (ms/60000).toFixed(1) + 'm')) : '-';
+                
+                const viewDetail = (exec) => {
+                    selectedExecution.value = exec;
+                    detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+                    detailModal.show();
+                };
+                
+                const viewLogs = async (exec) => {
+                    selectedExecution.value = exec;
+                    executionLogs.value = [];
+                    try {
+                        const resp = await axios.get('/brick-web/api/scripts/executions/' + exec.executionId + '/logs');
+                        if (resp.data.code === 200) executionLogs.value = resp.data.data || [];
+                    } catch (e) { console.error('加载日志失败:', e); }
+                    logModal = new bootstrap.Modal(document.getElementById('logModal'));
+                    logModal.show();
+                };
+                
+                const reRun = async (exec) => {
+                    try {
+                        const resp = await axios.post('/brick-web/api/scripts/execute', { scriptName: exec.scriptName });
+                        if (resp.data.code === 200) Swal.fire({ icon: 'success', title: '执行已启动' });
+                        else Swal.fire({ icon: 'error', title: '执行失败', text: resp.data.message });
+                    } catch (e) { Swal.fire({ icon: 'error', title: '执行失败', text: e.message }); }
+                };
+                
+                const deleteRecord = async (exec) => {
+                    const result = await Swal.fire({ title: '确认删除', text: '删除后无法恢复', icon: 'warning', showCancelButton: true, confirmButtonText: '删除', cancelButtonText: '取消' });
+                    if (result.isConfirmed) {
+                        try {
+                            const resp = await axios.delete('/brick-web/api/scripts/executions/' + exec.executionId);
+                            if (resp.data.code === 200) { Swal.fire({ icon: 'success', title: '删除成功' }); loadExecutions(); }
+                            else Swal.fire({ icon: 'error', title: '删除失败', text: resp.data.message });
+                        } catch (e) { Swal.fire({ icon: 'error', title: '删除失败', text: e.message }); }
+                    }
+                };
+                
+                onMounted(() => loadExecutions());
+                return { executions, filterStatus, searchKeyword, filteredExecutions, successCount, failedCount, runningCount, selectedExecution, executionLogs, viewDetail, viewLogs, reRun, deleteRecord, formatDate, formatDuration };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

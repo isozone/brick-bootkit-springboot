@@ -1,143 +1,70 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>插件列表 - Brick Web</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
-    
     <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
-    
     <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
     <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
     <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
     <script src="/brick-web/static/js/brick-web.js"></script>
+    <script src="/brick-web/static/js/components/sidebar.js"></script>
+    <script src="/brick-web/static/js/components/topbar.js"></script>
+    <script src="/brick-web/static/js/components/common.js"></script>
+    <style>
+        .plugin-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+        .plugin-icon.started { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .plugin-icon.stopped { background: var(--gray-100); color: var(--gray-500); }
+        .plugin-icon.failed { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    </style>
 </head>
 <body>
+    <div class="brick-overlay" id="sidebar-overlay"></div>
     <div class="brick-wrapper">
         <aside class="brick-sidebar" id="sidebar">
             <div class="brick-sidebar-header">
                 <a href="/brick-web/index.html" class="brick-brand">
-                    <div class="brick-brand-icon">
-                        <i class="bi bi-box-seam"></i>
-                    </div>
+                    <div class="brick-brand-icon"><i class="bi bi-box-seam"></i></div>
                     <span>Brick Web</span>
                 </a>
             </div>
-            
-            <nav class="brick-sidebar-nav">
-                <div class="brick-nav-section">
-                    <div class="brick-nav-section-title">概览</div>
-                    <ul class="brick-nav">
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/index.html">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>仪表盘</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="brick-nav-section">
-                    <div class="brick-nav-section-title">插件管理</div>
-                    <ul class="brick-nav">
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link active" href="/brick-web/plugins/index.html">
-                                <i class="bi bi-plug"></i>
-                                <span>插件列表</span>
-                            </a>
-                        </li>
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/plugins/upload.html">
-                                <i class="bi bi-cloud-upload"></i>
-                                <span>上传插件</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="brick-nav-section">
-                    <div class="brick-nav-section-title">系统监控</div>
-                    <ul class="brick-nav">
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/monitor/overview.html">
-                                <i class="bi bi-bar-chart-line"></i>
-                                <span>监控概览</span>
-                            </a>
-                        </li>
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/monitor/memory.html">
-                                <i class="bi bi-memory"></i>
-                                <span>内存监控</span>
-                            </a>
-                        </li>
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/monitor/cpu.html">
-                                <i class="bi bi-cpu"></i>
-                                <span>CPU 监控</span>
-                            </a>
-                        </li>
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/brick-web/monitor/threads.html">
-                                <i class="bi bi-gear"></i>
-                                <span>线程监控</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="brick-nav-section">
-                    <div class="brick-nav-section-title">文档</div>
-                    <ul class="brick-nav">
-                        <li class="brick-nav-item">
-                            <a class="brick-nav-link" href="/doc.html" target="_blank">
-                                <i class="bi bi-book"></i>
-                                <span>API 文档</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            
+            <nav class="brick-sidebar-nav"></nav>
             <div class="brick-sidebar-footer">
-                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
-                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">
-                        B
+                <div class="brick-user-info">
+                    <div class="brick-user-avatar">
+                        <span class="brick-avatar-text">B</span>
                     </div>
-                    <div style="flex: 1;">
-                        <div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div>
-                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div>
+                    <div class="brick-user-details">
+                        <div class="brick-user-name">Brick Admin</div>
+                        <div class="brick-user-role">系统管理员</div>
                     </div>
                 </div>
             </div>
         </aside>
-        
         <main class="brick-main">
             <header class="brick-topbar">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()">
+                <div class="brick-topbar-left">
+                    <button class="brick-toggle-sidebar" type="button" id="sidebar-toggle-btn">
                         <i class="bi bi-list"></i>
                     </button>
-                    <nav class="brick-breadcrumb">
-                        <a href="/brick-web/index.html">首页</a>
-                        <span class="brick-breadcrumb-separator">/</span>
-                        <span class="brick-breadcrumb-item active">插件列表</span>
-                    </nav>
+                    <nav class="brick-breadcrumb" id="breadcrumb-nav"></nav>
                 </div>
-                
-                <div class="brick-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="loadPlugins()">
-                        <i class="bi bi-arrow-clockwise"></i>
-                        <span class="d-none d-sm-inline">刷新</span>
-                    </button>
-                    <div class="brick-time">
-                        <i class="bi bi-clock"></i>
-                        <span id="current-time"></span>
-                    </div>
-                </div>
+                <div class="brick-actions" id="topbar-actions"></div>
             </header>
             
             <div class="brick-content" id="app">
@@ -294,32 +221,23 @@
                     </ul>
                 </nav>
             </div>
+            <footer class="brick-footer">
+                <div class="brick-footer-content">
+                    <div class="brick-footer-left">
+                        <span>&copy; 2024 Brick Web. All rights reserved.</span>
+                    </div>
+                    <div class="brick-footer-right">
+                        <span class="me-3"><i class="bi bi-info-circle me-1"></i>v4.0.4</span>
+                        <a href="https://github.com/v18268185209/brick-bootkit-springboot" target="_blank" class="brick-footer-link">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </main>
     </div>
     
-    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-    
     <script>
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
-        
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-        }
-        
         const { createApp, ref, computed, watch, onMounted } = Vue;
         
         createApp({
@@ -488,6 +406,29 @@
                 };
             }
         }).mount('#app');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.Sidebar) {
+                window.Sidebar.init('plugins-list');
+            }
+            if (window.Topbar) {
+                window.Topbar.init({
+                    breadcrumbs: [
+                        { label: '首页', href: '/brick-web/index.html' },
+                        { label: '插件管理', href: '/brick-web/plugins/index.html' }
+                    ]
+                });
+            }
+            const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const toggleSidebar = () => {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.toggle('open');
+                if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
+            };
+            if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+            if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+        });
     </script>
     
     <style>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模板管理 - Brick Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/brick-web/static/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/brick-web/static/css/brick-web.css">
+    <script src="/brick-web/static/lib/vue/js/vue.global.prod.js"></script>
+    <script src="/brick-web/static/lib/axios/js/axios.min.js"></script>
+    <script src="/brick-web/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/brick-web/static/lib/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <script src="/brick-web/static/js/brick-web.js"></script>
+    <style>
+        .template-card { cursor: pointer; transition: all 0.2s; }
+        .template-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .template-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .template-icon.shell { background: #e0f2fe; color: #0369a1; }
+        .template-icon.python { background: #fef3c7; color: #b45309; }
+        .template-icon.js { background: #dcfce7; color: #15803d; }
+    </style>
+</head>
+<body>
+    <div class="brick-wrapper">
+        <aside class="brick-sidebar" id="sidebar">
+            <div class="brick-sidebar-header">
+                <a href="/brick-web/index.html" class="brick-brand">
+                    <div class="brick-brand-icon"><i class="bi bi-box-seam"></i></div>
+                    <span>Brick Web</span>
+                </a>
+            </div>
+            <nav class="brick-sidebar-nav">
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">概览</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/index.html"><i class="bi bi-speedometer2"></i><span>仪表盘</span></a></li>
+                    </ul>
+                </div>
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">插件管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/plugins/index.html"><i class="bi bi-plug"></i><span>插件列表</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/plugins/upload.html"><i class="bi bi-cloud-upload"></i><span>上传插件</span></a></li>
+                    </ul>
+                </div>
+                <div class="brick-nav-section">
+                    <div class="brick-nav-section-title">脚本管理</div>
+                    <ul class="brick-nav">
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/index.html"><i class="bi bi-file-earmark-code"></i><span>脚本列表</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/editor.html"><i class="bi bi-pencil-square"></i><span>编辑器</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/templates.html"><i class="bi bi-grid-3x3"></i><span>模板管理</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/executions.html"><i class="bi bi-clock-history"></i><span>执行记录</span></a></li>
+                        <li class="brick-nav-item"><a class="brick-nav-link" href="/brick-web/templates/scripts/scheduler.html"><i class="bi bi-clock"></i><span>调度任务</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="brick-sidebar-footer">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+                    <div style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600;">B</div>
+                    <div style="flex: 1;"><div style="font-size: 0.875rem; font-weight: 500; color: #fff;">Brick Admin</div><div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">管理员</div></div>
+                </div>
+            </div>
+        </aside>
+        <main class="brick-main">
+            <header class="brick-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="brick-toggle-sidebar" type="button" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+                    <nav class="brick-breadcrumb">
+                        <a href="/brick-web/index.html">首页</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <a href="/brick-web/templates/scripts/templates.html">脚本管理</a>
+                        <span class="brick-breadcrumb-separator">/</span>
+                        <span class="brick-breadcrumb-item active">模板管理</span>
+                    </nav>
+                </div>
+                <div class="brick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="BrickWeb.refresh()"><i class="bi bi-arrow-clockwise"></i><span class="d-none d-sm-inline">刷新</span></button>
+                    <button class="btn btn-primary btn-sm" @click="showCreateModal"><i class="bi bi-plus-lg"></i> 新建模板</button>
+                </div>
+            </header>
+            <div class="brick-content" id="app">
+                <div class="brick-page-header fade-in">
+                    <h1 class="brick-page-title">脚本模板</h1>
+                    <p class="brick-page-subtitle">管理和使用预定义的脚本模板</p>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="brick-stat-card primary"><div class="brick-stat-icon"><i class="bi bi-grid-3x3"></i></div><div class="brick-stat-value">{{ templates.length }}</div><div class="brick-stat-label">模板总数</div></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="brick-stat-card success"><div class="brick-stat-icon"><i class="bi bi-play-circle"></i></div><div class="brick-stat-value">{{ usageCount }}</div><div class="brick-stat-label">使用次数</div></div>
+                    </div>
+                </div>
+                <div class="brick-card fade-in">
+                    <div class="brick-card-header">
+                        <h5 class="brick-card-title"><i class="bi bi-grid-3x3 text-primary"></i>模板列表</h5>
+                        <input type="text" class="form-control form-control-sm" placeholder="搜索模板..." v-model="searchKeyword" style="width: 200px;">
+                    </div>
+                    <div class="brick-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4 col-lg-3" v-for="template in filteredTemplates" :key="template.templateId">
+                                <div class="template-card p-3 border rounded bg-white h-100" @click="useTemplate(template)">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="template-icon" :class="getTemplateIconClass(template.scriptType)">
+                                            <i :class="getTemplateIcon(template.scriptType)"></i>
+                                        </div>
+                                        <div class="flex-grow-1 min-width-0">
+                                            <h6 class="mb-1 text-truncate">{{ template.templateName }}</h6>
+                                            <p class="mb-1 text-muted small text-truncate">{{ template.description || '暂无描述' }}</p>
+                                            <div class="d-flex gap-1 flex-wrap">
+                                                <span class="badge bg-light text-dark small">{{ template.scriptType || 'UNKNOWN' }}</span>
+                                                <span class="badge bg-secondary small" v-if="template.usageCount > 0">使用 {{ template.usageCount }} 次</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-lg-3" v-if="filteredTemplates.length === 0">
+                                <div class="text-center text-muted py-5 border rounded bg-light">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    暂无模板
+                                    <button class="btn btn-primary btn-sm mt-2" @click="showCreateModal">创建模板</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="brick-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- 创建模板模态框 -->
+    <div class="modal fade" id="createModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">创建模板</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">模板名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="newTemplate.templateName" placeholder="输入模板名称">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">显示名称</label>
+                            <input type="text" class="form-control" v-model="newTemplate.displayName" placeholder="显示名称">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">脚本类型</label>
+                            <select class="form-select" v-model="newTemplate.scriptType">
+                                <option value="">请选择</option>
+                                <option value="SHELL">Shell</option>
+                                <option value="PYTHON">Python</option>
+                                <option value="JAVASCRIPT">JavaScript</option>
+                                <option value="SQL">SQL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">分类</label>
+                            <input type="text" class="form-control" v-model="newTemplate.category" placeholder="分类">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">描述</label>
+                            <textarea class="form-control" v-model="newTemplate.description" rows="2" placeholder="模板描述..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">模板内容</label>
+                            <textarea class="form-control font-monospace" v-model="newTemplate.templateContent" rows="8" placeholder="# 在此输入模板代码..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" @click="createTemplate">创建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        createApp({
+            setup() {
+                const templates = ref([]);
+                const searchKeyword = ref('');
+                const usageCount = ref(0);
+                const loading = ref(true);
+                const newTemplate = ref({ templateName: '', displayName: '', scriptType: '', category: '', description: '', templateContent: '' });
+                let createModal = null;
+                
+                const filteredTemplates = computed(() => {
+                    if (!searchKeyword.value) return templates.value;
+                    const keyword = searchKeyword.value.toLowerCase();
+                    return templates.value.filter(t => 
+                        t.templateName?.toLowerCase().includes(keyword) ||
+                        t.description?.toLowerCase().includes(keyword)
+                    );
+                });
+                
+                const loadTemplates = async () => {
+                    loading.value = true;
+                    try {
+                        const resp = await axios.get('/brick-web/api/scripts/templates');
+                        if (resp.data.code === 200) {
+                            templates.value = resp.data.data || [];
+                            usageCount.value = templates.value.reduce((sum, t) => sum + (t.usageCount || 0), 0);
+                        }
+                    } catch (e) {
+                        console.error('加载模板失败:', e);
+                    }
+                    loading.value = false;
+                };
+                
+                const getTemplateIcon = (type) => {
+                    const icons = { 'SHELL': 'bi-terminal', 'PYTHON': 'bi-filetype-py', 'JAVASCRIPT': 'bi-filetype-js', 'SQL': 'bi-database' };
+                    return icons[type] || 'bi-file-earmark-code';
+                };
+                
+                const getTemplateIconClass = (type) => {
+                    const classes = { 'SHELL': 'shell', 'PYTHON': 'python', 'JAVASCRIPT': 'js' };
+                    return classes[type] || 'shell';
+                };
+                
+                const showCreateModal = () => {
+                    createModal = new bootstrap.Modal(document.getElementById('createModal'));
+                    createModal.show();
+                };
+                
+                const createTemplate = async () => {
+                    if (!newTemplate.value.templateName) {
+                        Swal.fire({ icon: 'warning', title: '请填写模板名称' });
+                        return;
+                    }
+                    try {
+                        const resp = await axios.post('/brick-web/api/scripts/templates', newTemplate.value);
+                        if (resp.data.code === 200) {
+                            Swal.fire({ icon: 'success', title: '创建成功' });
+                            createModal.hide();
+                            loadTemplates();
+                            newTemplate.value = { templateName: '', displayName: '', scriptType: '', category: '', description: '', templateContent: '' };
+                        } else {
+                            Swal.fire({ icon: 'error', title: '创建失败', text: resp.data.message });
+                        }
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: '创建失败', text: e.message });
+                    }
+                };
+                
+                const useTemplate = (template) => {
+                    window.location.href = `/brick-web/templates/scripts/editor.html?template=${template.templateId}`;
+                };
+                
+                onMounted(() => { loadTemplates(); });
+                return { templates, searchKeyword, filteredTemplates, usageCount, newTemplate, showCreateModal, createTemplate, useTemplate, getTemplateIcon, getTemplateIconClass };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

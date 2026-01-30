@@ -3,6 +3,7 @@ package com.zqzqq.bootkits.web.demo;
 import com.zqzqq.bootkits.loader.launcher.SpringBootstrap;
 import com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap;
 import com.zqzqq.bootkits.web.annotation.EnableBrickWeb;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -13,7 +14,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
  *
  * @author brick-bootkit
  */
-@SpringBootApplication(scanBasePackages = {"com.zqzqq.bootkits.**","com.zqzqq.bootkits.web.demo.**"})
+@SpringBootApplication(
+    scanBasePackages = {"com.zqzqq.bootkits.**","com.zqzqq.bootkits.web.demo.**"},
+    exclude = {
+        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
+    }
+)
 @EnableBrickWeb
 public class DemoApplication  implements SpringBootstrap {
 

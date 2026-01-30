@@ -1,0 +1,219 @@
+// 布局样式
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  height: 100%;
+  background: $bg-dark;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width $transition-normal;
+  flex-shrink: 0;
+
+  &.collapsed {
+    width: 64px;
+  }
+
+  .sidebar-header {
+    height: $header-height;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, $primary-color, $primary-hover);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  .sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+  }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: $bg-secondary;
+}
+
+.header {
+  height: $header-height;
+  background: $bg-primary;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .toggle-btn {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background $transition-fast;
+
+      &:hover {
+        background: $bg-secondary;
+      }
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: $text-secondary;
+
+      .current {
+        color: $text-primary;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .header-action {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background $transition-fast;
+      position: relative;
+
+      &:hover {
+        background: $bg-secondary;
+      }
+
+      .badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        background: $error-color;
+        border-radius: 50%;
+      }
+    }
+
+    .user-dropdown {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background $transition-fast;
+
+      &:hover {
+        background: $bg-secondary;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $primary-color, $info-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .user-info {
+        .user-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: $text-primary;
+        }
+
+        .user-role {
+          font-size: 12px;
+          color: $text-secondary;
+        }
+      }
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.footer {
+  height: 40px;
+  background: $bg-primary;
+  border-top: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+// 响应式
+@media (max-width: $breakpoint-lg) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}

@@ -1,0 +1,214 @@
+@import './variables.scss';
+
+// 全局重置
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: $font-family;
+  font-size: 14px;
+  color: $text-primary;
+  background-color: $bg-secondary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+// 通用样式
+.page-container {
+  padding: 24px;
+  min-height: calc(100vh - #{$header-height});
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  .page-actions {
+    display: flex;
+    gap: 12px;
+  }
+}
+
+// 卡片样式
+.card {
+  background: $bg-primary;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  padding: 20px;
+  transition: box-shadow $transition-normal;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid $border-color;
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+}
+
+// 统计卡片
+.stat-card {
+  background: $bg-primary;
+  border-radius: $border-radius;
+  padding: 20px;
+  border: 1px solid $border-color;
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    &.primary { background: rgba($primary-color, 0.1); color: $primary-color; }
+    &.success { background: rgba($success-color, 0.1); color: $success-color; }
+    &.warning { background: rgba($warning-color, 0.1); color: $warning-color; }
+    &.error { background: rgba($error-color, 0.1); color: $error-color; }
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: $text-secondary;
+  }
+
+  .stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-size: 12px;
+
+    &.up { color: $success-color; }
+    &.down { color: $error-color; }
+  }
+}
+
+// 表格样式
+.table-container {
+  background: $bg-primary;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  overflow: hidden;
+}
+
+// 空状态
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: $text-secondary;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-text {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+}
+
+// 标签
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.primary { background: rgba($primary-color, 0.1); color: $primary-color; }
+  &.success { background: rgba($success-color, 0.1); color: $success-color; }
+  &.warning { background: rgba($warning-color, 0.1); color: $warning-color; }
+  &.error { background: rgba($error-color, 0.1); color: $error-color; }
+  &.info { background: rgba($info-color, 0.1); color: $info-color; }
+  &.default { background: $bg-secondary; color: $text-secondary; }
+}
+
+// Flex 工具类
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+
+// 间距工具类
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+
+// 文本工具类
+.text-primary { color: $text-primary; }
+.text-secondary { color: $text-secondary; }
+.text-success { color: $success-color; }
+.text-warning { color: $warning-color; }
+.text-error { color: $error-color; }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }

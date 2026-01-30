@@ -115,6 +115,10 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
         registry.addResourceHandler("/brick-web/*/*.html")
                 .addResourceLocations("classpath:/static/templates/")
                 .resourceChain(true);
+        // 添加子目录HTML页面支持
+        registry.addResourceHandler("/brick-web/templates/**")
+                .addResourceLocations("classpath:/static/templates/")
+                .resourceChain(true);
     }
     
     /**
@@ -139,5 +143,13 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
         registry.addViewController("/brick-web/monitor/memory.html").setViewName("forward:/templates/monitor/memory.html");
         registry.addViewController("/brick-web/monitor/cpu.html").setViewName("forward:/templates/monitor/cpu.html");
         registry.addViewController("/brick-web/monitor/threads.html").setViewName("forward:/templates/monitor/threads.html");
+
+        // 脚本管理相关
+        registry.addRedirectViewController("/brick-web/scripts", "/brick-web/scripts/index.html");
+        registry.addViewController("/brick-web/scripts/index.html").setViewName("forward:/templates/scripts/index.html");
+        registry.addViewController("/brick-web/scripts/editor.html").setViewName("forward:/templates/scripts/editor.html");
+        registry.addViewController("/brick-web/scripts/templates.html").setViewName("forward:/templates/scripts/templates.html");
+        registry.addViewController("/brick-web/scripts/scheduler.html").setViewName("forward:/templates/scripts/scheduler.html");
+        registry.addViewController("/brick-web/scripts/executions.html").setViewName("forward:/templates/scripts/executions.html");
     }
 }

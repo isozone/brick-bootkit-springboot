@@ -43,6 +43,13 @@
             <version>${project.version}</version>
         </dependency>
         
+        <!-- Brick BootKit Scripts (脚本核心) -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-scripts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <!-- Micrometer (指标收集) -->
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -74,7 +81,7 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.5</version>
+            <version>3.5.15</version>
             <scope>provided</scope>
         </dependency>
         

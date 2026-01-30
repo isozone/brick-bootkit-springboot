@@ -9,7 +9,7 @@ import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
@@ -29,23 +29,24 @@ import java.util.stream.Collectors;
 
 /**
  * 系统监控服务（完整功能，需要 PluginManager）
- * 
+ * 注意：PluginManager 是延迟初始化的（在 ApplicationStartedEvent 时），
+ * 因此使用 ObjectProvider 在运行时动态获取，而不是使用 @ConditionalOnBean
+ *
  * @author brick-bootkit
  */
 @Slf4j
 @Service
-@ConditionalOnBean(PluginManager.class)
 public class MonitorWebService {
 
-    private final PluginManager pluginManager;
+    private final ObjectProvider<PluginManager> pluginManagerProvider;
     private final MeterRegistry meterRegistry;
-    
+
     private final OperatingSystemMXBean osMXBean;
     private final MemoryMXBean memoryMXBean;
     private final ThreadMXBean threadMXBean;
-    
-    public MonitorWebService(PluginManager pluginManager, MeterRegistry meterRegistry) {
-        this.pluginManager = pluginManager;
+
+    public MonitorWebService(ObjectProvider<PluginManager> pluginManagerProvider, MeterRegistry meterRegistry) {
+        this.pluginManagerProvider = pluginManagerProvider;
         this.meterRegistry = meterRegistry;
         this.osMXBean = ManagementFactory.getOperatingSystemMXBean();
         this.memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -53,25 +54,44 @@ public class MonitorWebService {
     }
 
     /**
+     * 获取 PluginManager 实例
+     */
+    private PluginManager getPluginManager() {
+        return pluginManagerProvider.getIfAvailable();
+    }
+
+    /**
      * 获取系统监控概览
      */
     public MonitorOverviewDTO getOverview() {
         // 插件统计
-        List<PluginInfo> plugins = pluginManager.getPlugins();
-        int total = plugins.size();
-        int started = (int) plugins.stream()
-                .filter(p -> p.getPluginState() != null && 
-                            p.getPluginState().name().equals("STARTED"))
-                .count();
-        int stopped = total - started;
-        int failed = 0; // 可以从状态枚举中获取失败状态
-        
-        MonitorOverviewDTO.PluginStatistics stats = MonitorOverviewDTO.PluginStatistics.builder()
-                .total(total)
-                .started(started)
-                .stopped(stopped)
-                .failed(failed)
-                .build();
+        PluginManager pluginManager = getPluginManager();
+        MonitorOverviewDTO.PluginStatistics stats;
+        if (pluginManager != null) {
+            List<PluginInfo> plugins = pluginManager.getPlugins();
+            int total = plugins.size();
+            int started = (int) plugins.stream()
+                    .filter(p -> p.getPluginState() != null &&
+                                p.getPluginState().name().equals("STARTED"))
+                    .count();
+            int stopped = total - started;
+            int failed = 0; // 可以从状态枚举中获取失败状态
+
+            stats = MonitorOverviewDTO.PluginStatistics.builder()
+                    .total(total)
+                    .started(started)
+                    .stopped(stopped)
+                    .failed(failed)
+                    .build();
+        } else {
+            // PluginManager 不可用时返回空统计
+            stats = MonitorOverviewDTO.PluginStatistics.builder()
+                    .total(0)
+                    .started(0)
+                    .stopped(0)
+                    .failed(0)
+                    .build();
+        }
         
         // JVM 内存
         MonitorOverviewDTO.MemoryInfo memoryInfo = getMemoryInfo();
@@ -87,10 +107,15 @@ public class MonitorWebService {
         
         // GC 收集器信息
         List<MonitorOverviewDTO.GCInfo> gcCollectors = getGCCollectors();
-        
+
         // 插件性能列表
-        List<PluginPerformanceDTO> pluginPerformances = getPluginPerformances(plugins);
-        
+        List<PluginPerformanceDTO> pluginPerformances;
+        if (pluginManager != null) {
+            pluginPerformances = getPluginPerformances(pluginManager.getPlugins());
+        } else {
+            pluginPerformances = new ArrayList<>();
+        }
+
         return MonitorOverviewDTO.builder()
                 .pluginStatistics(stats)
                 .memory(memoryInfo)
