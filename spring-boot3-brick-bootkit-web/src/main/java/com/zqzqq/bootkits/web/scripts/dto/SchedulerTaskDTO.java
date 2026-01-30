@@ -52,6 +52,7 @@ public class SchedulerTaskDTO {
      */
     public enum SchedulerStatus {
         CREATED,
+        RUNNING,
         ENABLED,
         DISABLED,
         ERROR

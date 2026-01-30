@@ -357,15 +357,67 @@ public class FileScriptStorage implements ScriptStorage {
     
     @Override
     public List<SchedulerTaskDTO> getAllSchedulerTasks() throws StorageException {
-        return new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            Path schedulerPath = Paths.get(dataPath, "scheduler");
+            if (!Files.exists(schedulerPath)) {
+                return new ArrayList<>();
+            }
+            return Files.list(schedulerPath)
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".json"))
+                    .map(p -> {
+                        try {
+                            return objectMapper.readValue(p.toFile(), SchedulerTaskDTO.class);
+                        } catch (IOException e) {
+                            log.warn("Failed to read scheduler task file: {}", p);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .sorted((a, b) -> {
+                        if (b.getCreatedAt() == null) return 1;
+                        if (a.getCreatedAt() == null) return -1;
+                        return b.getCreatedAt().compareTo(a.getCreatedAt());
+                    })
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new StorageException("Failed to get all scheduler tasks", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     @Override
     public void deleteSchedulerTask(String taskId) throws StorageException {
+        lock.writeLock().lock();
+        try {
+            Path taskPath = Paths.get(dataPath, "scheduler", taskId + ".json");
+            Files.deleteIfExists(taskPath);
+        } catch (IOException e) {
+            throw new StorageException("Failed to delete scheduler task", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
     
     @Override
     public void updateTaskStatus(String taskId, String status) throws StorageException {
+        lock.writeLock().lock();
+        try {
+            Path taskPath = Paths.get(dataPath, "scheduler", taskId + ".json");
+            if (!Files.exists(taskPath)) {
+                return;
+            }
+            SchedulerTaskDTO task = objectMapper.readValue(taskPath.toFile(), SchedulerTaskDTO.class);
+            task.setTaskStatus(status);
+            task.setUpdatedAt(LocalDateTime.now());
+            objectMapper.writeValue(taskPath.toFile(), task);
+        } catch (IOException e) {
+            throw new StorageException("Failed to update scheduler task status", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
     
     @Override
