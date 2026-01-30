@@ -129,7 +129,8 @@ const getIcon = (iconName) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+// 全局覆盖 naive-ui 菜单样式（不要 scoped）
 @import '@/styles/layout.scss';
 
 .sidebar {
@@ -137,52 +138,30 @@ const getIcon = (iconName) => {
   flex-direction: column;
   background: #1e293b;
 
-  :deep(.n-menu) {
+  .n-menu {
+    // 使用 CSS 变量覆盖 naive-ui 默认样式
+    --n-item-text-color: #ffffff !important;
+    --n-item-text-color-hover: #ffffff !important;
+    --n-item-text-color-active: #facc15 !important;
+    --n-item-color-hover: rgba(255, 255, 255, 0.15) !important;
+    --n-item-color-active: rgba(234, 179, 8, 0.25) !important;
+    --n-item-icon-color: rgba(255, 255, 255, 0.85) !important;
+    --n-item-icon-color-active: #facc15 !important;
+    
     background: transparent;
 
     .n-menu-item {
       margin: 4px 8px;
+      border-radius: 6px;
 
-      // 默认状态 - 文字白色
-      .n-menu-item-content {
-        color: #ffffff !important;
-        border-radius: 6px;
-        
-        .n-menu-item-content__text {
-          color: #ffffff !important;
-        }
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.15);
-        }
-      }
-
-      // 选中状态 - 金色高亮（与白色文字更搭配）
-      &.n-menu-item--selected .n-menu-item-content {
-        background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), transparent) !important;
-        color: #facc15 !important;
-        
-        .n-menu-item-content__text {
-          color: #facc15 !important;
-        }
+      // 一级菜单选中状态 - 金色
+      &.n-menu-item--selected > .n-menu-item-content {
         font-weight: 600;
       }
     }
 
-    // 图标颜色
     .n-menu-item-content__icon {
-      color: rgba(255, 255, 255, 0.85);
-    }
-
-    // 选中时图标也变金色
-    &.n-menu-item--selected .n-menu-item-content__icon {
-      color: #facc15 !important;
-    }
-    
-    // 覆盖naive-ui默认的menu-item样式
-    .n-menu-item-content {
-      --n-item-text-color: #ffffff !important;
-      --n-item-color-active: transparent !important;
+      color: inherit;
     }
   }
 
@@ -193,5 +172,22 @@ const getIcon = (iconName) => {
   .sidebar-footer {
     border-top-color: rgba(255, 255, 255, 0.1);
   }
+}
+
+// 强制覆盖一级菜单的选中颜色（使用更高优先级）
+.sidebar .n-menu .n-menu-item.n-menu-item--selected > .n-menu-item-content,
+.sidebar .n-menu .n-menu-item.n-menu-item--actived > .n-menu-item-content {
+  color: #facc15 !important;
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), transparent) !important;
+}
+
+.sidebar .n-menu .n-menu-item.n-menu-item--selected > .n-menu-item-content .n-menu-item-content__text,
+.sidebar .n-menu .n-menu-item.n-menu-item--actived > .n-menu-item-content .n-menu-item-content__text {
+  color: #facc15 !important;
+}
+
+.sidebar .n-menu .n-menu-item.n-menu-item--selected > .n-menu-item-content .n-menu-item-content__icon,
+.sidebar .n-menu .n-menu-item.n-menu-item--actived > .n-menu-item-content .n-menu-item-content__icon {
+  color: #facc15 !important;
 }
 </style>
