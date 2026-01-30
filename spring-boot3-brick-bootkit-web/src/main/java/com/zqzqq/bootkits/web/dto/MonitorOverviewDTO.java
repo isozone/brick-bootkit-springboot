@@ -152,6 +152,8 @@ public class MonitorOverviewDTO implements Serializable {
         private double systemLoad;
         /** 进程 CPU 时间（纳秒） */
         private long processCpuTime;
+        /** 每个 CPU 核心的使用率列表 (0-100%) */
+        private List<Double> corePercents;
     }
     
     /**
@@ -245,5 +247,34 @@ public class MonitorOverviewDTO implements Serializable {
         private long time;
         /** 最大单次耗时（毫秒） */
         private long maxTime;
+    }
+    
+    /**
+     * 线程池信息
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ThreadPoolInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
+        /** 线程池名称 */
+        private String poolName;
+        /** 核心线程数 */
+        private int corePoolSize;
+        /** 最大线程数 */
+        private int maximumPoolSize;
+        /** 当前活跃线程数 */
+        private int activeCount;
+        /** 任务队列大小 */
+        private int queueSize;
+        /** 已完成任务数 */
+        private long completedTaskCount;
+        /** 当前线程数 */
+        private int poolSize;
+        /** 最大线程数历史峰值 */
+        private int largestPoolSize;
+        /** 线程池状态 */
+        private String status;
     }
 }

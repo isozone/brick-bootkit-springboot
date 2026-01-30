@@ -83,6 +83,7 @@ export const API_PATHS = {
   MONITOR_CPU: '/brick-web/api/monitor/cpu',
   MONITOR_THREADS: '/brick-web/api/monitor/threads',
   MONITOR_THREADS_DETAIL: '/brick-web/api/monitor/threads/detail',
+  MONITOR_THREAD_POOLS: '/brick-web/api/monitor/thread-pools',
   MONITOR_SYSTEM: '/brick-web/api/monitor/system',
   MONITOR_HISTORY: '/brick-web/api/monitor/history',
 
@@ -107,7 +108,8 @@ export const API_PATHS = {
   PLUGINS_START: '/brick-web/api/plugins/{pluginId}/start',
   PLUGINS_STOP: '/brick-web/api/plugins/{pluginId}/stop',
   PLUGINS_RESTART: '/brick-web/api/plugins/{pluginId}/restart',
-  PLUGINS_UNINSTALL: '/brick-web/api/plugins/{pluginId}'
+  PLUGINS_UNINSTALL: '/brick-web/api/plugins/{pluginId}',
+  PLUGINS_UPLOAD_HISTORY: '/brick-web/api/plugins/upload-history'
 }
 
 // 状态常量

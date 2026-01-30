@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -92,5 +93,14 @@ public class MonitorController {
             @RequestParam(defaultValue = "memory") String type,
             @RequestParam(defaultValue = "3600") long since) {
         return ApiResult.success(monitorWebServiceProvider.getObject().getHistoryData(type, since));
+    }
+
+    /**
+     * 获取线程池信息
+     */
+    @GetMapping("/thread-pools")
+    @Operation(summary = "获取线程池信息")
+    public ApiResult<List<MonitorOverviewDTO.ThreadPoolInfo>> threadPools() {
+        return ApiResult.success(monitorWebServiceProvider.getObject().getThreadPools());
     }
 }

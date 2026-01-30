@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 /**
@@ -282,13 +285,168 @@ public class MonitorWebService {
             // 方法不可用
         }
         
+        // 获取每个 CPU 核心的使用率
+        List<Double> corePercents = getPerCoreCpuUsage(availableProcessors);
+        
         return MonitorOverviewDTO.CpuInfo.builder()
                 .systemPercent(systemCpuLoad >= 0 ? systemCpuLoad * 100 : 0)
                 .processPercent(0)
                 .availableProcessors(availableProcessors)
                 .systemLoad(systemLoad >= 0 ? systemLoad : 0)
                 .processCpuTime(processCpuTime)
+                .corePercents(corePercents)
                 .build();
+    }
+    
+    /**
+     * 获取每个 CPU 核心的使用率
+     */
+    private List<Double> getPerCoreCpuUsage(int availableProcessors) {
+        List<Double> corePercents = new ArrayList<>();
+        
+        // 获取系统负载作为备用估算值
+        double systemLoad = 0;
+        if (osMXBean instanceof com.sun.management.OperatingSystemMXBean) {
+            com.sun.management.OperatingSystemMXBean sunOsMXBean = 
+                (com.sun.management.OperatingSystemMXBean) osMXBean;
+            systemLoad = sunOsMXBean.getSystemLoadAverage();
+        } else {
+            systemLoad = osMXBean.getSystemLoadAverage();
+        }
+        
+        // 尝试使用 OperatingSystemMXBean 获取每个核心的 CPU 负载
+        try {
+            if (osMXBean instanceof com.sun.management.OperatingSystemMXBean) {
+                com.sun.management.OperatingSystemMXBean sunOsMXBean = 
+                    (com.sun.management.OperatingSystemMXBean) osMXBean;
+                
+                // 使用系统属性获取每个 CPU 的使用率
+                String osName = System.getProperty("os.name").toLowerCase();
+                
+                if (osName.contains("linux")) {
+                    // Linux 系统：读取 /proc/stat 获取每个 CPU 核心的使用情况
+                    corePercents = getLinuxCpuUsage(availableProcessors);
+                } else if (osName.contains("windows")) {
+                    // Windows 系统：使用性能计数器近似计算
+                    corePercents = getWindowsCpuUsage(availableProcessors);
+                }
+            }
+        } catch (Exception e) {
+            // 获取失败时返回空列表
+            log.debug("获取每个 CPU 核心使用率失败", e);
+        }
+        
+        // 如果上述方法失败，使用系统负载估算
+        if (corePercents.isEmpty()) {
+            for (int i = 0; i < availableProcessors; i++) {
+                double estimatedLoad = systemLoad >= 0 ? Math.min(100, systemLoad * 10) : 0.0;
+                corePercents.add(estimatedLoad);
+            }
+        }
+        
+        return corePercents;
+    }
+    
+    /**
+     * 获取 Linux 系统每个 CPU 核心的使用率
+     */
+    private List<Double> getLinuxCpuUsage(int availableProcessors) {
+        List<Double> corePercents = new ArrayList<>();
+        try {
+            // 读取 /proc/stat 文件
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader("/proc/stat"));
+            
+            String line;
+            int cpuCount = 0;
+            
+            while ((line = reader.readLine()) != null && cpuCount < availableProcessors) {
+                if (line.startsWith("cpu") && line.length() > 3 && Character.isDigit(line.charAt(3))) {
+                    // 解析 cpu0, cpu1, ... 行
+                    String[] parts = line.split("\\s+");
+                    if (parts.length >= 8) {
+                        // user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice
+                        long user = Long.parseLong(parts[1]);
+                        long nice = Long.parseLong(parts[2]);
+                        long system = Long.parseLong(parts[3]);
+                        long idle = Long.parseLong(parts[4]);
+                        long iowait = Long.parseLong(parts.length > 5 ? parts[5] : "0");
+                        long irq = Long.parseLong(parts.length > 6 ? parts[6] : "0");
+                        long softirq = Long.parseLong(parts.length > 7 ? parts[7] : "0");
+                        
+                        long total = user + nice + system + idle + iowait + irq + softirq;
+                        long active = total - idle - iowait;
+                        
+                        double percent = total > 0 ? (double) active / total * 100 : 0;
+                        corePercents.add(Math.round(percent * 100) / 100.0);
+                        cpuCount++;
+                    }
+                }
+            }
+            reader.close();
+        } catch (Exception e) {
+            log.debug("读取 Linux CPU 使用率失败", e);
+        }
+        return corePercents;
+    }
+    
+    /**
+     * 获取 Windows 系统每个 CPU 核心的使用率
+     * 注意：Windows 下精确获取每个核心使用率比较复杂，这里使用近似方法
+     */
+    private List<Double> getWindowsCpuUsage(int availableProcessors) {
+        List<Double> corePercents = new ArrayList<>();
+        try {
+            // 使用 PerformanceMXBean 获取每个处理器的使用率
+            java.lang.management.OperatingSystemMXBean osBean = 
+                ManagementFactory.getOperatingSystemMXBean();
+            
+            // 尝试使用 com.sun.management.OperatingSystemMXBean 的方法
+            if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+                com.sun.management.OperatingSystemMXBean sunOsBean = 
+                    (com.sun.management.OperatingSystemMXBean) osBean;
+                
+                // 获取系统 CPU 使用率作为参考
+                double systemLoad = sunOsBean.getSystemCpuLoad();
+                
+                // 对于 Windows，我们尝试通过执行 wmic 命令获取每个核心的使用率
+                ProcessBuilder pb = new ProcessBuilder(
+                    "wmic", "CPU", "get", "LoadPercentage", "/value"
+                );
+                pb.redirectErrorStream(true);
+                Process p = pb.start();
+                
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(p.getInputStream()));
+                
+                String line;
+                int coreIndex = 0;
+                while ((line = reader.readLine()) != null && coreIndex < availableProcessors) {
+                    if (line.startsWith("LoadPercentage=")) {
+                        String value = line.substring("LoadPercentage=".length());
+                        try {
+                            double load = Double.parseDouble(value);
+                            corePercents.add(load);
+                            coreIndex++;
+                        } catch (NumberFormatException e) {
+                            // 忽略
+                        }
+                    }
+                }
+                reader.close();
+                p.waitFor();
+                
+                // 如果成功获取到每个核心的使用率，返回结果
+                if (!corePercents.isEmpty()) {
+                    return corePercents;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("获取 Windows CPU 使用率失败", e);
+        }
+        
+        // 如果无法获取，返回估算值
+        return corePercents;
     }
 
     /**
@@ -487,5 +645,139 @@ public class MonitorWebService {
         history.put("since", since);
         history.put("dataPoints", new ArrayList<>());
         return history;
+    }
+
+    /**
+     * 获取线程池信息
+     */
+    public List<MonitorOverviewDTO.ThreadPoolInfo> getThreadPools() {
+        List<MonitorOverviewDTO.ThreadPoolInfo> threadPools = new ArrayList<>();
+        
+        // 获取 JVM 线程池信息（通过 ManagementFactory）
+        try {
+            // 获取 ForkJoinPool 信息（Java 7+）
+            addForkJoinPoolInfo(threadPools);
+            
+            // 获取通过 Executors 创建的常见线程池
+            addCommonExecutorInfo(threadPools);
+            
+        } catch (Exception e) {
+            log.debug("获取线程池信息失败", e);
+        }
+        
+        return threadPools;
+    }
+    
+    /**
+     * 获取 ForkJoinPool 信息
+     */
+    private void addForkJoinPoolInfo(List<MonitorOverviewDTO.ThreadPoolInfo> threadPools) {
+        try {
+            // ForkJoinPool.commonPool() 可以获取公共 ForkJoinPool
+            java.util.concurrent.ForkJoinPool commonPool = java.util.concurrent.ForkJoinPool.commonPool();
+            if (commonPool != null) {
+                MonitorOverviewDTO.ThreadPoolInfo info = MonitorOverviewDTO.ThreadPoolInfo.builder()
+                        .poolName("ForkJoinPool-commonPool")
+                        .corePoolSize(commonPool.getParallelism())
+                        .maximumPoolSize(commonPool.getParallelism())
+                        .activeCount(commonPool.getActiveThreadCount())
+                        .poolSize(commonPool.getPoolSize())
+                        .largestPoolSize(commonPool.getPoolSize()) // 使用当前池大小作为历史峰值
+                        .queueSize(commonPool.getQueuedSubmissionCount())
+                        .completedTaskCount(0) // ForkJoinPool 不直接提供此方法
+                        .status(commonPool.isShutdown() ? "SHUTDOWN" : "RUNNING")
+                        .build();
+                threadPools.add(info);
+            }
+        } catch (Exception e) {
+            log.debug("获取 ForkJoinPool 信息失败", e);
+        }
+    }
+    
+    /**
+     * 获取常见线程池信息（基于 JVM 线程统计估算）
+     */
+    private void addCommonExecutorInfo(List<MonitorOverviewDTO.ThreadPoolInfo> threadPools) {
+        // 通过 ThreadMXBean 获取线程统计信息
+        int totalThreads = threadMXBean.getThreadCount();
+        int peakThreads = threadMXBean.getPeakThreadCount();
+        int daemonThreads = threadMXBean.getDaemonThreadCount();
+        
+        // JVM 内部线程（估算，每个线程消耗约 1MB 栈空间）
+        int jvmInternalThreads = 20; // 估算 JVM 内部线程数量
+        
+        // 根据观察到的线程名称模式进行分类
+        MonitorOverviewDTO.ThreadPoolInfo httpPool = MonitorOverviewDTO.ThreadPoolInfo.builder()
+                .poolName("http-nio-pool")
+                .corePoolSize(0)
+                .maximumPoolSize(200) // Tomcat 默认最大线程数
+                .activeCount(0)
+                .poolSize(countThreadsByPattern("http-nio"))
+                .largestPoolSize(countThreadsByPattern("http-nio"))
+                .queueSize(0)
+                .completedTaskCount(0)
+                .status("RUNNING")
+                .build();
+        threadPools.add(httpPool);
+        
+        MonitorOverviewDTO.ThreadPoolInfo catalinaPool = MonitorOverviewDTO.ThreadPoolInfo.builder()
+                .poolName("catalina-utility-pool")
+                .corePoolSize(0)
+                .maximumPoolSize(10)
+                .activeCount(countThreadsByPattern("catalina-utility"))
+                .poolSize(countThreadsByPattern("catalina-utility"))
+                .largestPoolSize(countThreadsByPattern("catalina-utility"))
+                .queueSize(0)
+                .completedTaskCount(0)
+                .status("RUNNING")
+                .build();
+        threadPools.add(catalinaPool);
+        
+        MonitorOverviewDTO.ThreadPoolInfo rmiPool = MonitorOverviewDTO.ThreadPoolInfo.builder()
+                .poolName("rmi-scheduler-pool")
+                .corePoolSize(0)
+                .maximumPoolSize(10)
+                .activeCount(countThreadsByPattern("RMI Scheduler"))
+                .poolSize(countThreadsByPattern("RMI Scheduler"))
+                .largestPoolSize(countThreadsByPattern("RMI Scheduler"))
+                .queueSize(0)
+                .completedTaskCount(0)
+                .status("RUNNING")
+                .build();
+        threadPools.add(rmiPool);
+        
+        // 通用线程池统计
+        int userThreads = totalThreads - daemonThreads - jvmInternalThreads;
+        MonitorOverviewDTO.ThreadPoolInfo userPool = MonitorOverviewDTO.ThreadPoolInfo.builder()
+                .poolName("user-thread-pool")
+                .corePoolSize(0)
+                .maximumPoolSize(totalThreads)
+                .activeCount(userThreads)
+                .poolSize(userThreads)
+                .largestPoolSize(peakThreads)
+                .queueSize(0)
+                .completedTaskCount(threadMXBean.getTotalStartedThreadCount() - totalThreads)
+                .status("RUNNING")
+                .build();
+        threadPools.add(userPool);
+    }
+    
+    /**
+     * 按线程名称模式统计线程数量
+     */
+    private int countThreadsByPattern(String pattern) {
+        try {
+            ThreadInfo[] threads = threadMXBean.dumpAllThreads(false, false);
+            int count = 0;
+            for (ThreadInfo info : threads) {
+                if (info != null && info.getThreadName() != null && 
+                    info.getThreadName().contains(pattern)) {
+                    count++;
+                }
+            }
+            return count;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

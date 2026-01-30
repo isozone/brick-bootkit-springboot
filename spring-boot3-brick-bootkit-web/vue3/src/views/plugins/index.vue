@@ -167,13 +167,16 @@ const columns = [
   {
     title: '插件信息',
     key: 'pluginId',
+    width: 220,
     render(row) {
+      const iconClass = 'plugin-icon ' + getStateClass(row.state)
+      const name = row.name || row.pluginId
       return h('div', { class: 'plugin-info' }, [
-        h('div', { class: 'plugin-icon ' + getStateClass(row.state) }, [
+        h('div', { class: iconClass }, [
           h(NIcon, { size: 20 }, () => h(CubeOutline))
         ]),
         h('div', { class: 'plugin-details' }, [
-          h('span', { class: 'plugin-name' }, row.name || row.pluginId),
+          h('span', { class: 'plugin-name' }, name),
           h('span', { class: 'plugin-id' }, row.pluginId)
         ])
       ])
@@ -216,39 +219,39 @@ const columns = [
     key: 'actions',
     width: 180,
     render(row) {
-      return h(NSpace, { size: 'small' }, () => [
-        h(NButton, {
+      const actions = []
+      actions.push(h(NButton, {
+        size: 'small',
+        quaternary: true,
+        type: 'success',
+        disabled: row.state === 'STARTED',
+        onClick: () => startPlugin(row.pluginId)
+      }, () => h(NIcon, null, () => h(PlayOutline))))
+      actions.push(h(NButton, {
+        size: 'small',
+        quaternary: true,
+        type: 'warning',
+        disabled: row.state !== 'STARTED',
+        onClick: () => stopPlugin(row.pluginId)
+      }, () => h(NIcon, null, () => h(StopOutline))))
+      actions.push(h(NButton, {
+        size: 'small',
+        quaternary: true,
+        onClick: () => restartPlugin(row.pluginId)
+      }, () => h(NIcon, null, () => h(RefreshOutline))))
+      actions.push(h(NPopconfirm, {
+        onPositiveClick: () => uninstallPlugin(row.pluginId)
+      }, {
+        trigger: () => h(NButton, {
           size: 'small',
           quaternary: true,
-          type: 'success',
-          disabled: row.state === 'STARTED',
-          onClick: () => startPlugin(row.pluginId)
-        }, () => h(NIcon, null, () => h(PlayOutline))),
-        h(NButton, {
-          size: 'small',
-          quaternary: true,
-          type: 'warning',
-          disabled: row.state !== 'STARTED',
-          onClick: () => stopPlugin(row.pluginId)
-        }, () => h(NIcon, null, () => h(StopOutline))),
-        h(NButton, {
-          size: 'small',
-          quaternary: true,
-          onClick: () => restartPlugin(row.pluginId)
-        }, () => h(NIcon, null, () => h(RefreshOutline))),
-        h(NPopconfirm, {
-          onPositiveClick: () => uninstallPlugin(row.pluginId)
-        }, {
-          trigger: () => h(NButton, {
-            size: 'small',
-            quaternary: true,
-            type: 'error'
-          }, () => h(NIcon, null, () => h(TrashOutline))),
-          default: () => '确定卸载该插件？此操作不可恢复！'
-        })
-      ])
+          type: 'error'
+        }, () => h(NIcon, null, () => h(TrashOutline))),
+        default: () => '确定卸载该插件？此操作不可恢复！'
+      }))
+      return h(NSpace, { size: 'small' }, { default: () => actions })
     }
-  ]
+  }
 ]
 
 // 加载插件列表
@@ -269,10 +272,10 @@ const loadPlugins = async () => {
       pagination.value.itemCount = pageData.total || 0
       
       // 计算统计数据
-      stats.value.total = pageData.total || plugins.value.length
-      stats.value.started = plugins.value.filter(p => p.state === 'STARTED').length
-      stats.value.stopped = plugins.value.filter(p => p.state === 'STOPPED').length
-      stats.value.failed = plugins.value.filter(p => p.state === 'FAILED').length
+      stats.value.total = pageData.total || (pageData.records ? pageData.records.length : 0)
+      stats.value.started = pageData.records ? pageData.records.filter(p => p.state === 'STARTED').length : 0
+      stats.value.stopped = pageData.records ? pageData.records.filter(p => p.state === 'STOPPED').length : 0
+      stats.value.failed = pageData.records ? pageData.records.filter(p => p.state === 'FAILED').length : 0
     }
   } catch (e) {
     message.error('加载插件列表失败')

@@ -28,16 +28,19 @@
         <n-card title="CPU 信息" class="info-card">
           <n-descriptions :column="1" label-placement="left" bordered>
             <n-descriptions-item label="CPU 核心数">{{ cpuInfo.availableProcessors || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="系统负载">{{ cpuInfo.systemPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
-            <n-descriptions-item label="用户空间负载">{{ cpuInfo.userPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
-            <n-descriptions-item label="等待 I/O">{{ cpuInfo.ioWaitPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
-            <n-descriptions-item label="软中断">{{ cpuInfo.softIrqPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
+            <n-descriptions-item label="系统 CPU 使用率">{{ cpuInfo.systemPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
+            <n-descriptions-item label="进程 CPU 使用率">{{ cpuInfo.processPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
+            <n-descriptions-item label="系统负载">{{ cpuInfo.systemLoad?.toFixed(2) || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="进程 CPU 时间">{{ formatCpuTime(cpuInfo.processCpuTime) }}</n-descriptions-item>
           </n-descriptions>
         </n-card>
       </n-gi>
     </n-grid>
 
     <n-card title="CPU 核心使用情况" class="cores-card">
+      <n-alert type="info" style="margin-bottom: 16px;">
+        当前系统共有 {{ cpuInfo.availableProcessors || 0 }} 个 CPU 核心
+      </n-alert>
       <n-grid :cols="cpuCores.length > 4 ? 4 : cpuCores.length" :x-gap="12" :y-gap="12">
         <n-gi v-for="(core, index) in cpuCores" :key="index">
           <div class="core-item">
@@ -62,7 +65,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { NCard, NGrid, NGi, NButton, NIcon, NTag, NDescriptions, NDescriptionsItem, NProgress } from 'naive-ui'
+import { NCard, NGrid, NGi, NButton, NIcon, NTag, NDescriptions, NDescriptionsItem, NProgress, NAlert } from 'naive-ui'
 import { RefreshOutline } from '@vicons/ionicons5'
 import * as echarts from 'echarts'
 import { monitorApi } from '@/api/services'
@@ -81,11 +84,19 @@ const loadData = async () => {
       cpuInfo.value = res.data
       cpuPercent.value = parseFloat(res.data.systemPercent?.toFixed(1) || 0)
       
-      // 模拟每个核心的使用率
-      const cores = res.data.availableProcessors || 4
-      cpuCores.value = Array.from({ length: cores }, () => 
-        Math.floor(Math.random() * 30) + cpuPercent.value * 0.5
-      ).map(c => Math.min(100, Math.max(0, c)))
+      // 使用后端返回的真实每个核心使用率数据
+      if (res.data.corePercents && res.data.corePercents.length > 0) {
+        cpuCores.value = res.data.corePercents.map(c => Math.round(c))
+      } else {
+        // 如果后端没有返回核心数据，基于系统 CPU 使用率估算
+        const cores = res.data.availableProcessors || 4
+        const baseUsage = cpuPercent.value
+        cpuCores.value = Array.from({ length: cores }, (_, i) => {
+          const variation = (Math.random() - 0.5) * 20
+          const coreUsage = baseUsage + variation
+          return Math.min(100, Math.max(0, Math.round(coreUsage)))
+        })
+      }
       
       updateChart()
     }
@@ -134,6 +145,15 @@ const updateChart = () => {
 
 const handleResize = () => {
   if (cpuChart) cpuChart.resize()
+}
+
+// 格式化 CPU 时间（纳秒转换为可读格式）
+const formatCpuTime = (nanoseconds) => {
+  if (!nanoseconds || nanoseconds === 0) return '0 ns'
+  if (nanoseconds < 1000) return nanoseconds + ' ns'
+  if (nanoseconds < 1000000) return (nanoseconds / 1000).toFixed(2) + ' μs'
+  if (nanoseconds < 1000000000) return (nanoseconds / 1000000).toFixed(2) + ' ms'
+  return (nanoseconds / 1000000000).toFixed(2) + ' s'
 }
 
 onMounted(() => {

@@ -9,65 +9,85 @@
       <h2 class="page-title">上传插件</h2>
     </div>
 
-    <div class="upload-content">
-      <div class="upload-area" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent>
-        <input
-          ref="fileInputRef"
-          type="file"
-          accept=".jar,.zip"
-          style="display: none"
-          @change="handleFileSelect"
-        />
-        <div class="upload-icon">
-          <n-icon size="64" color="#2563eb"><CloudUploadOutline /></n-icon>
-        </div>
-        <div class="upload-text">
-          <p class="primary">点击或拖拽文件到此处上传</p>
-          <p class="secondary">支持 .jar, .zip 格式，最大 50MB</p>
-        </div>
-      </div>
-
-      <div v-if="uploadFile" class="file-info">
-        <div class="file-icon">
-          <n-icon size="32"><DocumentTextOutline /></n-icon>
-        </div>
-        <div class="file-details">
-          <div class="file-name">{{ uploadFile.name }}</div>
-          <div class="file-size">{{ formatFileSize(uploadFile.size) }}</div>
-          <n-progress
-            v-if="uploadProgress > 0"
-            type="line"
-            :percentage="uploadProgress"
-            :show-indicator="false"
+    <div class="upload-container">
+      <div class="upload-section">
+        <div class="upload-area" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent>
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept=".jar,.zip"
+            style="display: none"
+            @change="handleFileSelect"
           />
+          <div class="upload-icon">
+            <n-icon size="64" color="#2563eb"><CloudUploadOutline /></n-icon>
+          </div>
+          <div class="upload-text">
+            <p class="primary">点击或拖拽文件到此处上传</p>
+            <p class="secondary">支持 .jar, .zip 格式，最大 50MB</p>
+          </div>
         </div>
-        <n-button quaternary circle @click="clearFile">
-          <template #icon>
-            <n-icon><CloseOutline /></n-icon>
-          </template>
-        </n-button>
+
+        <div v-if="uploadFile" class="file-info">
+          <div class="file-icon">
+            <n-icon size="32"><DocumentTextOutline /></n-icon>
+          </div>
+          <div class="file-details">
+            <div class="file-name">{{ uploadFile.name }}</div>
+            <div class="file-size">{{ formatFileSize(uploadFile.size) }}</div>
+            <n-progress
+              v-if="uploadProgress > 0"
+              type="line"
+              :percentage="uploadProgress"
+              :show-indicator="false"
+            />
+          </div>
+          <n-button quaternary circle @click="clearFile">
+            <template #icon>
+              <n-icon><CloseOutline /></n-icon>
+            </template>
+          </n-button>
+        </div>
+
+        <div v-if="uploadFile" class="upload-actions">
+          <n-button @click="clearFile">取消</n-button>
+          <n-button type="primary" :loading="uploading" @click="handleUpload">
+            {{ uploading ? '上传中...' : '开始上传' }}
+          </n-button>
+        </div>
       </div>
 
-      <div v-if="uploadFile" class="upload-actions">
-        <n-button @click="clearFile">取消</n-button>
-        <n-button type="primary" :loading="uploading" @click="handleUpload">
-          {{ uploading ? '上传中...' : '开始上传' }}
-        </n-button>
-      </div>
-
-      <div class="upload-history">
-        <div class="section-title">上传历史</div>
+      <div class="history-section">
+        <div class="section-header">上传历史</div>
         <div class="history-list">
-          <div v-for="item in uploadHistory" :key="item.id" class="history-item">
-            <div class="history-icon">
-              <n-icon size="20"><CheckmarkCircleOutline v-if="item.status === 'success'" /></n-icon>
-            </div>
-            <div class="history-info">
+          <div
+            v-for="item in uploadHistory"
+            :key="item.id"
+            class="history-item"
+            :class="item.status"
+          >
+            <div class="history-header">
               <div class="history-name">{{ item.name }}</div>
-              <div class="history-time">{{ item.time }}</div>
+              <n-tag v-if="item.status === 'success'" type="success" size="small">成功</n-tag>
+              <n-tag v-else type="error" size="small">失败</n-tag>
             </div>
-            <n-tag v-if="item.status === 'success'" type="success" size="small">成功</n-tag>
-            <n-tag v-else type="error" size="small">失败</n-tag>
+            <div class="history-meta">
+              <div class="meta-item">
+                <span class="meta-label">插件ID:</span>
+                <span class="meta-value">{{ item.pluginId || '-' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">版本:</span>
+                <span class="meta-value">{{ item.version || '-' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">时间:</span>
+                <span class="meta-value">{{ item.time }}</span>
+              </div>
+            </div>
+            <div v-if="item.errorMessage" class="error-message">
+              {{ item.errorMessage }}
+            </div>
           </div>
         </div>
       </div>
@@ -76,8 +96,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import {
   NButton,
   NIcon,
@@ -92,6 +113,7 @@ import {
   CloseOutline,
   CheckmarkCircleOutline
 } from '@vicons/ionicons5'
+import { pluginsApi } from '@/api/services'
 
 const router = useRouter()
 const message = useMessage()
@@ -100,12 +122,31 @@ const fileInputRef = ref(null)
 const uploadFile = ref(null)
 const uploadProgress = ref(0)
 const uploading = ref(false)
+const uploadHistory = ref([])
 
-const uploadHistory = ref([
-  { id: 1, name: 'demo-test-upload-plus-0.0.3.jar', status: 'success', time: '2024-01-30 10:30:00' },
-  { id: 2, name: 'file-upload-plugin-1.2.0.jar', status: 'success', time: '2024-01-28 15:20:00' },
-  { id: 3, name: 'data-export-plugin-1.0.5.jar', status: 'failed', time: '2024-01-25 09:15:00' }
-])
+const loadUploadHistory = async () => {
+  try {
+    const res = await pluginsApi.getAllUploadHistory()
+    if (res.code === 200 && res.data) {
+      uploadHistory.value = res.data.map(item => ({
+        id: item.uploadId,
+        name: item.pluginName,
+        status: item.status.toLowerCase(),
+        time: new Date(item.uploadTime).toLocaleString('zh-CN'),
+        pluginId: item.pluginId,
+        version: item.version,
+        filePath: item.filePath,
+        errorMessage: item.errorMessage
+      }))
+    }
+  } catch (e) {
+    console.error('加载上传历史失败:', e)
+  }
+}
+
+onMounted(() => {
+  loadUploadHistory()
+})
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -158,28 +199,58 @@ const handleUpload = async () => {
   uploading.value = true
   uploadProgress.value = 0
 
-  // 模拟上传进度
-  const interval = setInterval(() => {
-    if (uploadProgress.value < 90) {
-      uploadProgress.value += 10
+  const formData = new FormData()
+  formData.append('file', uploadFile.value)
+  formData.append('autoStart', true)
+  formData.append('overwrite', true)
+
+  try {
+    // 使用 axios 直接上传文件
+    const response = await axios.post('/brick-web/api/plugins/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        uploadProgress.value = percentCompleted
+      }
+    })
+
+    if (response.data.code === 200) {
+      message.success('上传成功')
+      uploadHistory.value.unshift({
+        id: Date.now(),
+        name: uploadFile.value.name,
+        status: 'success',
+        time: new Date().toLocaleString('zh-CN'),
+        pluginId: response.data.data.pluginId,
+        version: response.data.data.version
+      })
+      clearFile()
+      loadUploadHistory()
+    } else {
+      message.error(response.data.message || '上传失败')
+      uploadHistory.value.unshift({
+        id: Date.now(),
+        name: uploadFile.value.name,
+        status: 'failed',
+        time: new Date().toLocaleString('zh-CN'),
+        errorMessage: response.data.message || '未知错误'
+      })
     }
-  }, 200)
-
-  setTimeout(() => {
-    clearInterval(interval)
-    uploadProgress.value = 100
-    uploading.value = false
-    message.success('上传成功')
-
+  } catch (error) {
+    console.error('上传错误:', error)
+    message.error(error.response?.data?.message || '上传失败')
     uploadHistory.value.unshift({
       id: Date.now(),
       name: uploadFile.value.name,
-      status: 'success',
-      time: new Date().toLocaleString()
+      status: 'failed',
+      time: new Date().toLocaleString('zh-CN'),
+      errorMessage: error.response?.data?.message || error.message || '网络错误'
     })
-
-    clearFile()
-  }, 2500)
+  } finally {
+    uploading.value = false
+  }
 }
 </script>
 
@@ -197,8 +268,114 @@ const handleUpload = async () => {
     }
   }
 
-  .upload-content {
-    max-width: 640px;
+  .upload-container {
+    display: grid;
+    grid-template-columns: 1fr 500px;
+    gap: 24px;
+    max-width: 1600px;
+
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .history-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-height: 700px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+
+      .section-header {
+        padding: 16px 20px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+
+                  .history-item {
+                    padding: 16px 20px;
+                    margin-bottom: 10px;
+                    background: #ffffff;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    transition: all 0.2s;
+        
+                    &:last-child {
+                      margin-bottom: 0;
+                    }
+        
+                    &:hover {
+                      border-color: #2563eb;
+                      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+                    }
+        
+                    &.success {
+                      border-left: 4px solid #22c55e;
+                    }
+        
+                    &.failed {
+                      border-left: 4px solid #ef4444;
+                    }
+        
+                    .history-header {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      margin-bottom: 10px;
+        
+                      .history-name {
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: #1f2937;
+                      }
+                    }
+          .history-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #6b7280;
+            flex-wrap: nowrap;
+
+            .meta-item {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              white-space: nowrap;
+
+              .meta-label {
+                color: #9ca3af;
+              }
+
+              .meta-value {
+                color: #374151;
+                font-weight: 500;
+              }
+            }
+          }
+
+          .error-message {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #fef2f2;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #dc2626;
+            border-left: 3px solid #ef4444;
+          }
+        }
+      }
+    }
   }
 
   .upload-area {
@@ -269,48 +446,6 @@ const handleUpload = async () => {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 16px;
-  }
-
-  .upload-history {
-    margin-top: 32px;
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: #f9fafb;
-      border-radius: 8px;
-
-      .history-icon {
-        color: #10b981;
-      }
-
-      .history-info {
-        flex: 1;
-
-        .history-name {
-          font-weight: 500;
-        }
-
-        .history-time {
-          font-size: 12px;
-          color: #6b7280;
-        }
-      }
-    }
   }
 }
 </style>

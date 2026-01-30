@@ -59,6 +59,9 @@ export const monitorApi = {
   // 获取线程详细信息
   getThreadDetail: () => service.get(API_PATHS.MONITOR_THREADS_DETAIL),
   
+  // 获取线程池信息
+  getThreadPools: () => service.get(API_PATHS.MONITOR_THREAD_POOLS),
+  
   // 获取系统信息
   getSystem: () => service.get(API_PATHS.MONITOR_SYSTEM),
   
@@ -178,7 +181,30 @@ export const pluginsApi = {
   restart: (pluginId) => service.post(API_PATHS.PLUGINS_RESTART.replace('{pluginId}', pluginId)),
   
   // 卸载插件
-  uninstall: (pluginId) => service.delete(API_PATHS.PLUGINS_UNINSTALL.replace('{pluginId}', pluginId))
+  uninstall: (pluginId) => service.delete(API_PATHS.PLUGINS_UNINSTALL.replace('{pluginId}', pluginId)),
+  
+  // 获取上传历史
+  getUploadHistory: (page = 1, size = 10, pluginId, status) => {
+    const params = { page, size }
+    if (pluginId) params.pluginId = pluginId
+    if (status) params.status = status
+    return service.get(API_PATHS.PLUGINS_UPLOAD_HISTORY, { params })
+  },
+  
+  // 获取所有上传历史
+  getAllUploadHistory: () => service.get(API_PATHS.PLUGINS_UPLOAD_HISTORY + '/all'),
+  
+  // 获取上传历史详情
+  getUploadHistoryById: (uploadId) => service.get(API_PATHS.PLUGINS_UPLOAD + '/history/' + uploadId),
+  
+  // 删除上传历史
+  deleteUploadHistory: (uploadId) => service.delete(API_PATHS.PLUGINS_UPLOAD + '/history/' + uploadId),
+  
+  // 批量删除上传历史
+  deleteUploadHistoryBefore: (beforeDate) => service.delete(API_PATHS.PLUGINS_UPLOAD + '/history', { params: { beforeDate } }),
+  
+  // 清空所有上传历史
+  clearAllUploadHistory: () => service.delete(API_PATHS.PLUGINS_UPLOAD + '/history/all')
 }
 
 export default service

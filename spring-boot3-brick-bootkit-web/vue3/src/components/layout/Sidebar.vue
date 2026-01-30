@@ -61,13 +61,21 @@ const router = useRouter()
 
 const activeKey = computed(() => {
   const path = route.path
-  // 找到当前路径对应的菜单 key
+  // 先尝试精确匹配完整路径
+  for (const item of MENU_CONFIG.sidebar) {
+    if (item.children) {
+      const child = item.children.find(c => path === c.path)
+      if (child) return child.key
+    }
+    if (path === item.path) return item.key
+  }
+  
+  // 如果没有精确匹配，再尝试前缀匹配
   for (const item of MENU_CONFIG.sidebar) {
     if (item.children) {
       const child = item.children.find(c => path.startsWith(c.path))
       if (child) return child.key
     }
-    if (item.path === path) return item.key
   }
   return null
 })

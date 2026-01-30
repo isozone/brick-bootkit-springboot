@@ -30,45 +30,51 @@
           <n-descriptions :column="1" size="small" label-placement="left">
             <n-descriptions-item label="核心数">{{ cpuInfo.availableProcessors || '-' }}</n-descriptions-item>
             <n-descriptions-item label="系统负载">{{ cpuInfo.systemPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
+            <n-descriptions-item label="进程 CPU">{{ cpuInfo.processPercent?.toFixed(2) || '-' }}%</n-descriptions-item>
           </n-descriptions>
         </n-card>
       </n-gi>
 
-      <!-- 内存监控 -->
-      <n-gi>
-        <n-card title="内存使用" class="monitor-card">
-          <template #header-extra>
-            <n-tag :type="heapPercent > 80 ? 'error' : heapPercent > 60 ? 'warning' : 'success'" size="small">
-              {{ heapPercent }}%
-            </n-tag>
-          </template>
-          <div ref="memoryChartRef" class="chart-container"></div>
-          <n-descriptions :column="1" size="small" label-placement="left">
-            <n-descriptions-item :label="formatBytes(heapUsed) + ' / ' + formatBytes(heapMax)">
-              JVM 堆内存
-            </n-descriptions-item>
-          </n-descriptions>
-        </n-card>
-      </n-gi>
-
-      <!-- 系统内存 -->
-      <n-gi>
-        <n-card title="系统内存" class="monitor-card">
-          <template #header-extra>
-            <n-tag :type="systemMemoryPercent > 80 ? 'error' : systemMemoryPercent > 60 ? 'warning' : 'success'" size="small">
-              {{ systemMemoryPercent }}%
-            </n-tag>
-          </template>
-          <div ref="systemMemoryChartRef" class="chart-container"></div>
-          <n-descriptions :column="1" size="small" label-placement="left">
-            <n-descriptions-item :label="formatBytes(systemMemoryUsed) + ' / ' + formatBytes(systemMemoryTotal)">
-              已用 / 总计
-            </n-descriptions-item>
-          </n-descriptions>
-        </n-card>
-      </n-gi>
-    </n-grid>
-
+          <!-- 内存监控 -->
+          <n-gi>
+              <n-card title="内存使用" class="monitor-card">
+                <template #header-extra>
+                  <n-tag :type="heapPercent > 80 ? 'error' : heapPercent > 60 ? 'warning' : 'success'" size="small">
+                    {{ heapPercent }}%
+                  </n-tag>
+                </template>
+                <div ref="memoryChartRef" class="chart-container"></div>
+                <n-descriptions :column="1" size="small" label-placement="left">
+                  <n-descriptions-item :label="formatBytes(heapUsed) + ' / ' + formatBytes(heapMax)">
+                    JVM 堆内存
+                  </n-descriptions-item>
+                  <n-descriptions-item :label="formatBytes(nonHeapUsed)">
+                    非堆内存
+                  </n-descriptions-item>
+                </n-descriptions>
+              </n-card>
+            </n-gi>
+      
+            <!-- 系统内存 -->
+            <n-gi>
+              <n-card title="系统内存" class="monitor-card">
+                <template #header-extra>
+                  <n-tag :type="systemMemoryPercent > 80 ? 'error' : systemMemoryPercent > 60 ? 'warning' : 'success'" size="small">
+                    {{ systemMemoryPercent }}%
+                  </n-tag>
+                </template>
+                <div ref="systemMemoryChartRef" class="chart-container"></div>
+                <n-descriptions :column="1" size="small" label-placement="left">
+                  <n-descriptions-item :label="formatBytes(systemMemoryUsed) + ' / ' + formatBytes(systemMemoryTotal)">
+                    已用 / 总计
+                  </n-descriptions-item>
+                  <n-descriptions-item :label="formatBytes(systemMemoryFree)">
+                    空闲内存
+                  </n-descriptions-item>
+                </n-descriptions>
+              </n-card>
+            </n-gi>
+          </n-grid>
     <!-- 系统信息 -->
     <n-card title="系统信息" class="info-card">
       <n-descriptions :column="4" label-placement="left" bordered>
@@ -77,9 +83,6 @@
         <n-descriptions-item label="系统版本">{{ systemInfo.osVersion || '-' }}</n-descriptions-item>
         <n-descriptions-item label="Java 版本">{{ systemInfo.javaVersion || '-' }}</n-descriptions-item>
         <n-descriptions-item label="运行时长">{{ formatUptime(systemInfo.uptime) }}</n-descriptions-item>
-        <n-descriptions-item label="进程 ID">{{ systemInfo.processId || '-' }}</n-descriptions-item>
-        <n-descriptions-item label="用户">{{ systemInfo.userName || '-' }}</n-descriptions-item>
-        <n-descriptions-item label="用户主目录">{{ systemInfo.userHome || '-' }}</n-descriptions-item>
       </n-descriptions>
     </n-card>
 
@@ -95,7 +98,56 @@
         <n-descriptions-item label="守护线程">{{ threadInfo.daemon || '-' }}</n-descriptions-item>
         <n-descriptions-item label="峰值线程">{{ threadInfo.peak || '-' }}</n-descriptions-item>
         <n-descriptions-item label="已启动线程">{{ threadInfo.started || '-' }}</n-descriptions-item>
+        <n-descriptions-item label="可运行">{{ threadInfo.runnableCount || '-' }}</n-descriptions-item>
+        <n-descriptions-item label="等待中">{{ threadInfo.waitingCount || '-' }}</n-descriptions-item>
+        <n-descriptions-item label="定时等待">{{ threadInfo.timedWaitingCount || '-' }}</n-descriptions-item>
+        <n-descriptions-item label="阻塞">{{ threadInfo.blockedCount || '-' }}</n-descriptions-item>
       </n-descriptions>
+    </n-card>
+
+    <!-- 插件统计 -->
+    <n-card title="插件统计" class="plugin-stat-card">
+      <template #header-extra>
+        <n-button text type="primary" @click="$router.push('/plugins')">
+          管理插件 >
+        </n-button>
+      </template>
+      <n-descriptions :column="4" label-placement="left" bordered>
+        <n-descriptions-item label="总插件数">
+          <n-tag type="info">{{ pluginStatistics.total || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="运行中">
+          <n-tag type="success">{{ pluginStatistics.started || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="已停止">
+          <n-tag type="warning">{{ pluginStatistics.stopped || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="启动失败">
+          <n-tag type="error">{{ pluginStatistics.failed || 0 }}</n-tag>
+        </n-descriptions-item>
+      </n-descriptions>
+    </n-card>
+
+    <!-- GC 收集器 -->
+    <n-card title="GC 统计" class="gc-card">
+      <n-data-table
+        :columns="gcColumns"
+        :data="gcInfo"
+        :bordered="false"
+        size="small"
+        :pagination="false"
+      />
+    </n-card>
+
+    <!-- 内存池详情 -->
+    <n-card title="内存池详情" class="memory-pools-card">
+      <n-data-table
+        :columns="memoryPoolColumns"
+        :data="memoryPools"
+        :bordered="false"
+        size="small"
+        :pagination="false"
+      />
     </n-card>
   </div>
 </template>
@@ -104,7 +156,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import {
   NCard, NGrid, NGi, NButton, NIcon, NTag, NDescriptions,
-  NDescriptionsItem, useMessage
+  NDescriptionsItem, NDataTable, useMessage
 } from 'naive-ui'
 import { RefreshOutline } from '@vicons/ionicons5'
 import * as echarts from 'echarts'
@@ -120,13 +172,52 @@ const cpuPercent = ref(0)
 const heapUsed = ref(0)
 const heapMax = ref(1)
 const heapPercent = ref(0)
+const nonHeapUsed = ref(0)
 const systemMemoryTotal = ref(0)
 const systemMemoryUsed = ref(0)
+const systemMemoryFree = ref(0)
 const systemMemoryPercent = ref(0)
+const memoryPools = ref([])
+
+// GC 表格列
+const gcColumns = [
+  { title: '收集器名称', key: 'name' },
+  { title: '执行次数', key: 'count' },
+  { title: '总耗时(ms)', key: 'time' },
+  { title: '最大单次耗时(ms)', key: 'maxTime' }
+]
+
+// 内存池表格列
+const memoryPoolColumns = [
+  { title: '内存池名称', key: 'name' },
+  { 
+    title: '已使用', 
+    key: 'used',
+    render: (row) => formatBytes(row.used)
+  },
+  { 
+    title: '最大', 
+    key: 'max',
+    render: (row) => row.max > 0 ? formatBytes(row.max) : '无限制'
+  },
+  {
+    title: '使用率',
+    key: 'usagePercent',
+    render: (row) => {
+      if (row.max > 0) {
+        const percent = ((row.used / row.max) * 100).toFixed(1)
+        return `${percent}%`
+      }
+      return '-'
+    }
+  }
+]
 
 // 系统信息
 const systemInfo = ref({})
 const threadInfo = ref({})
+const pluginStatistics = ref({})
+const gcInfo = ref([])
 
 // 图表引用
 const cpuChartRef = ref(null)
@@ -157,10 +248,21 @@ const loadData = async () => {
         heapUsed.value = d.memory.heapUsed || 0
         heapMax.value = d.memory.heapMax || 1
         heapPercent.value = parseFloat(d.memory.heapUsedPercent?.toFixed(1) || 0)
+        nonHeapUsed.value = d.memory.nonHeapUsed || 0
         
         systemMemoryTotal.value = d.memory.systemTotal || 0
         systemMemoryUsed.value = d.memory.systemUsed || 0
+        systemMemoryFree.value = d.memory.systemFree || 0
         systemMemoryPercent.value = parseFloat(d.memory.systemUsedPercent?.toFixed(1) || 0)
+        
+        // 内存池详情
+        if (d.memory.memoryPools) {
+          memoryPools.value = Object.values(d.memory.memoryPools).map(pool => ({
+            name: pool.name,
+            used: pool.used,
+            max: pool.max
+          }))
+        }
       }
       
       // 系统信息 - 后端返回 d.system
@@ -171,6 +273,16 @@ const loadData = async () => {
       // 线程信息 - 后端返回 d.threads
       if (d.threads) {
         threadInfo.value = d.threads
+      }
+      
+      // 插件统计 - 后端返回 d.pluginStatistics
+      if (d.pluginStatistics) {
+        pluginStatistics.value = d.pluginStatistics
+      }
+      
+      // GC 收集器 - 后端返回 d.gcCollectors
+      if (d.gcCollectors) {
+        gcInfo.value = d.gcCollectors
       }
       
       updateCharts()
@@ -382,7 +494,7 @@ onUnmounted(() => {
   margin-bottom: 16px;
 }
 
-.info-card, .thread-card {
+.info-card, .thread-card, .plugin-stat-card, .gc-card, .memory-pools-card {
   border-radius: 8px;
   margin-bottom: 24px;
 }

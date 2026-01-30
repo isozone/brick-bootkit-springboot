@@ -14,13 +14,13 @@
     </div>
 
     <!-- 线程统计 -->
-    <n-grid :cols="4" :x-gap="16" :y-gap="16" class="stat-grid">
+    <n-grid :cols="5" :x-gap="16" :y-gap="16" class="stat-grid">
       <n-gi>
         <n-card class="stat-card">
           <div class="stat-content">
             <n-icon size="28" color="#2563eb"><LayersOutline /></n-icon>
             <div class="stat-info">
-              <div class="stat-value">{{ threadInfo.threadCount || 0 }}</div>
+              <div class="stat-value">{{ threadInfo.total || 0 }}</div>
               <div class="stat-label">活动线程</div>
             </div>
           </div>
@@ -31,7 +31,7 @@
           <div class="stat-content">
             <n-icon size="28" color="#10b981"><TrendingUpOutline /></n-icon>
             <div class="stat-info">
-              <div class="stat-value">{{ threadInfo.peakThreadCount || 0 }}</div>
+              <div class="stat-value">{{ threadInfo.peak || 0 }}</div>
               <div class="stat-label">峰值线程</div>
             </div>
           </div>
@@ -42,8 +42,19 @@
           <div class="stat-content">
             <n-icon size="28" color="#f59e0b"><TimeOutline /></n-icon>
             <div class="stat-info">
-              <div class="stat-value">{{ threadInfo.daemonThreadCount || 0 }}</div>
+              <div class="stat-value">{{ threadInfo.daemon || 0 }}</div>
               <div class="stat-label">守护线程</div>
+            </div>
+          </div>
+        </n-card>
+      </n-gi>
+      <n-gi>
+        <n-card class="stat-card">
+          <div class="stat-content">
+            <n-icon size="28" color="#8b5cf6"><PeopleOutline /></n-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ threadInfo.started || 0 }}</div>
+              <div class="stat-label">已启动线程</div>
             </div>
           </div>
         </n-card>
@@ -60,6 +71,30 @@
         </n-card>
       </n-gi>
     </n-grid>
+
+    <!-- 线程状态统计 -->
+    <n-card title="线程状态统计" class="state-stat-card">
+      <n-descriptions :column="6" label-placement="left" bordered size="small">
+        <n-descriptions-item label="可运行">
+          <n-tag type="success" size="small">{{ threadInfo.runnableCount || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="等待中">
+          <n-tag type="warning" size="small">{{ threadInfo.waitingCount || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="限时等待">
+          <n-tag type="info" size="small">{{ threadInfo.timedWaitingCount || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="阻塞">
+          <n-tag type="error" size="small">{{ threadInfo.blockedCount || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="新建">
+          <n-tag size="small">{{ threadInfo.newCount || 0 }}</n-tag>
+        </n-descriptions-item>
+        <n-descriptions-item label="已终止">
+          <n-tag size="small">{{ threadInfo.terminatedCount || 0 }}</n-tag>
+        </n-descriptions-item>
+      </n-descriptions>
+    </n-card>
 
     <!-- 死锁警告 -->
     <n-alert v-if="deadlockedCount > 0" type="error" title="检测到死锁线程" class="deadlock-alert">
@@ -107,11 +142,11 @@
 import { ref, computed, h, onMounted } from 'vue'
 import {
   NCard, NGrid, NGi, NButton, NIcon, NInput, NDataTable, NTag,
-  NAlert, NSpace, useMessage
+  NAlert, NDescriptions, NDescriptionsItem, NSpace, useMessage
 } from 'naive-ui'
 import {
   RefreshOutline, LayersOutline, TrendingUpOutline, TimeOutline,
-  WarningOutline, SearchOutline
+  WarningOutline, SearchOutline, PeopleOutline
 } from '@vicons/ionicons5'
 import { monitorApi } from '@/api/services'
 
@@ -128,9 +163,8 @@ const filteredThreads = computed(() => {
   if (!searchKeyword.value) return threadList.value
   const keyword = searchKeyword.value.toLowerCase()
   return threadList.value.filter(t =>
-    t.name?.toLowerCase().includes(keyword) ||
-    t.state?.toLowerCase().includes(keyword) ||
-    t.stackTrace?.some(s => s?.toLowerCase().includes(keyword))
+    t.threadName?.toLowerCase().includes(keyword) ||
+    t.threadState?.toLowerCase().includes(keyword)
   )
 })
 
@@ -158,31 +192,58 @@ const getStateText = (state) => {
 
 // 表格列配置
 const columns = [
-  { title: '线程 ID', key: 'threadId', width: 100 },
-  { title: '线程名称', key: 'threadName', ellipsis: true },
+  { title: '线程 ID', key: 'threadId', width: 90 },
+  { title: '线程名称', key: 'threadName', ellipsis: true, minWidth: 180 },
   {
     title: '状态',
     key: 'threadState',
-    width: 100,
+    width: 90,
     render(row) {
       return h(NTag, { size: 'small', type: getStateType(row.threadState) }, () => getStateText(row.threadState))
     }
   },
-  { title: '优先级', key: 'priority', width: 80 },
+  { title: '优先级', key: 'priority', width: 70 },
   {
     title: 'CPU 时间',
     key: 'cpuTime',
-    width: 120,
+    width: 100,
     render(row) {
-      return row.cpuTime ? (row.cpuTime / 1000000).toFixed(2) + ' ms' : '-'
+      if (!row.cpuTime || row.cpuTime === 0) return '-'
+      // 纳秒转换为毫秒
+      return (row.cpuTime / 1000000).toFixed(2) + ' ms'
     }
   },
   {
-    title: '用户',
-    key: 'isDaemon',
-    width: 80,
+    title: '类型',
+    key: 'daemon',
+    width: 70,
     render(row) {
-      return h(NTag, { size: 'small', type: row.isDaemon ? 'info' : 'success' }, () => row.isDaemon ? '守护' : '用户')
+      return h(NTag, { size: 'small', type: row.daemon ? 'info' : 'success' }, () => row.daemon ? '守护' : '用户')
+    }
+  },
+  {
+    title: '阻塞次数',
+    key: 'blockedCount',
+    width: 90,
+    render(row) {
+      return row.blockedCount > 0 ? h('span', { style: { color: '#ef4444' } }, row.blockedCount) : row.blockedCount
+    }
+  },
+  {
+    title: '等待次数',
+    key: 'waitedCount',
+    width: 90,
+    render(row) {
+      return row.waitedCount > 0 ? h('span', { style: { color: '#f59e0b' } }, row.waitedCount) : row.waitedCount
+    }
+  },
+  {
+    title: '锁名称',
+    key: 'lockName',
+    width: 150,
+    ellipsis: true,
+    render(row) {
+      return row.lockName ? row.lockName : '-'
     }
   }
 ]
@@ -202,17 +263,30 @@ const loadData = async () => {
   try {
     const res = await monitorApi.getThreadDetail()
     if (res.code === 200 && res.data) {
-      threadInfo.value = {
-        threadCount: res.data.threadCount,
-        peakThreadCount: res.data.peakThreadCount,
-        daemonThreadCount: res.data.daemonThreadCount
+      // 线程统计信息 - 后端返回 data.threadInfo
+      if (res.data.threadInfo) {
+        threadInfo.value = {
+          total: res.data.threadInfo.total,
+          peak: res.data.threadInfo.peak,
+          daemon: res.data.threadInfo.daemon,
+          started: res.data.threadInfo.started,
+          newCount: res.data.threadInfo.newCount,
+          runnableCount: res.data.threadInfo.runnableCount,
+          blockedCount: res.data.threadInfo.blockedCount,
+          waitingCount: res.data.threadInfo.waitingCount,
+          timedWaitingCount: res.data.threadInfo.timedWaitingCount,
+          terminatedCount: res.data.threadInfo.terminatedCount
+        }
       }
       deadlockedCount.value = res.data.deadlockedThreads?.length || 0
-      threadList.value = res.data.threadInfos || []
-      // 线程池信息需要从其他接口获取，这里使用模拟数据
-      threadPools.value = [
-        { poolName: 'common-pool', corePoolSize: 4, maximumPoolSize: 8, activeCount: 2, queueSize: 100, completedTaskCount: 1520 }
-      ]
+      // 线程列表 - 后端返回 data.threads
+      threadList.value = res.data.threads || []
+      
+      // 获取线程池信息
+      const poolsRes = await monitorApi.getThreadPools()
+      if (poolsRes.code === 200 && poolsRes.data) {
+        threadPools.value = poolsRes.data
+      }
     }
   } catch (e) {
     message.error('获取线程数据失败')
@@ -237,8 +311,9 @@ onMounted(() => {
   .page-title { font-size: 24px; font-weight: 600; color: #1f2937; margin: 0; }
   .page-subtitle { color: #6b7280; margin: 4px 0 0 0; font-size: 14px; }
 }
-.stat-grid { margin-bottom: 24px; }
+.stat-grid { margin-bottom: 16px; }
 .stat-card { border-radius: 8px; }
+.state-stat-card { border-radius: 8px; margin-bottom: 16px; }
 .stat-content {
   display: flex;
   align-items: center;
