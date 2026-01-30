@@ -249,8 +249,35 @@ const columns = [
   }
 ]
 
-const handleExport = () => {
-  message.success('导出成功')
+const handleExport = async () => {
+  try {
+    message.info('正在导出...')
+    
+    const response = await executionsApi.export(searchKeyword.value || null, filterStatus.value)
+    
+    // 获取 blob 数据
+    const blob = response.data
+    if (!blob || blob.size === 0) {
+      message.warning('没有可导出的数据')
+      return
+    }
+    
+    // 创建下载链接
+    const objectUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = objectUrl
+    const filename = `execution_records_${new Date().toISOString().slice(0, 10)}.txt`
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(objectUrl)
+    
+    message.success('导出成功')
+  } catch (e) {
+    console.error('导出失败:', e)
+    message.error('导出失败: ' + (e.message || '未知错误'))
+  }
 }
 
 const handleView = (row) => {

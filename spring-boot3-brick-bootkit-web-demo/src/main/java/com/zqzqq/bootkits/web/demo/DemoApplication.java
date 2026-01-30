@@ -7,6 +7,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
     }
 )
 @EnableBrickWeb
+@EnableScheduling
 public class DemoApplication  implements SpringBootstrap {
 
     public static void main(String[] args) {

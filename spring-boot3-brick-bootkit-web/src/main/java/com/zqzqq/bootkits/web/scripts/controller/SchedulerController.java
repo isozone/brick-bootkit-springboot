@@ -159,6 +159,14 @@ public class SchedulerController {
     }
     
     /**
+     * 暂停定时任务（等同于禁用）
+     */
+    @PostMapping("/{taskId}/pause")
+    public ResponseEntity<?> pauseTask(@PathVariable String taskId) {
+        return disableTask(taskId);
+    }
+    
+    /**
      * 立即执行定时任务
      */
     @PostMapping("/{taskId}/execute")

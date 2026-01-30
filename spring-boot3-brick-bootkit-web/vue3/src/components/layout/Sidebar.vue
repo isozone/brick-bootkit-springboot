@@ -135,7 +135,7 @@ const getIcon = (iconName) => {
 .sidebar {
   display: flex;
   flex-direction: column;
-  background: #1a1a2e;
+  background: #1e293b;
 
   :deep(.n-menu) {
     background: transparent;
@@ -143,28 +143,46 @@ const getIcon = (iconName) => {
     .n-menu-item {
       margin: 4px 8px;
 
-      &.n-menu-item--selected {
-        .n-menu-item-content {
-          background: linear-gradient(90deg, rgba($primary-color, 0.2), transparent) !important;
-          border-radius: 6px;
-        }
-      }
-
+      // 默认状态 - 文字白色
       .n-menu-item-content {
+        color: #ffffff !important;
         border-radius: 6px;
+        
+        .n-menu-item-content__text {
+          color: #ffffff !important;
+        }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.15);
         }
+      }
+
+      // 选中状态 - 金色高亮（与白色文字更搭配）
+      &.n-menu-item--selected .n-menu-item-content {
+        background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), transparent) !important;
+        color: #facc15 !important;
+        
+        .n-menu-item-content__text {
+          color: #facc15 !important;
+        }
+        font-weight: 600;
       }
     }
 
+    // 图标颜色
     .n-menu-item-content__icon {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.85);
     }
 
-    .n-menu-item-content__label {
-      color: rgba(255, 255, 255, 0.9);
+    // 选中时图标也变金色
+    &.n-menu-item--selected .n-menu-item-content__icon {
+      color: #facc15 !important;
+    }
+    
+    // 覆盖naive-ui默认的menu-item样式
+    .n-menu-item-content {
+      --n-item-text-color: #ffffff !important;
+      --n-item-color-active: transparent !important;
     }
   }
 

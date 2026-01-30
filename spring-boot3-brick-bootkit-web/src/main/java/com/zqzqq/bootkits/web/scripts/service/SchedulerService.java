@@ -309,7 +309,6 @@ public class SchedulerService {
     
     /**
      * 计算下次执行时间
-     * 简化实现：解析Cron表达式并计算下次执行时间
      */
     private LocalDateTime calculateNextExecution(String cronExpression) {
         if (cronExpression == null || cronExpression.isEmpty()) {
@@ -317,30 +316,41 @@ public class SchedulerService {
         }
         
         try {
-            // 简化实现：解析简单的Cron表达式
-            // 格式: "分 时 日 月 周"
             String[] parts = cronExpression.trim().split("\\s+");
+            if (parts.length < 5) {
+                return LocalDateTime.now().plusMinutes(1);
+            }
             
             LocalDateTime now = LocalDateTime.now();
             
-            if (parts.length >= 5) {
-                // 假设格式: 分 时 日 月 周
-                int minute = parseCronField(parts[0], now.getMinute(), 0, 59);
-                int hour = parseCronField(parts[1], now.getHour(), 0, 23);
-                int dayOfMonth = parseCronField(parts[2], now.getDayOfMonth(), 1, 31);
-                int month = parseCronField(parts[3], now.getMonthValue(), 1, 12);
+            // 解析 cron 各字段
+            int targetMinute = parseCronField(parts[0], -1, 0, 59);
+            int targetHour = parseCronField(parts[1], -1, 0, 23);
+            int targetDayOfMonth = parseCronField(parts[2], -1, 1, 31);
+            int targetMonth = parseCronField(parts[3], -1, 1, 12);
+            
+            // 从当前时间开始，最多查找1年内的下一个执行时间
+            LocalDateTime candidate = now.withSecond(0).withNano(0);
+            
+            for (int i = 0; i < 365 * 24 * 60; i++) {
+                candidate = candidate.plusMinutes(1);
                 
-                // 检查是否需要推到下个月
-                if (month < now.getMonthValue() || (month == now.getMonthValue() && 
-                    (dayOfMonth < now.getDayOfMonth() || (dayOfMonth == now.getDayOfMonth() && 
-                    (hour < now.getHour() || (hour == now.getHour() && minute <= now.getMinute())))))) {
-                    return now.plusMonths(1).withDayOfMonth(1).withHour(hour).withMinute(minute).withSecond(0);
+                int m = candidate.getMinute();
+                int h = candidate.getHour();
+                int d = candidate.getDayOfMonth();
+                int mon = candidate.getMonthValue();
+                
+                // 检查所有字段是否匹配
+                boolean minuteMatch = (targetMinute == -1 || targetMinute == m);
+                boolean hourMatch = (targetHour == -1 || targetHour == h);
+                boolean dayMatch = (targetDayOfMonth == -1 || targetDayOfMonth == d);
+                boolean monthMatch = (targetMonth == -1 || targetMonth == mon);
+                
+                if (minuteMatch && hourMatch && dayMatch && monthMatch) {
+                    return candidate;
                 }
-                
-                return now.withDayOfMonth(dayOfMonth).withMonth(month).withHour(hour).withMinute(minute).withSecond(0);
             }
             
-            // 默认返回1分钟后
             return now.plusMinutes(1);
             
         } catch (Exception e) {
@@ -351,10 +361,15 @@ public class SchedulerService {
     
     /**
      * 解析Cron字段
+     * @param field cron字段值
+     * @param defaultValue 默认值，-1表示需要动态计算
+     * @param min 最小值
+     * @param max 最大值
+     * @return 解析后的值，-1表示任意值（*）
      */
     private int parseCronField(String field, int defaultValue, int min, int max) {
         if (field == null || field.equals("*") || field.equals("?")) {
-            return defaultValue;
+            return -1;  // -1 表示任意值
         }
         
         try {

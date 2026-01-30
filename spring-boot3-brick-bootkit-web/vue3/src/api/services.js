@@ -28,6 +28,11 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response) => {
+    // 如果是 blob 响应，直接返回（用于文件导出）
+    if (response.config.responseType === 'blob') {
+      return response
+    }
+    
     const res = response.data
     // 如果是直接返回数据的接口（如 ScriptRepositoryController）
     if (Array.isArray(res) || res.scriptName !== undefined || res.templateId !== undefined || res.success !== undefined) {
@@ -131,6 +136,8 @@ export const schedulerApi = {
   create: (data) => service.post(API_PATHS.SCRIPTS_SCHEDULER, data),
   update: (id, data) => service.put(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}`, data),
   delete: (id) => service.delete(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}`),
+  enable: (id) => service.post(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}/enable`),
+  disable: (id) => service.post(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}/disable`),
   pause: (id) => service.post(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}/pause`),
   resume: (id) => service.post(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}/resume`),
   execute: (id) => service.post(`${API_PATHS.SCRIPTS_SCHEDULER}/${id}/execute`)
@@ -152,7 +159,17 @@ export const executionsApi = {
     params: { scriptName } 
   }),
   cancel: (id) => service.post(`${API_PATHS.SCRIPTS_EXECUTIONS}/${id}/cancel`),
-  retry: (id) => service.post(`${API_PATHS.SCRIPTS_EXECUTIONS}/${id}/retry`)
+  retry: (id) => service.post(`${API_PATHS.SCRIPTS_EXECUTIONS}/${id}/retry`),
+  // 导出执行记录
+  export: (scriptName = null, status = null) => {
+    const params = {}
+    if (scriptName) params.scriptName = scriptName
+    if (status) params.status = status
+    return service.get(`${API_PATHS.SCRIPTS_EXECUTIONS}/export`, { 
+      params,
+      responseType: 'blob'
+    })
+  }
 }
 
 // ==================== 插件相关 API ====================

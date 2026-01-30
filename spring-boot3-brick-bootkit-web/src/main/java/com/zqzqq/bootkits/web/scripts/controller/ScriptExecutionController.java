@@ -5,7 +5,9 @@ import com.zqzqq.bootkits.web.scripts.service.ScriptExecutionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -175,6 +177,103 @@ public class ScriptExecutionController {
                 "retentionDays", retentionDays,
                 "cleanedCount", cleanedCount
         ));
+    }
+    
+    /**
+     * 导出执行记录为CSV
+     */
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportExecutions(
+            @RequestParam(required = false) String scriptName,
+            @RequestParam(required = false) String status) {
+        
+        List<ExecutionRecordDTO> allRecords;
+        
+        // 根据条件筛选
+        if (scriptName != null && !scriptName.isEmpty()) {
+            allRecords = executionService.getExecutionRecords(scriptName);
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ExecutionRecordDTO.ExecutionStatus execStatus = ExecutionRecordDTO.ExecutionStatus.valueOf(status);
+                    allRecords = allRecords.stream()
+                            .filter(r -> execStatus.equals(r.getStatus()))
+                            .toList();
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status value: {}", status);
+                }
+            }
+        } else {
+            allRecords = executionService.getAllExecutionRecords();
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ExecutionRecordDTO.ExecutionStatus execStatus = ExecutionRecordDTO.ExecutionStatus.valueOf(status);
+                    allRecords = allRecords.stream()
+                            .filter(r -> execStatus.equals(r.getStatus()))
+                            .toList();
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status value: {}", status);
+                }
+            }
+        }
+        
+        // 按时间倒序排序
+        allRecords = allRecords.stream()
+                .sorted((a, b) -> {
+                    if (b.getStartTime() == null) return 1;
+                    if (a.getStartTime() == null) return -1;
+                    return b.getStartTime().compareTo(a.getStartTime());
+                })
+                .toList();
+        
+        // 生成CSV
+        StringBuilder csv = new StringBuilder();
+        csv.append("\uFEFF"); // BOM for Excel UTF-8 support
+        csv.append("执行ID,脚本名称,脚本类型,状态,提交人,开始时间,结束时间,耗时(毫秒),参数,状态消息,输出,错误信息\n");
+        
+        for (ExecutionRecordDTO record : allRecords) {
+            csv.append(escapeCsv(record.getExecutionId())).append(",");
+            csv.append(escapeCsv(record.getScriptName())).append(",");
+            csv.append(escapeCsv(record.getScriptType())).append(",");
+            csv.append(escapeCsv(record.getStatus() != null ? record.getStatus().name() : "")).append(",");
+            csv.append(escapeCsv(record.getSubmittedBy() != null ? record.getSubmittedBy() : record.getExecutedBy())).append(",");
+            csv.append(escapeCsv(formatTime(record.getStartTime()))).append(",");
+            csv.append(escapeCsv(formatTime(record.getEndTime()))).append(",");
+            csv.append(record.getExecutionTimeMs() != null ? record.getExecutionTimeMs() : "").append(",");
+            csv.append(escapeCsv(record.getParameters())).append(",");
+            csv.append(escapeCsv(record.getStatusMessage())).append(",");
+            csv.append(escapeCsv(truncateString(record.getOutput(), 32000))).append(",");
+            csv.append(escapeCsv(truncateString(record.getErrorMessage(), 32000))).append("\n");
+        }
+        
+        String filename = "execution_records_" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".txt";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/plain;charset=utf-8"));
+        headers.setContentDispositionFormData("attachment", filename);
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+    
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        // Escape quotes and wrap in quotes if contains comma, quote or newline
+        if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+    
+    private String truncateString(String value, int maxLength) {
+        if (value == null) return "";
+        if (value.length() <= maxLength) return value;
+        return value.substring(0, maxLength) + "...";
+    }
+    
+    private String formatTime(LocalDateTime time) {
+        if (time == null) return "";
+        return time.toString().replace("T", " ").substring(0, 19);
     }
     
     /**
