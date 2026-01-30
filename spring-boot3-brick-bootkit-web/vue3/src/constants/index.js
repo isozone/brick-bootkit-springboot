@@ -30,18 +30,18 @@ export const MENU_CONFIG = {
       key: 'dashboard',
       label: '首页',
       icon: 'HomeOutline',
-      path: '/'
+      path: '/brick-web/'
     },
     {
       key: 'scripts',
       label: '脚本管理',
       icon: 'CodeSlashOutline',
       children: [
-        { key: 'scripts-list', label: '脚本列表', path: '/scripts' },
-        { key: 'scripts-editor', label: '脚本编辑器', path: '/scripts/editor' },
-        { key: 'scripts-templates', label: '脚本模板', path: '/scripts/templates' },
-        { key: 'scripts-scheduler', label: '定时任务', path: '/scripts/scheduler' },
-        { key: 'scripts-executions', label: '执行记录', path: '/scripts/executions' }
+        { key: 'scripts-list', label: '脚本列表', path: '/brick-web/scripts' },
+        { key: 'scripts-editor', label: '脚本编辑器', path: '/brick-web/scripts/editor' },
+        { key: 'scripts-templates', label: '脚本模板', path: '/brick-web/scripts/templates' },
+        { key: 'scripts-scheduler', label: '定时任务', path: '/brick-web/scripts/scheduler' },
+        { key: 'scripts-executions', label: '执行记录', path: '/brick-web/scripts/executions' }
       ]
     },
     {
@@ -49,8 +49,8 @@ export const MENU_CONFIG = {
       label: '插件管理',
       icon: 'CubeOutline',
       children: [
-        { key: 'plugins-list', label: '插件列表', path: '/plugins' },
-        { key: 'plugins-upload', label: '上传插件', path: '/plugins/upload' }
+        { key: 'plugins-list', label: '插件列表', path: '/brick-web/plugins' },
+        { key: 'plugins-upload', label: '上传插件', path: '/brick-web/plugins/upload' }
       ]
     },
     {
@@ -58,10 +58,10 @@ export const MENU_CONFIG = {
       label: '系统监控',
       icon: 'StatsChartOutline',
       children: [
-        { key: 'monitor-overview', label: '概览', path: '/monitor' },
-        { key: 'monitor-cpu', label: 'CPU监控', path: '/monitor/cpu' },
-        { key: 'monitor-memory', label: '内存监控', path: '/monitor/memory' },
-        { key: 'monitor-threads', label: '线程监控', path: '/monitor/threads' }
+        { key: 'monitor-overview', label: '概览', path: '/brick-web/monitor' },
+        { key: 'monitor-cpu', label: 'CPU监控', path: '/brick-web/monitor/cpu' },
+        { key: 'monitor-memory', label: '内存监控', path: '/brick-web/monitor/memory' },
+        { key: 'monitor-threads', label: '线程监控', path: '/brick-web/monitor/threads' }
       ]
     }
   ],

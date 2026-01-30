@@ -103,21 +103,9 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/META-INF/resources/webjars/")
                 .resourceChain(true);
         
-        // 静态资源（CSS、JS、库文件）
-        registry.addResourceHandler("/brick-web/static/**")
-                .addResourceLocations("classpath:/static/")
-                .resourceChain(true);
-        
-        // 所有HTML页面 - 放在 templates 目录下
-        registry.addResourceHandler("/brick-web/*.html")
-                .addResourceLocations("classpath:/static/templates/")
-                .resourceChain(true);
-        registry.addResourceHandler("/brick-web/*/*.html")
-                .addResourceLocations("classpath:/static/templates/")
-                .resourceChain(true);
-        // 添加子目录HTML页面支持
-        registry.addResourceHandler("/brick-web/templates/**")
-                .addResourceLocations("classpath:/static/templates/")
+        // Vue 打包的所有静态资源（包括 index.html、assets 等）
+        registry.addResourceHandler("/brick-web/**")
+                .addResourceLocations("classpath:/static/brick-web/")
                 .resourceChain(true);
     }
     
@@ -127,29 +115,7 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
      */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // 首页
-        registry.addRedirectViewController("/brick-web", "/brick-web/index.html");
-        registry.addViewController("/brick-web/index.html").setViewName("forward:/templates/index.html");
-        
-        // 插件相关
-        registry.addRedirectViewController("/brick-web/plugins", "/brick-web/plugins/index.html");
-        registry.addViewController("/brick-web/plugins/index.html").setViewName("forward:/templates/plugins/index.html");
-        registry.addViewController("/brick-web/plugins/detail.html").setViewName("forward:/templates/plugins/detail.html");
-        registry.addViewController("/brick-web/plugins/upload.html").setViewName("forward:/templates/plugins/upload.html");
-        
-        // 监控相关
-        registry.addRedirectViewController("/brick-web/monitor", "/brick-web/monitor/overview.html");
-        registry.addViewController("/brick-web/monitor/overview.html").setViewName("forward:/templates/monitor/overview.html");
-        registry.addViewController("/brick-web/monitor/memory.html").setViewName("forward:/templates/monitor/memory.html");
-        registry.addViewController("/brick-web/monitor/cpu.html").setViewName("forward:/templates/monitor/cpu.html");
-        registry.addViewController("/brick-web/monitor/threads.html").setViewName("forward:/templates/monitor/threads.html");
-
-        // 脚本管理相关
-        registry.addRedirectViewController("/brick-web/scripts", "/brick-web/scripts/index.html");
-        registry.addViewController("/brick-web/scripts/index.html").setViewName("forward:/templates/scripts/index.html");
-        registry.addViewController("/brick-web/scripts/editor.html").setViewName("forward:/templates/scripts/editor.html");
-        registry.addViewController("/brick-web/scripts/templates.html").setViewName("forward:/templates/scripts/templates.html");
-        registry.addViewController("/brick-web/scripts/scheduler.html").setViewName("forward:/templates/scripts/scheduler.html");
-        registry.addViewController("/brick-web/scripts/executions.html").setViewName("forward:/templates/scripts/executions.html");
+        // 根路径重定向到 Vue 首页
+        registry.addRedirectViewController("/", "/brick-web/");
     }
 }

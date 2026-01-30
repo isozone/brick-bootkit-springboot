@@ -620,6 +620,16 @@ plugin:
 
 4. 访问管理控制台：`http://localhost:8080/brick-web/index`
 
+#### 🔗 嵌入模式
+Web 管理控制台支持通过 URL 参数 `embedded=true` 以嵌入模式加载，此时会隐藏侧边栏、头部和底部，适合 iframe 嵌入到其他页面中使用。
+
+```
+# 嵌入模式访问地址
+http://localhost:8080/brick-web/index?embedded=true
+http://localhost:8080/brick-web/scripts?embedded=true
+http://localhost:8080/brick-web/monitor?embedded=true
+```
+
 
 
 ## ⚙️ 环境要求
