@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverrides">
+  <n-config-provider :theme-overrides="themeOverrides" :hljs="hljsInstance">
     <n-message-provider>
       <n-notification-provider>
         <n-dialog-provider>
@@ -15,6 +15,10 @@
 <script setup>
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { themeOverrides } from '@/constants'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
+
+const hljsInstance = hljs
 </script>
 
 <style lang="scss">

@@ -30,7 +30,11 @@ service.interceptors.response.use(
   (response) => {
     const res = response.data
     // 如果是直接返回数据的接口（如 ScriptRepositoryController）
-    if (Array.isArray(res) || res.scriptName !== undefined || res.templateId !== undefined) {
+    if (Array.isArray(res) || res.scriptName !== undefined || res.templateId !== undefined || res.success !== undefined) {
+      return { code: 200, data: res }
+    }
+    // 处理删除等操作成功返回 true 或 success 的情况
+    if (res === true || res === 'true' || res.success === true || res.data === true) {
       return { code: 200, data: res }
     }
     return res
@@ -86,7 +90,7 @@ export const scriptsApi = {
   update: (scriptName, data) => service.put(`${API_PATHS.SCRIPTS_LIST}/${scriptName}`, data),
   
   // 删除脚本
-  delete: (scriptName) => service.delete(`${API_PATHS.SCRIPTS_LIST}/${scriptName}`),
+  delete: (scriptName) => service.post(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/delete`),
   
   // 获取脚本内容
   getContent: (scriptName) => service.get(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/content`),
@@ -135,6 +139,13 @@ export const schedulerApi = {
 // ==================== 执行记录相关 API ====================
 
 export const executionsApi = {
+  // 分页获取执行记录列表
+  getList: (page = 1, size = 50, scriptName = null, status = null) => {
+    const params = { page, size }
+    if (scriptName) params.scriptName = scriptName
+    if (status) params.status = status
+    return service.get(API_PATHS.SCRIPTS_EXECUTIONS_LIST, { params })
+  },
   getAll: () => service.get(API_PATHS.SCRIPTS_EXECUTIONS),
   getById: (id) => service.get(`${API_PATHS.SCRIPTS_EXECUTIONS}/${id}`),
   getByScript: (scriptName) => service.get(`${API_PATHS.SCRIPTS_EXECUTIONS}`, { 

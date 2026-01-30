@@ -59,8 +59,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { NButton, NIcon, NTag, NModal, NInput, NSelect, NForm, NFormItem, useMessage } from 'naive-ui'
 import { AddOutline, CodeSlashOutline } from '@vicons/ionicons5'
 import { SCRIPT_TYPES } from '@/constants'
@@ -68,6 +68,7 @@ import { templatesApi } from '@/api/services'
 import CodeEditor from '@/components/CodeEditor.vue'
 
 const router = useRouter()
+const route = useRoute()
 const message = useMessage()
 
 const showCreateModal = ref(false)
@@ -177,6 +178,16 @@ const handleCreate = async () => {
     submitting.value = false
   }
 }
+
+// 监听路由变化，重新加载数据
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath === '/scripts/templates') {
+      loadTemplates()
+    }
+  }
+)
 
 onMounted(() => {
   loadTemplates()

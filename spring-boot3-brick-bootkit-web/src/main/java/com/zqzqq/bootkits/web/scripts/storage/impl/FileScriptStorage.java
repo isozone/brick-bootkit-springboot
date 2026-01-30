@@ -6,6 +6,7 @@ import com.zqzqq.bootkits.web.scripts.dto.*;
 import com.zqzqq.bootkits.web.scripts.storage.ScriptStorage;
 import com.zqzqq.bootkits.web.scripts.storage.ScriptStorageType;
 import com.zqzqq.bootkits.web.scripts.storage.StorageException;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -39,6 +40,7 @@ public class FileScriptStorage implements ScriptStorage {
                 .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
     
+    @PostConstruct
     @Override
     public void initialize() throws StorageException {
         try {
@@ -190,10 +192,15 @@ public class FileScriptStorage implements ScriptStorage {
     public void saveExecutionRecord(ExecutionRecordDTO record) throws StorageException {
         lock.writeLock().lock();
         try {
-            Path execPath = Paths.get(dataPath, "executions", record.getExecutionId() + ".json");
+            Path execDir = Paths.get(dataPath, "executions");
+            // 确保目录存在
+            if (!Files.exists(execDir)) {
+                Files.createDirectories(execDir);
+            }
+            Path execPath = execDir.resolve(record.getExecutionId() + ".json");
             objectMapper.writeValue(execPath.toFile(), record);
         } catch (IOException e) {
-            throw new StorageException("Failed to save execution record", e);
+            throw new StorageException("Failed to save execution record: " + e.getMessage(), e);
         } finally {
             lock.writeLock().unlock();
         }
@@ -222,17 +229,92 @@ public class FileScriptStorage implements ScriptStorage {
     
     @Override
     public List<ExecutionRecordDTO> getExecutionRecords(String scriptName) throws StorageException {
-        return new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            Path execDir = Paths.get(dataPath, "executions");
+            if (!Files.exists(execDir)) {
+                return new ArrayList<>();
+            }
+            
+            return Files.list(execDir)
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> {
+                        try {
+                            ExecutionRecordDTO record = objectMapper.readValue(path.toFile(), ExecutionRecordDTO.class);
+                            // 只返回指定脚本名称的记录
+                            if (scriptName != null && scriptName.equals(record.getScriptName())) {
+                                return record;
+                            }
+                            return null;
+                        } catch (IOException e) {
+                            log.warn("Failed to read execution record: {}", path);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .sorted((a, b) -> {
+                        // 按开始时间倒序排序
+                        if (b.getStartTime() == null) return 1;
+                        if (a.getStartTime() == null) return -1;
+                        return b.getStartTime().compareTo(a.getStartTime());
+                    })
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new StorageException("Failed to get execution records", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     @Override
     public List<ExecutionRecordDTO> getAllExecutionRecords() throws StorageException {
-        return new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            Path execDir = Paths.get(dataPath, "executions");
+            if (!Files.exists(execDir)) {
+                return new ArrayList<>();
+            }
+            
+            return Files.list(execDir)
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> {
+                        try {
+                            return objectMapper.readValue(path.toFile(), ExecutionRecordDTO.class);
+                        } catch (IOException e) {
+                            log.warn("Failed to read execution record: {}", path);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .sorted((a, b) -> {
+                        // 按开始时间倒序排序
+                        if (b.getStartTime() == null) return 1;
+                        if (a.getStartTime() == null) return -1;
+                        return b.getStartTime().compareTo(a.getStartTime());
+                    })
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new StorageException("Failed to get all execution records", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     @Override
     public boolean deleteExecutionRecord(String scriptName, String executionId) throws StorageException {
-        return false;
+        lock.writeLock().lock();
+        try {
+            Path execPath = Paths.get(dataPath, "executions", executionId + ".json");
+            if (Files.exists(execPath)) {
+                Files.delete(execPath);
+                return true;
+            }
+            return false;
+        } catch (IOException e) {
+            throw new StorageException("Failed to delete execution record", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
     
     @Override

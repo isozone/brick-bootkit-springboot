@@ -98,6 +98,7 @@ export const API_PATHS = {
   SCRIPTS_TEMPLATES: '/brick-web/api/v1/scripts/templates',
   SCRIPTS_SCHEDULER: '/brick-web/api/v1/scripts/scheduler',
   SCRIPTS_EXECUTIONS: '/brick-web/api/v1/scripts/executions',
+  SCRIPTS_EXECUTIONS_LIST: '/brick-web/api/v1/scripts/executions/list',
 
   // === 插件相关接口 ===
   PLUGINS_LIST: '/brick-web/api/plugins',

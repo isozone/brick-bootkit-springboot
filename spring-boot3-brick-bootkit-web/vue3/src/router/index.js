@@ -14,14 +14,8 @@ const routes = [
     meta: { title: '脚本列表' }
   },
   {
-    path: '/scripts/editor',
-    name: 'ScriptEditor',
-    component: () => import('@/views/scripts/editor.vue'),
-    meta: { title: '脚本编辑器' }
-  },
-  {
     path: '/scripts/editor/:id?',
-    name: 'ScriptEditorWithId',
+    name: 'ScriptEditor',
     component: () => import('@/views/scripts/editor.vue'),
     meta: { title: '脚本编辑器' }
   },

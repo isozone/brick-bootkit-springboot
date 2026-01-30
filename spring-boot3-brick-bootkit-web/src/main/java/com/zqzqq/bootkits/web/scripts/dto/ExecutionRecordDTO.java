@@ -30,6 +30,11 @@ public class ExecutionRecordDTO {
     private String scriptName;
     
     /**
+     * 脚本类型
+     */
+    private String scriptType;
+    
+    /**
      * 执行状态
      */
     private ExecutionStatus status;

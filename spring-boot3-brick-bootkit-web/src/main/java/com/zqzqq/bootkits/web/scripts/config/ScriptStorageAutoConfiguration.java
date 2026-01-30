@@ -34,7 +34,7 @@ public class ScriptStorageAutoConfiguration {
      * 文件存储Bean（默认）
      * 当没有其他ScriptStorage实现时，使用文件存储
      */
-    @Bean(name = "scriptStorage")
+    @Bean(name = "scriptStorage", initMethod = "initialize")
     @ConditionalOnMissingBean(name = "scriptStorage")
     @ConditionalOnProperty(prefix = "brick.scripts.storage", name = "type", havingValue = "file", matchIfMissing = true)
     public ScriptStorage fileScriptStorage(ScriptStorageProperties properties) {

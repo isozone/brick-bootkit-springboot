@@ -11,6 +11,7 @@ import com.zqzqq.bootkits.web.scripts.storage.ScriptStorage;
 import com.zqzqq.bootkits.web.scripts.storage.StorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,15 @@ public class ScriptRepositoryService {
     
     private final ScriptStorage scriptStorage;
     private final ScriptManager scriptManager;
+    @Lazy
+    private final ScriptExecutionService scriptExecutionService;
+    
+    /**
+     * 生成执行ID
+     */
+    private String generateExecutionId() {
+        return java.util.UUID.randomUUID().toString().replace("-", "");
+    }
     
     /**
      * 执行脚本
@@ -39,6 +49,12 @@ public class ScriptRepositoryService {
         
         Map<String, Object> result = new java.util.HashMap<>();
         long startTime = System.currentTimeMillis();
+        
+        // 生成执行ID并记录开始
+        String executionId = generateExecutionId();
+        String scriptType = request.getScriptType() != null ? request.getScriptType() : "SHELL";
+        String paramsStr = request.getParams() != null ? request.getParams().toString() : "";
+        scriptExecutionService.recordExecutionStart(request.getScriptName(), scriptType, executionId, "system", paramsStr);
         
         try {
             // 构建参数
@@ -55,13 +71,13 @@ public class ScriptRepositoryService {
                 config.setTimeoutMs(request.getTimeoutSeconds() * 1000L);
             }
             
-            // 解析脚本类型
-            ScriptType scriptType = ScriptType.valueOf(request.getScriptType() != null ? 
+            // 解析脚本类型（使用前面定义的 scriptType 变量）
+            ScriptType execScriptType = ScriptType.valueOf(request.getScriptType() != null ? 
                     request.getScriptType() : "SHELL");
             
             // 执行脚本
             ScriptExecutionResult execResult = scriptManager.executeScript(
-                    scriptType, request.getScriptContent(), arguments, config);
+                    execScriptType, request.getScriptContent(), arguments, config);
             
             long duration = System.currentTimeMillis() - startTime;
             
@@ -70,6 +86,15 @@ public class ScriptRepositoryService {
             result.put("errorMessage", execResult.getErrorMessage());
             result.put("exitCode", execResult.getExitCode());
             result.put("durationMs", duration);
+            
+            // 记录执行结果
+            if (execResult.isSuccess()) {
+                scriptExecutionService.recordExecutionSuccess(request.getScriptName(), executionId, 
+                        execResult.getMergedOutputString(), duration);
+            } else {
+                scriptExecutionService.recordExecutionFailure(request.getScriptName(), executionId, 
+                        execResult.getErrorMessage(), duration);
+            }
             
             log.info("Script execution completed: success={}", execResult.isSuccess());
             return result;
@@ -81,6 +106,10 @@ public class ScriptRepositoryService {
             result.put("errorMessage", e.getMessage());
             result.put("exitCode", -1);
             result.put("durationMs", duration);
+            
+            // 记录执行失败
+            scriptExecutionService.recordExecutionFailure(request.getScriptName(), executionId, 
+                    e.getMessage(), duration);
             return result;
         }
     }

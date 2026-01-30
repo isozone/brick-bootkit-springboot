@@ -141,15 +141,35 @@
         <n-button type="primary" @click="createScript" :loading="creating">创建</n-button>
       </template>
     </n-modal>
+
+    <!-- 执行结果弹窗 -->
+    <n-modal v-model:show="showExecuteModal" preset="dialog" :title="`执行脚本: ${currentExecuteScript?.scriptName || ''}`" style="width: 700px;">
+      <div v-if="executing" style="text-align: center; padding: 20px;">
+        <n-spin size="large" />
+        <p style="margin-top: 12px; color: #666;">正在执行脚本...</p>
+      </div>
+      <div v-else-if="executeResult">
+        <n-tag :type="executeResult.success ? 'success' : 'error'" style="margin-bottom: 12px">
+          {{ executeResult.success ? '执行成功' : '执行失败' }}
+        </n-tag>
+        <div v-if="executeResult.exitCode !== undefined" style="margin-bottom: 12px; color: #666;">
+          退出码: {{ executeResult.exitCode }} | 耗时: {{ executeResult.durationMs }}ms
+        </div>
+        <n-code :code="executeResult.output || executeResult.errorMessage || '无输出'" language="bash" style="max-height: 400px; overflow: auto" />
+      </div>
+      <template #action>
+        <n-button @click="showExecuteModal = false">关闭</n-button>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, h, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, h, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import {
   NCard, NGrid, NGi, NButton, NIcon, NInput, NSelect, NDataTable,
-  NEmpty, NModal, NForm, NFormItem, NTag, NSpace, NPopconfirm, useMessage
+  NEmpty, NModal, NForm, NFormItem, NTag, NSpace, NPopconfirm, NCode, useMessage
 } from 'naive-ui'
 import {
   AddOutline, CodeSlashOutline, PlayCircleOutline, TimeOutline,
@@ -160,6 +180,7 @@ import { scriptsApi, schedulerApi, executionsApi, templatesApi } from '@/api/ser
 import { SCRIPT_TYPES } from '@/constants'
 
 const router = useRouter()
+const route = useRoute()
 const message = useMessage()
 
 // 脚本列表
@@ -182,6 +203,12 @@ const newScript = ref({
   description: '',
   author: ''
 })
+
+// 执行弹窗
+const showExecuteModal = ref(false)
+const executeResult = ref(null)
+const executing = ref(false)
+const currentExecuteScript = ref(null)
 
 const formRules = {
   scriptName: { required: true, message: '请输入脚本名称' },
@@ -354,8 +381,72 @@ const loadStatistics = async () => {
 
 // 执行脚本
 const executeScript = async (script) => {
-  message.info(`执行脚本: ${script.scriptName}`)
-  // 实际项目中这里应该打开参数输入对话框
+  currentExecuteScript.value = script
+  executeResult.value = null
+  executing.value = true
+  showExecuteModal.value = true
+  
+  try {
+    // 获取脚本内容
+    let scriptContent = ''
+    try {
+      const contentRes = await scriptsApi.getContent(script.scriptName)
+      // contentRes 可能是 { code: 200, data: { content: "..." } } 或直接是 { content: "..." }
+      if (contentRes.data) {
+        scriptContent = contentRes.data.content || ''
+      } else if (contentRes.content) {
+        scriptContent = contentRes.content
+      } else if (typeof contentRes === 'string') {
+        scriptContent = contentRes
+      }
+    } catch (e) {
+      console.error('获取脚本内容失败:', e)
+    }
+    
+    if (!scriptContent) {
+      executeResult.value = {
+        success: false,
+        output: '',
+        exitCode: -1,
+        durationMs: 0,
+        errorMessage: '脚本内容为空，请先编辑脚本'
+      }
+      executing.value = false
+      return
+    }
+    
+    // 调用执行接口，传递脚本内容
+    const res = await scriptsApi.execute({
+      scriptName: script.scriptName,
+      scriptType: script.scriptType,
+      scriptContent: scriptContent,
+      params: [],
+      timeoutSeconds: 60
+    })
+    
+    if (res.code === 200) {
+      executeResult.value = {
+        success: res.data?.success || false,
+        output: res.data?.output || res.data?.mergedOutput || '',
+        exitCode: res.data?.exitCode || 0,
+        durationMs: res.data?.durationMs || res.data?.executionTimeMs || 0,
+        errorMessage: res.data?.errorMessage || res.data?.error || ''
+      }
+    } else {
+      message.error(res.message || '执行失败')
+    }
+  } catch (e) {
+    console.error('执行脚本失败:', e)
+    executeResult.value = {
+      success: false,
+      output: '',
+      exitCode: -1,
+      durationMs: 0,
+      errorMessage: e.response?.data?.message || e.message || '执行失败'
+    }
+  } finally {
+    executing.value = false
+  }
 }
 
 // 编辑脚本
@@ -413,14 +504,16 @@ const deleteScript = async (script) => {
   
   try {
     const res = await scriptsApi.delete(script.scriptName)
-    if (res.code === 200) {
+    // 处理响应数据结构
+    if (res.code === 200 || res.code === 0 || res.data === true || res === true) {
       message.success('删除成功')
       loadScripts()
     } else {
       message.error(res.message || '删除失败')
     }
   } catch (e) {
-    message.error('删除失败')
+    console.error('删除失败:', e)
+    message.error(e.response?.data?.message || '删除失败')
   }
 }
 
@@ -448,6 +541,17 @@ const createScript = async () => {
     creating.value = false
   }
 }
+
+// 监听路由变化，重新加载数据
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath === '/scripts') {
+      loadScripts()
+      loadStatistics()
+    }
+  }
+)
 
 onMounted(() => {
   loadScripts()

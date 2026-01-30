@@ -24,18 +24,18 @@ import java.util.Optional;
 public class ScriptExecutionService {
     
     private final ScriptStorage scriptStorage;
-    private final ScriptRepositoryService scriptRepositoryService;
     
     /**
      * 记录执行开始
      */
-    public ExecutionRecordDTO recordExecutionStart(String scriptName, String executionId, 
-                                                   String executedBy, String parameters) {
-        log.info("Recording execution start for script: {}, executionId: {}", scriptName, executionId);
+    public ExecutionRecordDTO recordExecutionStart(String scriptName, String scriptType,
+                                                   String executionId, String executedBy, String parameters) {
+        log.info("Recording execution start for script: {}, type: {}, executionId: {}", scriptName, scriptType, executionId);
         
         ExecutionRecordDTO record = new ExecutionRecordDTO();
         record.setExecutionId(executionId);
         record.setScriptName(scriptName);
+        record.setScriptType(scriptType);
         record.setStartTime(LocalDateTime.now());
         record.setSubmittedBy(executedBy);
         record.setParameters(parameters);
@@ -247,15 +247,19 @@ public class ScriptExecutionService {
         LocalDateTime cutoffTime = LocalDateTime.now().minusDays(retentionDays);
         int cleanedCount = 0;
         
-        List<ScriptInfoDTO> allScripts = scriptRepositoryService.getAllScriptInfo();
-        for (ScriptInfoDTO script : allScripts) {
-            List<ExecutionRecordDTO> records = getExecutionRecords(script.getScriptName());
-            for (ExecutionRecordDTO record : records) {
-                if (record.getEndTime() != null && record.getEndTime().isBefore(cutoffTime)) {
-                    deleteExecutionRecord(script.getScriptName(), record.getExecutionId());
-                    cleanedCount++;
+        try {
+            List<ScriptInfoDTO> allScripts = scriptStorage.getAllScriptInfo();
+            for (ScriptInfoDTO script : allScripts) {
+                List<ExecutionRecordDTO> records = getExecutionRecords(script.getScriptName());
+                for (ExecutionRecordDTO record : records) {
+                    if (record.getEndTime() != null && record.getEndTime().isBefore(cutoffTime)) {
+                        deleteExecutionRecord(script.getScriptName(), record.getExecutionId());
+                        cleanedCount++;
+                    }
                 }
             }
+        } catch (StorageException e) {
+            log.error("Failed to cleanup old execution records", e);
         }
         
         return cleanedCount;

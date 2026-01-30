@@ -124,13 +124,13 @@
       <div v-if="testResult.exitCode !== undefined" style="margin-bottom: 12px; color: #666">
         退出码: {{ testResult.exitCode }} | 耗时: {{ testResult.durationMs }}ms
       </div>
-      <n-code :code="testResult.output || testResult.errorMessage" :language="''" style="max-height: 400px; overflow: auto" />
+      <n-code :code="testResult.output || testResult.errorMessage" language="bash" style="max-height: 400px; overflow: auto" />
     </div>
   </n-modal>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
@@ -205,13 +205,16 @@ const templates = ref([
 const loadTemplate = async (templateId) => {
   try {
     const res = await templatesApi.getById(templateId)
-    if (res.code === 200 || res.code === 0) {
-      const template = res.data
+    // 处理响应数据结构
+    const template = res.data || res
+    if (res.code === 200 || res.code === 0 || template.templateId) {
       formData.value.name = template.displayName || template.templateName || ''
       formData.value.type = template.scriptType || 'SHELL'
       formData.value.description = template.description || ''
       formData.value.code = template.templateContent || template.code || ''
       message.success('已加载模板')
+    } else {
+      message.error('加载模板失败')
     }
   } catch (e) {
     console.error('加载模板失败:', e)
@@ -222,15 +225,30 @@ const loadTemplate = async (templateId) => {
 const loadScript = async (scriptName) => {
   try {
     const res = await scriptsApi.getByName(scriptName)
-    if (res.code === 200 || res.code === 0) {
-      const script = res.data
+    // 处理响应数据结构
+    const script = res.data || res
+    if (res.code === 200 || res.code === 0 || script.scriptName) {
       formData.value.name = script.scriptName
       formData.value.type = script.scriptType || 'SHELL'
       formData.value.description = script.description || ''
+      
       // 获取脚本内容
-      const contentRes = await scriptsApi.getContent(scriptName)
-      if (contentRes.code === 200 || contentRes.code === 0) {
-        formData.value.code = contentRes.data?.content || ''
+      try {
+        const contentRes = await scriptsApi.getContent(scriptName)
+        let content = ''
+        if (contentRes.data) {
+          content = contentRes.data.content || ''
+        } else if (contentRes.content) {
+          content = contentRes.content
+        } else if (typeof contentRes === 'string') {
+          content = contentRes
+        } else if (typeof contentRes.data === 'string') {
+          content = contentRes.data
+        }
+        formData.value.code = content
+      } catch (e) {
+        console.error('获取脚本内容失败:', e)
+        formData.value.code = ''
       }
     } else {
       message.error('加载脚本失败')
@@ -384,6 +402,13 @@ onMounted(() => {
   } else if (templateId) {
     // 从模板创建
     loadTemplate(templateId)
+  }
+})
+
+onBeforeUnmount(() => {
+  // 清理状态
+  if (codeEditorRef.value) {
+    codeEditorRef.value = null
   }
 })
 </script>

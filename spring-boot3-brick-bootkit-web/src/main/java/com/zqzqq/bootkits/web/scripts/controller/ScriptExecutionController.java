@@ -28,6 +28,69 @@ public class ScriptExecutionController {
     private final ScriptExecutionService executionService;
     
     /**
+     * 分页获取所有执行记录
+     */
+    @GetMapping("/list")
+    public ResponseEntity<Map<String, Object>> getExecutionsWithPagination(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String scriptName,
+            @RequestParam(required = false) String status) {
+        List<ExecutionRecordDTO> allRecords;
+        
+        // 根据条件筛选
+        if (scriptName != null && !scriptName.isEmpty()) {
+            allRecords = executionService.getExecutionRecords(scriptName);
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ExecutionRecordDTO.ExecutionStatus execStatus = ExecutionRecordDTO.ExecutionStatus.valueOf(status);
+                    allRecords = allRecords.stream()
+                            .filter(r -> execStatus.equals(r.getStatus()))
+                            .toList();
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status value: {}", status);
+                }
+            }
+        } else {
+            allRecords = executionService.getAllExecutionRecords();
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ExecutionRecordDTO.ExecutionStatus execStatus = ExecutionRecordDTO.ExecutionStatus.valueOf(status);
+                    allRecords = allRecords.stream()
+                            .filter(r -> execStatus.equals(r.getStatus()))
+                            .toList();
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status value: {}", status);
+                }
+            }
+        }
+        
+        // 按时间倒序排序
+        allRecords = allRecords.stream()
+                .sorted((a, b) -> {
+                    if (b.getStartTime() == null) return 1;
+                    if (a.getStartTime() == null) return -1;
+                    return b.getStartTime().compareTo(a.getStartTime());
+                })
+                .toList();
+        
+        // 分页
+        int total = allRecords.size();
+        int fromIndex = (page - 1) * size;
+        int toIndex = Math.min(fromIndex + size, total);
+        List<ExecutionRecordDTO> pagedRecords = fromIndex < total ? 
+                allRecords.subList(fromIndex, toIndex) : List.of();
+        
+        return ResponseEntity.ok(Map.of(
+                "records", pagedRecords,
+                "total", total,
+                "page", page,
+                "size", size,
+                "totalPages", (int) Math.ceil((double) total / size)
+        ));
+    }
+    
+    /**
      * 获取所有执行记录
      */
     @GetMapping
@@ -122,6 +185,7 @@ public class ScriptExecutionController {
         String executionId = java.util.UUID.randomUUID().toString();
         ExecutionRecordDTO record = executionService.recordExecutionStart(
                 request.get("scriptName"),
+                request.get("scriptType"),
                 executionId,
                 request.get("executedBy"),
                 request.get("parameters")

@@ -5,6 +5,7 @@ import com.zqzqq.bootkits.web.scripts.storage.ScriptStorage;
 import com.zqzqq.bootkits.web.scripts.storage.StorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class BatchJobService {
     
     private final ScriptStorage scriptStorage;
+    @Lazy
     private final ScriptExecutionService executionService;
     
     /**

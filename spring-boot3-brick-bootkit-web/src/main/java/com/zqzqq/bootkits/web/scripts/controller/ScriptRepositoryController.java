@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,10 +86,13 @@ public class ScriptRepositoryController {
     /**
      * 删除脚本
      */
-    @DeleteMapping("/{scriptName}")
-    public ResponseEntity<Void> deleteScript(@PathVariable String scriptName) {
+    @PostMapping("/{scriptName}/delete")
+    public ResponseEntity<Map<String, Object>> deleteScript(@PathVariable String scriptName) {
         scriptRepositoryService.deleteScript(scriptName);
-        return ResponseEntity.noContent().build();
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "删除成功");
+        return ResponseEntity.ok(result);
     }
     
     /**
