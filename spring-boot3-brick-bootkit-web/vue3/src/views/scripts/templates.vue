@@ -29,18 +29,42 @@
       </div>
     </div>
 
-    <!-- 预览模态框 -->
-    <n-modal v-model:show="showPreview" preset="card" title="模板预览" style="width: 800px">
-      <n-code :code="currentTemplate?.code" language="shell" />
+    <n-modal v-model:show="showPreview" preset="card" title="模板预览" style="width: 900px">
+      <CodeEditor :model-value="currentTemplate?.code" :language="currentTemplate?.type" :readonly="true" :show-header="false" height="400px" />
+    </n-modal>
+
+    <n-modal v-model:show="showCreateModal" preset="card" title="新建模板" style="width: 900px">
+      <n-form ref="formRef" :model="newTemplate" :rules="formRules" label-placement="top">
+        <n-form-item label="模板名称" path="name">
+          <n-input v-model:value="newTemplate.name" placeholder="请输入模板名称" />
+        </n-form-item>
+        <n-form-item label="模板类型" path="type">
+          <n-select v-model:value="newTemplate.type" :options="scriptTypeOptions" placeholder="请选择模板类型" />
+        </n-form-item>
+        <n-form-item label="描述" path="description">
+          <n-input v-model:value="newTemplate.description" type="textarea" placeholder="请输入模板描述" :rows="2" />
+        </n-form-item>
+        <n-form-item label="模板代码" path="code">
+          <CodeEditor v-model="newTemplate.code" :language="newTemplate.type || 'shell'" height="300px" title="模板代码" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <n-button @click="showCreateModal = false">取消</n-button>
+          <n-button type="primary" :loading="submitting" @click="handleCreate">确定</n-button>
+        </div>
+      </template>
     </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NIcon, NTag, NModal, NCode, useMessage } from 'naive-ui'
+import { NButton, NIcon, NTag, NModal, NInput, NSelect, NForm, NFormItem, useMessage } from 'naive-ui'
 import { AddOutline, CodeSlashOutline } from '@vicons/ionicons5'
+import { SCRIPT_TYPES } from '@/constants'
+import CodeEditor from '@/components/CodeEditor.vue'
 
 const router = useRouter()
 const message = useMessage()
@@ -48,6 +72,22 @@ const message = useMessage()
 const showCreateModal = ref(false)
 const showPreview = ref(false)
 const currentTemplate = ref(null)
+const submitting = ref(false)
+const formRef = ref(null)
+
+const scriptTypeOptions = SCRIPT_TYPES.map(t => ({ label: t.label, value: t.value }))
+
+const newTemplate = ref({
+  name: '',
+  type: '',
+  description: '',
+  code: ''
+})
+
+const formRules = {
+  name: { required: true, message: '请输入模板名称' },
+  type: { required: true, message: '请选择模板类型' }
+}
 
 const templates = ref([
   { id: 1, name: '数据库备份', type: 'SQL', description: '完整的数据库备份脚本', color: '#8b5cf6', code: '-- 数据库备份\nBACKUP DATABASE' },
@@ -67,10 +107,57 @@ const handleUse = (template) => {
   router.push({ path: '/scripts/editor', query: { templateId: template.id } })
   message.success('已选择模板')
 }
+
+const handleCreate = async () => {
+  try {
+    await formRef.value?.validate()
+  } catch {
+    return
+  }
+
+  submitting.value = true
+  try {
+    const newId = Math.max(...templates.value.map(t => t.id), 0) + 1
+    const typeInfo = SCRIPT_TYPES.find(t => t.value === newTemplate.value.type) || { color: '#6b7280' }
+
+    const template = {
+      id: newId,
+      name: newTemplate.value.name,
+      type: newTemplate.value.type,
+      description: newTemplate.value.description,
+      code: newTemplate.value.code,
+      color: typeInfo.color
+    }
+
+    templates.value.unshift(template)
+
+    newTemplate.value = { name: '', type: '', description: '', code: '' }
+    showCreateModal.value = false
+
+    message.success('模板创建成功')
+  } catch (e) {
+    console.error('创建模板失败:', e)
+    message.error('创建模板失败')
+  } finally {
+    submitting.value = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .script-templates-page {
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+  }
+
   .templates-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
