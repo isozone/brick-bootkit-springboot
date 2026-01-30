@@ -88,16 +88,16 @@ export const API_PATHS = {
   MONITOR_HISTORY: '/brick-web/api/monitor/history',
 
   // === 脚本相关接口 ===
-  SCRIPTS_LIST: '/api/v1/scripts',
-  SCRIPTS_CREATE: '/api/v1/scripts',
-  SCRIPTS_UPDATE: '/api/v1/scripts',
-  SCRIPTS_DELETE: '/api/v1/scripts',
-  SCRIPTS_CONTENT: '/api/v1/scripts/{scriptName}/content',
-  SCRIPTS_VERSIONS: '/api/v1/scripts/{scriptName}/versions',
-  SCRIPTS_RESTORE_VERSION: '/api/v1/scripts/{scriptName}/versions/{version}/restore',
-  SCRIPTS_TEMPLATES: '/api/v1/scripts/templates',
-  SCRIPTS_SCHEDULER: '/api/v1/scripts/scheduler',
-  SCRIPTS_EXECUTIONS: '/api/v1/scripts/executions',
+  SCRIPTS_LIST: '/brick-web/api/v1/scripts',
+  SCRIPTS_CREATE: '/brick-web/api/v1/scripts',
+  SCRIPTS_UPDATE: '/brick-web/api/v1/scripts',
+  SCRIPTS_DELETE: '/brick-web/api/v1/scripts',
+  SCRIPTS_CONTENT: '/brick-web/api/v1/scripts/{scriptName}/content',
+  SCRIPTS_VERSIONS: '/brick-web/api/v1/scripts/{scriptName}/versions',
+  SCRIPTS_RESTORE_VERSION: '/brick-web/api/v1/scripts/{scriptName}/versions/{version}/restore',
+  SCRIPTS_TEMPLATES: '/brick-web/api/v1/scripts/templates',
+  SCRIPTS_SCHEDULER: '/brick-web/api/v1/scripts/scheduler',
+  SCRIPTS_EXECUTIONS: '/brick-web/api/v1/scripts/executions',
 
   // === 插件相关接口 ===
   PLUGINS_LIST: '/brick-web/api/plugins',

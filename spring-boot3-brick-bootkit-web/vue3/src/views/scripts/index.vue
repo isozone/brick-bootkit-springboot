@@ -153,9 +153,10 @@ import {
 } from 'naive-ui'
 import {
   AddOutline, CodeSlashOutline, PlayCircleOutline, TimeOutline,
-  DocumentTextOutline, SearchOutline, TrashOutline, PencilOutline, PlayOutline
+  DocumentTextOutline, SearchOutline, TrashOutline, PencilOutline, PlayOutline,
+  ReturnDownBackOutline, ShareOutline
 } from '@vicons/ionicons5'
-import { scriptsApi, schedulerApi, executionsApi } from '@/api/services'
+import { scriptsApi, schedulerApi, executionsApi, templatesApi } from '@/api/services'
 import { SCRIPT_TYPES } from '@/constants'
 
 const router = useRouter()
@@ -234,6 +235,18 @@ const columns = [
     }
   },
   {
+    title: '状态',
+    key: 'enabled',
+    width: 80,
+    render(row) {
+      const isPublished = row.enabled === true
+      return h(NTag, {
+        size: 'small',
+        type: isPublished ? 'success' : 'warning'
+      }, () => isPublished ? '已发布' : '草稿')
+    }
+  },
+  {
     title: '版本',
     key: 'version',
     width: 80,
@@ -257,25 +270,42 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
-    width: 180,
+    width: 220,
     render(row) {
+      const isPublished = row.enabled === true
+      
       return h(NSpace, { size: 'small' }, () => [
         h(NButton, {
           size: 'small',
           quaternary: true,
           onClick: () => executeScript(row)
         }, () => h(NIcon, null, () => h(PlayOutline))),
-        h(NButton, {
+        // 只有草稿状态才能编辑
+        !isPublished ? h(NButton, {
           size: 'small',
           quaternary: true,
           onClick: () => editScript(row)
-        }, () => h(NIcon, null, () => h(PencilOutline))),
+        }, () => h(NIcon, null, () => h(PencilOutline))) : null,
         h(NButton, {
           size: 'small',
           quaternary: true,
           onClick: () => viewHistory(row)
         }, () => h(NIcon, null, () => h(TimeOutline))),
-        h(NPopconfirm, {
+        // 草稿状态显示发布按钮
+        !isPublished ? h(NButton, {
+          size: 'small',
+          quaternary: true,
+          type: 'primary',
+          onClick: () => publishScript(row)
+        }, () => h(NIcon, null, () => h(ShareOutline))) : null,
+        // 已发布状态显示撤回按钮
+        isPublished ? h(NButton, {
+          size: 'small',
+          quaternary: true,
+          onClick: () => unpublishScript(row)
+        }, () => h(NIcon, null, () => h(ReturnDownBackOutline))) : null,
+        // 只有草稿状态才能删除
+        !isPublished ? h(NPopconfirm, {
           onPositiveClick: () => deleteScript(row)
         }, {
           trigger: () => h(NButton, {
@@ -283,8 +313,8 @@ const columns = [
             quaternary: true,
             type: 'error'
           }, () => h(NIcon, null, () => h(TrashOutline))),
-          default: () => '确定删除该脚本？'
-        })
+          default: () => '确定删除该草稿脚本？'
+        }) : null
       ])
     }
   }
@@ -312,11 +342,11 @@ const loadStatistics = async () => {
     const [execRes, schedRes, tplRes] = await Promise.all([
       executionsApi.getAll().catch(() => ({ data: [] })),
       schedulerApi.getAll().catch(() => ({ data: [] })),
-      // templatesApi.getAll().catch(() => ({ data: [] }))
+      templatesApi.getAll().catch(() => ({ data: [] }))
     ])
     todayExecutions.value = execRes.data?.length || 0
     schedulerCount.value = schedRes.data?.length || 0
-    // templateCount.value = tplRes.data?.length || 0
+    templateCount.value = tplRes.data?.length || 0
   } catch (e) {
     console.error('加载统计数据失败:', e)
   }
@@ -338,8 +368,49 @@ const viewHistory = (script) => {
   router.push(`/scripts/executions?script=${script.scriptName}`)
 }
 
-// 删除脚本
+// 撤回发布（将已发布变为草稿）
+const unpublishScript = async (script) => {
+  try {
+    const res = await scriptsApi.update(script.scriptName, {
+      ...script,
+      enabled: false
+    })
+    if (res.code === 200) {
+      message.success('已撤回发布，变为草稿状态')
+      loadScripts()
+    } else {
+      message.error(res.message || '撤回失败')
+    }
+  } catch (e) {
+    message.error('撤回失败')
+  }
+}
+
+// 发布脚本（将草稿变为已发布）
+const publishScript = async (script) => {
+  try {
+    const res = await scriptsApi.update(script.scriptName, {
+      ...script,
+      enabled: true
+    })
+    if (res.code === 200) {
+      message.success('发布成功')
+      loadScripts()
+    } else {
+      message.error(res.message || '发布失败')
+    }
+  } catch (e) {
+    message.error('发布失败')
+  }
+}
+
+// 删除脚本（只能删除草稿）
 const deleteScript = async (script) => {
+  if (script.enabled === true) {
+    message.warning('已发布的脚本请先撤回发布再删除')
+    return
+  }
+  
   try {
     const res = await scriptsApi.delete(script.scriptName)
     if (res.code === 200) {

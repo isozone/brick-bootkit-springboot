@@ -64,7 +64,17 @@ public class FileScriptStorage implements ScriptStorage {
     public void saveScriptInfo(ScriptInfoDTO scriptInfo) throws StorageException {
         lock.writeLock().lock();
         try {
+            Path repoPath = Paths.get(dataPath, "repository");
+            createDirectory(repoPath.toString());
             Path metaPath = Paths.get(dataPath, "repository", scriptInfo.getScriptName() + ".json");
+            
+            // 如果是新建脚本，设置创建时间和更新时间
+            LocalDateTime now = LocalDateTime.now();
+            if (scriptInfo.getCreatedAt() == null) {
+                scriptInfo.setCreatedAt(now);
+            }
+            scriptInfo.setUpdatedAt(now);
+            
             objectMapper.writeValue(metaPath.toFile(), scriptInfo);
         } catch (IOException e) {
             throw new StorageException("Failed to save script info", e);
@@ -135,6 +145,8 @@ public class FileScriptStorage implements ScriptStorage {
     public void saveScriptContent(String scriptName, String content) throws StorageException {
         lock.writeLock().lock();
         try {
+            Path repoPath = Paths.get(dataPath, "repository");
+            createDirectory(repoPath.toString());
             Path scriptPath = Paths.get(dataPath, "repository", scriptName);
             Files.write(scriptPath, content.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
@@ -344,6 +356,15 @@ public class FileScriptStorage implements ScriptStorage {
         lock.writeLock().lock();
         try {
             Path templatePath = Paths.get(dataPath, "templates", template.getTemplateId() + ".json");
+            createDirectory(templatePath.getParent().toString());
+            
+            // 如果是新建模板，设置创建时间和更新时间
+            LocalDateTime now = LocalDateTime.now();
+            if (template.getCreatedAt() == null) {
+                template.setCreatedAt(now);
+            }
+            template.setUpdatedAt(now);
+            
             objectMapper.writeValue(templatePath.toFile(), template);
         } catch (IOException e) {
             throw new StorageException("Failed to save template", e);
@@ -370,11 +391,43 @@ public class FileScriptStorage implements ScriptStorage {
     
     @Override
     public List<ScriptTemplateDTO> getAllTemplates() throws StorageException {
-        return new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            Path templatesPath = Paths.get(dataPath, "templates");
+            if (!Files.exists(templatesPath)) {
+                return new ArrayList<>();
+            }
+            return Files.list(templatesPath)
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".json"))
+                    .map(p -> {
+                        try {
+                            return objectMapper.readValue(p.toFile(), ScriptTemplateDTO.class);
+                        } catch (IOException e) {
+                            log.warn("Failed to read template file: {}", p);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new StorageException("Failed to get all templates", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     @Override
     public void deleteTemplate(String templateId) throws StorageException {
+        lock.writeLock().lock();
+        try {
+            Path templatePath = Paths.get(dataPath, "templates", templateId + ".json");
+            Files.deleteIfExists(templatePath);
+        } catch (IOException e) {
+            throw new StorageException("Failed to delete template", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
     
     @Override

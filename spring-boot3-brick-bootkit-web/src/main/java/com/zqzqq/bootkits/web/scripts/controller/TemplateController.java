@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/templates")
+@RequestMapping("/brick-web/api/v1/scripts/templates")
 @RequiredArgsConstructor
 public class TemplateController {
     

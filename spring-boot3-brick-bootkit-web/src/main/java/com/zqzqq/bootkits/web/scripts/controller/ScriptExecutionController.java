@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/scripts/executions")
+@RequestMapping("/brick-web/api/v1/scripts/executions")
 @RequiredArgsConstructor
 public class ScriptExecutionController {
     

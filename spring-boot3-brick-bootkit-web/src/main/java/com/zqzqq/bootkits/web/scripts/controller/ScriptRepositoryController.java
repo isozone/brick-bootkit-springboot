@@ -1,5 +1,6 @@
 package com.zqzqq.bootkits.web.scripts.controller;
 
+import com.zqzqq.bootkits.web.scripts.dto.ExecuteRequest;
 import com.zqzqq.bootkits.web.scripts.dto.ScriptInfoDTO;
 import com.zqzqq.bootkits.web.scripts.dto.ScriptVersionDTO;
 import com.zqzqq.bootkits.web.scripts.service.ScriptRepositoryService;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/scripts")
+@RequestMapping("/brick-web/api/v1/scripts")
 @RequiredArgsConstructor
 public class ScriptRepositoryController {
     
@@ -42,6 +43,23 @@ public class ScriptRepositoryController {
         return scriptRepositoryService.getScriptInfo(scriptName)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * 执行脚本（测试用）
+     */
+    @PostMapping("/execute")
+    public ResponseEntity<Map<String, Object>> executeScript(@RequestBody ExecuteRequest request) {
+        log.info("Executing script: {}, type: {}", request.getScriptName(), request.getScriptType());
+        
+        Map<String, Object> result = scriptRepositoryService.executeScript(request);
+        
+        boolean success = Boolean.TRUE.equals(result.get("success"));
+        if (success) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
     }
     
     /**

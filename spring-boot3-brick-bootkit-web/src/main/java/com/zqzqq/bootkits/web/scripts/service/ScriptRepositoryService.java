@@ -1,5 +1,10 @@
 package com.zqzqq.bootkits.web.scripts.service;
 
+import com.zqzqq.bootkits.scripts.core.ScriptConfiguration;
+import com.zqzqq.bootkits.scripts.core.ScriptExecutionResult;
+import com.zqzqq.bootkits.scripts.core.ScriptManager;
+import com.zqzqq.bootkits.scripts.core.ScriptType;
+import com.zqzqq.bootkits.web.scripts.dto.ExecuteRequest;
 import com.zqzqq.bootkits.web.scripts.dto.ScriptInfoDTO;
 import com.zqzqq.bootkits.web.scripts.dto.ScriptVersionDTO;
 import com.zqzqq.bootkits.web.scripts.storage.ScriptStorage;
@@ -9,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -23,6 +29,61 @@ import java.util.Optional;
 public class ScriptRepositoryService {
     
     private final ScriptStorage scriptStorage;
+    private final ScriptManager scriptManager;
+    
+    /**
+     * 执行脚本
+     */
+    public Map<String, Object> executeScript(ExecuteRequest request) {
+        log.info("Executing script: {}, type: {}", request.getScriptName(), request.getScriptType());
+        
+        Map<String, Object> result = new java.util.HashMap<>();
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            // 构建参数
+            String[] arguments = null;
+            if (request.getParams() != null && !request.getParams().isEmpty()) {
+                arguments = request.getParams().stream()
+                        .map(p -> p.getOrDefault("value", ""))
+                        .toArray(String[]::new);
+            }
+            
+            // 构建配置
+            ScriptConfiguration config = new ScriptConfiguration();
+            if (request.getTimeoutSeconds() != null) {
+                config.setTimeoutMs(request.getTimeoutSeconds() * 1000L);
+            }
+            
+            // 解析脚本类型
+            ScriptType scriptType = ScriptType.valueOf(request.getScriptType() != null ? 
+                    request.getScriptType() : "SHELL");
+            
+            // 执行脚本
+            ScriptExecutionResult execResult = scriptManager.executeScript(
+                    scriptType, request.getScriptContent(), arguments, config);
+            
+            long duration = System.currentTimeMillis() - startTime;
+            
+            result.put("success", execResult.isSuccess());
+            result.put("output", execResult.getMergedOutputString());
+            result.put("errorMessage", execResult.getErrorMessage());
+            result.put("exitCode", execResult.getExitCode());
+            result.put("durationMs", duration);
+            
+            log.info("Script execution completed: success={}", execResult.isSuccess());
+            return result;
+            
+        } catch (Exception e) {
+            log.error("Failed to execute script", e);
+            long duration = System.currentTimeMillis() - startTime;
+            result.put("success", false);
+            result.put("errorMessage", e.getMessage());
+            result.put("exitCode", -1);
+            result.put("durationMs", duration);
+            return result;
+        }
+    }
     
     /**
      * 创建或更新脚本信息

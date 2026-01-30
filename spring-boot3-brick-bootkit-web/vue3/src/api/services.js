@@ -30,7 +30,7 @@ service.interceptors.response.use(
   (response) => {
     const res = response.data
     // 如果是直接返回数据的接口（如 ScriptRepositoryController）
-    if (Array.isArray(res) || res.scriptName !== undefined) {
+    if (Array.isArray(res) || res.scriptName !== undefined || res.templateId !== undefined) {
       return { code: 200, data: res }
     }
     return res
@@ -91,12 +91,14 @@ export const scriptsApi = {
   // 获取脚本内容
   getContent: (scriptName) => service.get(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/content`),
   
-  // 更新脚本内容
-  updateContent: (scriptName, content) => 
-    service.put(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/content`, { content }),
+    // 更新脚本内容
+    updateContent: (scriptName, content) => 
+      service.put(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/content`, { content }),
   
-  // 获取脚本版本列表
-  getVersions: (scriptName) => service.get(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/versions`),
+    // 执行脚本（测试用）
+    execute: (data) => service.post(`${API_PATHS.SCRIPTS_LIST}/execute`, data),
+  
+    // 获取脚本版本列表  getVersions: (scriptName) => service.get(`${API_PATHS.SCRIPTS_LIST}/${scriptName}/versions`),
   
   // 保存脚本版本
   saveVersion: (scriptName, version) => 

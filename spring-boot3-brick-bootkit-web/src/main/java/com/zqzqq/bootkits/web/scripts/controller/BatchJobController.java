@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/batch")
+@RequestMapping("/brick-web/api/v1/batch")
 @RequiredArgsConstructor
 public class BatchJobController {
     

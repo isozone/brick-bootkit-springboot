@@ -523,11 +523,7 @@ public class DefaultPluginManager implements PluginManager{
                     pluginMap.put(info.getPluginId(), info);
                 }
             });
-            
-            List<PluginInfo> plugins = new ArrayList<>(pluginMap.values());
-            log.info("getPlugins() 调用，startedPlugins 大小: {}, resolvedPlugins 大小: {}, 返回插件数量: {}", 
-                     startedPlugins.size(), resolvedPlugins.size(), plugins.size());
-            return plugins;
+            return new ArrayList<>(pluginMap.values());
         });
     }
 

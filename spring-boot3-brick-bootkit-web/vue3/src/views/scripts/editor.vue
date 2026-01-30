@@ -2,7 +2,7 @@
   <div class="script-editor">
     <div class="editor-header">
       <div class="header-left">
-        <n-button quaternary circle @click="$emit('close')">
+        <n-button quaternary circle @click="handleGoBack">
           <template #icon>
             <n-icon><ArrowBackOutline /></n-icon>
           </template>
@@ -10,6 +10,7 @@
         <span class="editor-title">{{ isEdit ? '编辑脚本' : '新建脚本' }}</span>
       </div>
       <div class="header-right">
+        <n-button type="warning" @click="handleTestScript" :loading="testing">测试运行</n-button>
         <n-button @click="handleSaveDraft">保存草稿</n-button>
         <n-button type="primary" @click="handleSave">保存并发布</n-button>
       </div>
@@ -113,10 +114,24 @@
       </n-dynamic-input>
     </div>
   </div>
+
+  <!-- 测试结果弹窗 -->
+  <n-modal v-model:show="showTestResult" preset="dialog" title="执行结果" style="width: 700px">
+    <div v-if="testResult">
+      <n-tag :type="testResult.success ? 'success' : 'error'" style="margin-bottom: 12px">
+        {{ testResult.success ? '执行成功' : '执行失败' }}
+      </n-tag>
+      <div v-if="testResult.exitCode !== undefined" style="margin-bottom: 12px; color: #666">
+        退出码: {{ testResult.exitCode }} | 耗时: {{ testResult.durationMs }}ms
+      </div>
+      <n-code :code="testResult.output || testResult.errorMessage" :language="''" style="max-height: 400px; overflow: auto" />
+    </div>
+  </n-modal>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
   NIcon,
@@ -127,14 +142,19 @@ import {
   NSpace,
   NTooltip,
   NDynamicInput,
+  NModal,
+  NCode,
+  NTag,
   useMessage
 } from 'naive-ui'
 import {
   ArrowBackOutline,
   CodeOutline,
-  CopyOutline
+  CopyOutline,
+  PlayOutline
 } from '@vicons/ionicons5'
 import { SCRIPT_TYPES, MESSAGE } from '@/constants'
+import { templatesApi, scriptsApi } from '@/api/services'
 
 const props = defineProps({
   scriptId: {
@@ -145,6 +165,8 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'close'])
 
+const route = useRoute()
+const router = useRouter()
 const message = useMessage()
 
 const formRef = ref(null)
@@ -158,6 +180,10 @@ const formData = ref({
   code: '',
   params: []
 })
+
+const testing = ref(false)
+const testResult = ref(null)
+const showTestResult = ref(false)
 
 const formRules = {
   name: { required: true, message: '请输入脚本名称' },
@@ -175,6 +201,45 @@ const templates = ref([
   { id: 2, name: 'Python 基础模板', description: '适用于简单的 Python 脚本', code: '#!/usr/bin/env python3\nprint("Hello World")' },
   { id: 3, name: '数据库备份模板', description: '适用于数据库备份操作', code: '-- 数据库备份脚本\nSELECT * INTO OUTFILE' }
 ])
+
+const loadTemplate = async (templateId) => {
+  try {
+    const res = await templatesApi.getById(templateId)
+    if (res.code === 200 || res.code === 0) {
+      const template = res.data
+      formData.value.name = template.displayName || template.templateName || ''
+      formData.value.type = template.scriptType || 'SHELL'
+      formData.value.description = template.description || ''
+      formData.value.code = template.templateContent || template.code || ''
+      message.success('已加载模板')
+    }
+  } catch (e) {
+    console.error('加载模板失败:', e)
+    message.error('加载模板失败')
+  }
+}
+
+const loadScript = async (scriptName) => {
+  try {
+    const res = await scriptsApi.getByName(scriptName)
+    if (res.code === 200 || res.code === 0) {
+      const script = res.data
+      formData.value.name = script.scriptName
+      formData.value.type = script.scriptType || 'SHELL'
+      formData.value.description = script.description || ''
+      // 获取脚本内容
+      const contentRes = await scriptsApi.getContent(scriptName)
+      if (contentRes.code === 200 || contentRes.code === 0) {
+        formData.value.code = contentRes.data?.content || ''
+      }
+    } else {
+      message.error('加载脚本失败')
+    }
+  } catch (e) {
+    console.error('加载脚本失败:', e)
+    message.error('加载脚本失败')
+  }
+}
 
 const getFileExtension = (type) => {
   const extMap = {
@@ -202,6 +267,10 @@ const handleCopy = () => {
   message.success('已复制到剪贴板')
 }
 
+const handleGoBack = () => {
+  router.back()
+}
+
 const handleTabKey = (e) => {
   e.preventDefault()
   const textarea = codeEditorRef.value
@@ -213,27 +282,110 @@ const handleTabKey = (e) => {
   })
 }
 
+const handleTestScript = async () => {
+  try {
+    // 验证必填项
+    if (!formData.value.code) {
+      message.warning('请输入脚本代码')
+      return
+    }
+    
+    testing.value = true
+    
+    const request = {
+      scriptName: formData.value.name,
+      scriptType: formData.value.type,
+      scriptContent: formData.value.code,
+      params: formData.value.params,
+      timeoutSeconds: 60
+    }
+    
+    const res = await scriptsApi.execute(request)
+    
+    if (res.code === 200) {
+      testResult.value = {
+        success: res.data.success,
+        output: res.data.output || '',
+        errorMessage: res.data.errorMessage || '',
+        exitCode: res.data.exitCode,
+        durationMs: res.data.durationMs
+      }
+      showTestResult.value = true
+    } else {
+      message.error(res.message || '执行失败')
+    }
+  } catch (e) {
+    console.error('执行失败:', e)
+    message.error('执行失败: ' + (e.response?.data?.message || e.message))
+  } finally {
+    testing.value = false
+  }
+}
+
 const handleSaveDraft = async () => {
   try {
     await formRef.value?.validate()
-    message.success(MESSAGE.SUCCESS.SAVE)
-    emit('save')
+    
+    // 保存脚本信息 - 草稿状态
+    const scriptInfo = {
+      scriptName: formData.value.name,
+      scriptType: formData.value.type,
+      description: formData.value.description,
+      content: formData.value.code,
+      enabled: false  // 草稿：未启用
+    }
+    
+    await scriptsApi.create(scriptInfo)
+    
+    // 保存脚本内容
+    await scriptsApi.updateContent(formData.value.name, formData.value.code)
+    
+    message.success('草稿保存成功')
+    router.push('/scripts')
   } catch (e) {
-    // 验证失败
+    console.error('保存失败:', e)
+    message.error(e.response?.data?.message || MESSAGE.ERROR.SAVE)
   }
 }
 
 const handleSave = async () => {
   try {
     await formRef.value?.validate()
-    message.success(MESSAGE.SUCCESS.SAVE)
-    emit('save')
+    
+    // 保存脚本信息 - 已发布状态
+    const scriptInfo = {
+      scriptName: formData.value.name,
+      scriptType: formData.value.type,
+      description: formData.value.description,
+      content: formData.value.code,
+      enabled: true  // 发布：已启用
+    }
+    
+    await scriptsApi.create(scriptInfo)
+    
+    // 保存脚本内容
+    await scriptsApi.updateContent(formData.value.name, formData.value.code)
+    
+    message.success('保存并发布成功')
+    router.push('/scripts')
   } catch (e) {
-    // 验证失败
+    console.error('保存失败:', e)
+    message.error(e.response?.data?.message || MESSAGE.ERROR.SAVE)
   }
 }
 
-import { nextTick } from 'vue'
+onMounted(() => {
+  const scriptName = route.query.name
+  const templateId = route.query.templateId
+  
+  if (scriptName) {
+    // 编辑模式
+    loadScript(scriptName)
+  } else if (templateId) {
+    // 从模板创建
+    loadTemplate(templateId)
+  }
+})
 </script>
 
 <style lang="scss" scoped>

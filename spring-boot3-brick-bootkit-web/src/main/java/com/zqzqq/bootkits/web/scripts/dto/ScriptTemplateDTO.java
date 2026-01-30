@@ -1,5 +1,10 @@
 package com.zqzqq.bootkits.web.scripts.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.ScriptTypeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.ScriptTypeSerializer;
 import com.zqzqq.bootkits.scripts.core.ScriptType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +23,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ScriptTemplateDTO {
     
     private String templateId;
@@ -32,6 +38,8 @@ public class ScriptTemplateDTO {
     
     private List<String> tags;
     
+    @JsonSerialize(using = ScriptTypeSerializer.class)
+    @JsonDeserialize(using = ScriptTypeDeserializer.class)
     private ScriptType scriptType;
     
     private String templateContent;

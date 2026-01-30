@@ -64,6 +64,7 @@ import { useRouter } from 'vue-router'
 import { NButton, NIcon, NTag, NModal, NInput, NSelect, NForm, NFormItem, useMessage } from 'naive-ui'
 import { AddOutline, CodeSlashOutline } from '@vicons/ionicons5'
 import { SCRIPT_TYPES } from '@/constants'
+import { templatesApi } from '@/api/services'
 import CodeEditor from '@/components/CodeEditor.vue'
 
 const router = useRouter()
@@ -86,17 +87,41 @@ const newTemplate = ref({
 
 const formRules = {
   name: { required: true, message: '请输入模板名称' },
-  type: { required: true, message: '请选择模板类型' }
+  type: { required: true, message: '请选择模板类型' },
+  code: { required: true, message: '请输入模板代码' }
 }
 
-const templates = ref([
-  { id: 1, name: '数据库备份', type: 'SQL', description: '完整的数据库备份脚本', color: '#8b5cf6', code: '-- 数据库备份\nBACKUP DATABASE' },
-  { id: 2, name: '日志轮转', type: 'Shell', description: '日志文件轮转和清理', color: '#2563eb', code: '#!/bin/bash\nfind /var/log -name "*.log"' },
-  { id: 3, name: '系统监控', type: 'Python', description: '系统资源监控脚本', color: '#f59e0b', code: '#!/usr/bin/env python3\nimport psutil' },
-  { id: 4, name: '文件同步', type: 'Shell', description: '文件同步到远程服务器', color: '#10b981', code: '#!/bin/bash\nrsync -avz' },
-  { id: 5, name: '服务检查', type: 'PowerShell', description: 'Windows 服务状态检查', color: '#0284c7', code: 'Get-Service | Where-Object {$_.Status -eq "Running"}' },
-  { id: 6, name: '性能测试', type: 'Python', description: 'Web 服务性能测试', color: '#ec4899', code: '#!/usr/bin/env python3\nimport locust' }
-])
+const templates = ref([])
+
+const typeColorMap = {
+  SQL: '#8b5cf6',
+  Shell: '#2563eb',
+  Python: '#f59e0b',
+  PowerShell: '#0284c7',
+  JavaScript: '#ec4899'
+}
+
+const getTypeColor = (type) => typeColorMap[type?.toUpperCase()] || '#6b7280'
+
+const loadTemplates = async () => {
+  try {
+    const res = await templatesApi.getAll()
+    if (res.code === 200 || res.code === 0) {
+      const data = res.data || res
+      templates.value = data.map(t => ({
+        id: t.templateId || t.id,
+        name: t.displayName || t.templateName || t.name,
+        type: t.scriptType || t.type,
+        description: t.description,
+        code: t.templateContent || t.code,
+        color: getTypeColor(t.scriptType || t.type)
+      }))
+    }
+  } catch (e) {
+    console.error('加载模板列表失败:', e)
+    message.error('加载模板列表失败')
+  }
+}
 
 const handlePreview = (template) => {
   currentTemplate.value = template
@@ -117,31 +142,45 @@ const handleCreate = async () => {
 
   submitting.value = true
   try {
-    const newId = Math.max(...templates.value.map(t => t.id), 0) + 1
-    const typeInfo = SCRIPT_TYPES.find(t => t.value === newTemplate.value.type) || { color: '#6b7280' }
-
-    const template = {
-      id: newId,
-      name: newTemplate.value.name,
-      type: newTemplate.value.type,
+    const templateData = {
+      templateName: newTemplate.value.name,
+      displayName: newTemplate.value.name,
       description: newTemplate.value.description,
-      code: newTemplate.value.code,
-      color: typeInfo.color
+      scriptType: newTemplate.value.type?.toUpperCase(),
+      templateContent: newTemplate.value.code,
+      category: 'custom'
     }
 
-    templates.value.unshift(template)
+    const res = await templatesApi.create(templateData)
+    
+    if (res.code === 200 || res.code === 0) {
+      const created = res.data
+      templates.value.unshift({
+        id: created.templateId || created.id,
+        name: created.displayName || created.templateName || newTemplate.value.name,
+        type: created.scriptType || newTemplate.value.type,
+        description: created.description,
+        code: created.templateContent || newTemplate.value.code,
+        color: getTypeColor(created.scriptType || newTemplate.value.type)
+      })
 
-    newTemplate.value = { name: '', type: '', description: '', code: '' }
-    showCreateModal.value = false
-
-    message.success('模板创建成功')
+      newTemplate.value = { name: '', type: '', description: '', code: '' }
+      showCreateModal.value = false
+      message.success('模板创建成功')
+    } else {
+      message.error(res.message || '创建模板失败')
+    }
   } catch (e) {
     console.error('创建模板失败:', e)
-    message.error('创建模板失败')
+    message.error(e.response?.data?.message || '创建模板失败')
   } finally {
     submitting.value = false
   }
 }
+
+onMounted(() => {
+  loadTemplates()
+})
 </script>
 
 <style lang="scss" scoped>
