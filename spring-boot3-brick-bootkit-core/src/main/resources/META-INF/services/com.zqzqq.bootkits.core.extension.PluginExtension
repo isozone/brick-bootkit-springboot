@@ -1,0 +1,10 @@
+# Plugin Extension SPI Configuration
+# 
+# Add your custom extension implementations below.
+# Each line should contain the fully qualified class name of an implementation.
+# 
+# Example:
+# com.example.MyCustomExtension
+#
+# Note: Implementations must have a public no-arg constructor.
+

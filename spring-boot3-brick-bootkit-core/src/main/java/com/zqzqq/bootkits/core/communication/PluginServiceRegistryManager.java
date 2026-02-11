@@ -23,6 +23,8 @@ import com.zqzqq.bootkits.core.communication.event.ServiceUnregisteredEvent;
 import com.zqzqq.bootkits.core.plugin.Plugin;
 
 import java.lang.reflect.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +39,8 @@ import java.util.Set;
  * @since 2024/01/01
  */
 public class PluginServiceRegistryManager {
+
+    private static final Logger log = LoggerFactory.getLogger(PluginServiceRegistryManager.class);
 
     private final PluginServiceRegistry serviceRegistry;
     private final Plugin plugin;
@@ -94,7 +98,7 @@ public class PluginServiceRegistryManager {
                 count++;
                 
             } catch (Exception e) {
-                System.err.println("Failed to register service: " + serviceClass.getName() + " - " + e.getMessage());
+                log.error("Failed to register service: {}", serviceClass.getName(), e);
             }
         }
         
@@ -252,7 +256,7 @@ public class PluginServiceRegistryManager {
      *
      * @param <T> service type
      * @param serviceInterface service interface class
-     * @param pluginManager plugin manager
+     *
      * @return service proxy or null
      */
     public static <T> T findService(

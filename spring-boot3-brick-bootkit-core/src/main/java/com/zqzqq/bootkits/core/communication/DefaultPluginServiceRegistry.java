@@ -15,6 +15,8 @@
  */
 
 package com.zqzqq.bootkits.core.communication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.zqzqq.bootkits.core.communication.event.*;
 import com.zqzqq.bootkits.core.communication.exception.*;
@@ -35,6 +37,8 @@ import java.util.stream.Collectors;
  * @since 2024/01/01
  */
 public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultPluginServiceRegistry.class);
 
     // ==================== Core Storage ====================
 
@@ -341,7 +345,7 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
                 try {
                     listener.onServiceChange(event);
                 } catch (Exception e) {
-                    System.err.println("Error in service change listener: " + e.getMessage());
+                    log.error("Error in service change listener", e);
                 }
             }
         }

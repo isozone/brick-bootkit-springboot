@@ -135,57 +135,98 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         resources.clear();
     }
 
+    /**
+     * 搜索单个资源。优先从热缓存中查找，其次查找所有基础URL。
+     * 
+     * @param name 资源名称
+     * @return 找到的资源，未找到返回 null
+     */
     protected final synchronized Resource searchResource(String name) {
-        Set<URL> searchUrl = new HashSet<>();
-        URL matchBaseUrl = null;
-        URL matchExistUrl = null;
+        // 1. 优先从热缓存中查找
+        URL matchBaseUrl = searchInHotUrls(name);
+        
+        // 2. 如果热缓存未找到，从所有基础URL中查找
+        if (matchBaseUrl == null) {
+            matchBaseUrl = searchInBaseUrls(name);
+        }
+        
+        // 3. 创建并返回资源
+        if (matchBaseUrl != null) {
+            return createAndAddResource(name, matchBaseUrl);
+        }
+        
+        return null;
+    }
 
-        // TODO 还需要优化
-        while (true){
+    /**
+     * 在热缓存中搜索资源
+     * @param name 资源名称
+     * @return 匹配的基础URL，未找到返回null
+     */
+    private URL searchInHotUrls(String name) {
+        List<URL> searched = new ArrayList<>();
+        
+        for (int i = 0; i < hotUrls.size(); i++) {
             URL baseUrl = hotUrls.pollFirst();
-            if(baseUrl == null){
+            if (baseUrl == null) {
                 break;
             }
-            searchUrl.add(baseUrl);
-            URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
-            if(existUrl != null){
-                matchBaseUrl = baseUrl;
-                matchExistUrl = existUrl;
+            
+            searched.add(baseUrl);
+            
+            if (ResourceUtils.getExistUrl(baseUrl, name) != null) {
+                // 找到，将搜索过的URL按顺序放回热缓存
+                for (URL url : searched) {
+                    hotUrls.addLast(url);
+                }
                 hotUrls.addFirst(baseUrl);
-                break;
+                return baseUrl;
             }
         }
-
-        if(matchBaseUrl == null){
-            List<URL> baseUrls = getBaseUrl();
-
-            for (URL baseUrl : baseUrls) {
-                if(searchUrl.contains(baseUrl)){
-                    continue;
-                }
-
-                URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
-                if(existUrl != null){
-                    matchBaseUrl = baseUrl;
-                    matchExistUrl = existUrl;
-                    hotUrls.addFirst(baseUrl);
-                    break;
-                }
-            }
-        }
-        if(matchBaseUrl != null){
-            try {
-                Resource resource = new DefaultResource(name, matchBaseUrl, matchExistUrl);
-                addResource(resource);
-                return resource;
-            } catch (Exception e) {
-                log.warn("Failed to add resource to storage: {}", name, e);
-                return null;
-            }
+        
+        // 未找到，将搜索过的URL按顺序放回热缓存
+        for (URL url : searched) {
+            hotUrls.addLast(url);
         }
         return null;
     }
 
+    /**
+     * 在所有基础URL中搜索资源
+     * @param name 资源名称
+     * @return 匹配的基础URL，未找到返回null
+     */
+    private URL searchInBaseUrls(String name) {
+        List<URL> baseUrls = getBaseUrl();
+        
+        for (URL baseUrl : baseUrls) {
+            if (ResourceUtils.getExistUrl(baseUrl, name) != null) {
+                // 找到，添加到热缓存
+                hotUrls.addFirst(baseUrl);
+                return baseUrl;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * 创建并添加资源
+     * @param name 资源名称
+     * @param baseUrl 基础URL
+     * @return 创建的资源
+     */
+    private Resource createAndAddResource(String name, URL baseUrl) {
+        URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
+        try {
+            Resource resource = new DefaultResource(name, baseUrl, existUrl);
+            addResource(resource);
+            return resource;
+        } catch (Exception e) {
+            log.warn("Failed to add resource to storage: {}", name, e);
+            return null;
+        }
+    }
     protected final Enumeration<Resource> searchResources(String name){
         List<URL> baseUrls = getBaseUrl();
         return new InternalEnumeration(baseUrls, name);
