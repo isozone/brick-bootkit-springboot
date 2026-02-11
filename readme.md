@@ -30,6 +30,7 @@
 - [开发特性](#-开发特性)
 - [架构设计](#-架构设计)
 - [功能模块](#-功能模块)
+- [插件服务通信](#-插件服务通信)
 - [环境要求](#-环境要求)
 - [快速开始](#-快速开始)
 - [配置说明](#-配置说明)
@@ -631,6 +632,189 @@ http://localhost:8080/brick-web/monitor?embedded=true
 ```
 
 
+
+
+## 🔗 插件服务通信
+
+本框架提供插件间服务通信能力，支持插件之间相互调用方法或接口。
+
+### 核心概念
+
+- **Service Registry (服务注册中心)**: 管理插件服务的注册、发现和生命周期
+- **Service Descriptor (服务描述符)**: 存储服务的元信息（版本、优先级、健康状态等）
+- **Version Range (版本范围)**: 支持语义化版本控制，如 `[1.0,2.0)`
+- **Cross-ClassLoader Proxy (跨类加载器代理)**: 解决插件间类隔离问题
+
+### 快速开始
+
+#### 1. 定义服务接口
+
+```java
+package com.example.plugin.service;
+
+public interface UserService {
+    String getUserName(Long userId);
+    UserInfo getUserInfo(Long userId);
+}
+```
+
+#### 2. 在插件中实现服务
+
+```java
+package com.example.plugin.service.impl;
+
+@PluginService(
+    interfaceClass = UserService.class,
+    version = "1.0.0",
+    name = "user-service",
+    priority = 100
+)
+public class UserServiceImpl implements UserService {
+    
+    @Override
+    public String getUserName(Long userId) {
+        return "User-" + userId;
+    }
+    
+    @Override
+    public UserInfo getUserInfo(Long userId) {
+        return new UserInfo(userId, "User-" + userId);
+    }
+}
+```
+
+#### 3. 在其他插件中调用服务
+
+```java
+package com.example.consumer.plugin;
+
+@ServiceDependency(
+    pluginId = "user-plugin",
+    serviceInterface = UserService.class,
+    versionRange = "[1.0,2.0)"
+)
+public class UserConsumer {
+    
+    @ServiceDependency
+    private UserService userService;
+    
+    public void printUserName(Long userId) {
+        String name = userService.getUserName(userId);
+        System.out.println("User name: " + name);
+    }
+}
+```
+
+### 编程式使用
+
+#### 注册服务
+
+```java
+@Autowired
+private PluginServiceRegistry pluginRegistry;
+
+// 方式1: 自动扫描（推荐）
+// 在插件启动时使用 PluginServiceRegistryManager 自动扫描 @PluginService 注解
+
+// 方式2: 手动注册
+public void registerUserService() {
+    UserServiceImpl userService = new UserServiceImpl();
+    
+    pluginRegistry.registerService(
+        "user-plugin",                    // pluginId
+        UserService.class,               // service interface
+        userService,                      // service instance
+        ServiceMetadata.builder()
+            .version("1.0.0")
+            .priority(100)
+            .healthCheckEnabled(true)
+            .build()
+    );
+}
+```
+
+#### 发现服务
+
+```java
+@Autowired
+private PluginServiceRegistry pluginRegistry;
+
+// 根据插件ID获取服务
+public UserService getUserService() {
+    return pluginRegistry.getService("user-plugin", UserService.class);
+}
+
+// 获取所有实现某接口的服务
+public List<UserService> getAllUserServices() {
+    return pluginRegistry.getServices(UserService.class);
+}
+
+// 根据版本范围获取服务
+public List<UserService> getUserServicesByVersion() {
+    return pluginRegistry.getServicesByVersion(UserService.class, "[1.0,2.0)");
+}
+```
+
+#### 依赖检查
+
+```java
+public boolean checkPluginDependencies(String pluginId) {
+    ServiceDependencyCheckResult result = pluginRegistry.checkDependencies(pluginId);
+    
+    if (!result.isSatisfied()) {
+        result.getUnsatisfiedDependencies().forEach(dep -> {
+            System.err.println("Missing dependency: " + dep.getRequiredService());
+        });
+    }
+    
+    return result.isSatisfied();
+}
+```
+
+### 事件监听
+
+```java
+public class ServiceChangeListenerImpl implements ServiceChangeListener {
+    
+    @Override
+    public void onServiceChange(ServiceEvent event) {
+        if (event instanceof ServiceRegisteredEvent) {
+            ServiceDescriptor descriptor = event.getServiceDescriptor();
+            System.out.println("Service registered: " + descriptor.getServiceId());
+        } else if (event instanceof ServiceUnregisteredEvent) {
+            ServiceDescriptor descriptor = event.getServiceDescriptor();
+            System.out.println("Service unregistered: " + descriptor.getServiceId());
+        }
+    }
+}
+
+// 订阅服务变化
+pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
+```
+
+### 版本兼容
+
+框架支持多种版本范围表达式：
+
+| 表达式 | 说明 | 示例 |
+|--------|------|------|
+| `[1.0.0]` | 精确版本 | 只匹配 1.0.0 |
+| `[1.0,2.0)` | 范围版本 | >=1.0.0 且 <2.0.0 |
+| `[1.0,)` | 最低版本 | >=1.0.0 |
+| `(,2.0)` | 最高版本 | <2.0.0 |
+| `*` | 任意版本 | 匹配所有版本 |
+
+### API 参考
+
+| 方法 | 说明 |
+|------|------|
+| `registerService(pluginId, interface, instance, metadata)` | 注册服务 |
+| `getService(pluginId, interface)` | 获取服务 |
+| `getServices(interface)` | 获取所有实现 |
+| `getServicesByVersion(interface, versionRange)` | 按版本获取 |
+| `checkDependencies(pluginId)` | 检查依赖 |
+| `subscribe(interface, listener)` | 订阅变化 |
+| `unregisterService(pluginId, interface)` | 注销服务 |
 
 ## ⚙️ 环境要求
 
