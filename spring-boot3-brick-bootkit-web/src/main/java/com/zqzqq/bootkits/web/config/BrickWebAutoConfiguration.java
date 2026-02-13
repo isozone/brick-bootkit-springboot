@@ -104,8 +104,8 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
                 .resourceChain(true);
         
         // Vue 打包的所有静态资源（包括 index.html、assets 等）
-        registry.addResourceHandler("/brick-web/**")
-                .addResourceLocations("classpath:/static/brick-web/")
+        registry.addResourceHandler("/plugins-web/**")
+                .addResourceLocations("classpath:/static/plugins-web/")
                 .resourceChain(true);
     }
     
@@ -116,6 +116,6 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         // 根路径重定向到 Vue 首页
-        registry.addRedirectViewController("/", "/brick-web/");
+        registry.addRedirectViewController("/", "/plugins-web/");
     }
 }

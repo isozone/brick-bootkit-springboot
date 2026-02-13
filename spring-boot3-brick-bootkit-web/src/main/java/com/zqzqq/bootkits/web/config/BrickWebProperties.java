@@ -27,12 +27,12 @@ public class BrickWebProperties {
     /**
      * API 前缀
      */
-    private String apiPrefix = "/brick-web/api";
+    private String apiPrefix = "/plugins-web/api";
     
     /**
      * 页面路径前缀
      */
-    private String pagePrefix = "/brick-web";
+    private String pagePrefix = "/plugins-web";
     
     /**
      * 监控刷新间隔（秒）

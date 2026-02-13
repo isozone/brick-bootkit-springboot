@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/brick-web/api/v1/scheduler")
+@RequestMapping("/plugins-web/api/v1/scheduler")
 @RequiredArgsConstructor
 public class SchedulerTaskController {
     

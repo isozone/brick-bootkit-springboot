@@ -28,11 +28,11 @@ public @interface EnableBrickWeb {
      * API 前缀
      * @return API 路径前缀
      */
-    String apiPrefix() default "/brick-web/api";
+    String apiPrefix() default "/plugins-web/api";
     
     /**
      * 页面路径前缀
      * @return 页面路径前缀
      */
-    String pagePrefix() default "/brick-web";
+    String pagePrefix() default "/plugins-web";
 }
