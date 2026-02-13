@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.core.exception;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
 
 /**
- * 鎻掍欢瑙ｅ瘑异常
+ * 插件解密异常
  *
  * @author starBlues
  * @since 3.0.0

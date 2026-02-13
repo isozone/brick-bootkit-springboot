@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.core.descriptor.decrypt;
 import java.util.Properties;
 
 /**
- * 绌虹殑鎻掍欢瑙ｅ瘑
+ * 空的插件解密
  *
  * @author starBlues
  * @since 3.0.0

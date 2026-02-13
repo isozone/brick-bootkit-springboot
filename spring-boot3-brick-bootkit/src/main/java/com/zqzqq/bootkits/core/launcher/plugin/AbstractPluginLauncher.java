@@ -50,10 +50,10 @@ public abstract class AbstractPluginLauncher extends AbstractLauncher<SpringPlug
     }
 
     /**
-     * 鍒涘缓插件鐨刢lassloader
+     * 创建插件的ClassLoader
      * @param args 参数
      * @return ClassLoader
-     * @throws Exception 鍒涘缓ClassLoader异常
+     * @throws Exception 创建ClassLoader异常
      */
     protected abstract ClassLoader createPluginClassLoader(String... args) throws Exception;
 

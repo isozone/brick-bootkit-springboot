@@ -37,7 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 涓荤▼搴忛敓?ApplicationContext 鐨勫疄鐜伴敓?
+ * 主应用程序 ApplicationContext 的实现类
  * @author starBlues
  * @version 3.0.1
  */
@@ -71,7 +71,7 @@ public class MainApplicationContextProxy extends ApplicationContextProxy impleme
             this.requestMappingHandlerAdapter = SpringBeanUtils.getExistBean(
                     applicationContext, REQUEST_MAPPING_ADAPTER_BANE_NAME, RequestMappingHandlerAdapter.class);
             if(this.requestMappingHandlerMapping == null || this.requestMappingHandlerAdapter == null){
-                log.error("涓荤▼搴忕幆澧冨紓甯革紝鎻掍欢不能娉ㄥ唽 Controller 接口");
+                log.error("主程序环境异常，插件不能注册 Controller 接口");
                 isRegisterController = false;
             } else {
                 isRegisterController = true;

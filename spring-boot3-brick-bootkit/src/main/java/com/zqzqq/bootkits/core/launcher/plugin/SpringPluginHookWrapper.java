@@ -92,7 +92,7 @@ public class SpringPluginHookWrapper implements SpringPluginHook {
         try {
             pluginLaunchInvolved.close(pluginInsideInfo, classLoader);
         } catch (Exception e){
-            log.error("关闭插件鍚姩缁勪欢异常: {}", e.getMessage(), e);
+            log.error("关闭插件启动组件异常: {}", e.getMessage(), e);
         }
         
         // 3. 关闭classloader
@@ -103,7 +103,7 @@ public class SpringPluginHookWrapper implements SpringPluginHook {
                 ((AutoCloseable) classLoader).close();
             }
         } catch (Exception e) {
-            log.error("关闭插件绫诲姞杞藉櫒异常: {}", e.getMessage(), e);
+            log.error("关闭插件类加载器异常: {}", e.getMessage(), e);
         }
         
         // 4. 移除插件jar等信息
