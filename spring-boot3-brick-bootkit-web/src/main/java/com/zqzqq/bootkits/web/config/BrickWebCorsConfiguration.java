@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author brick-bootkit
  */
 @Configuration
-@ConditionalOnProperty(prefix = "plugins.web.cors", name = "enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(prefix = "plugin.web.cors", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class BrickWebCorsConfiguration {
 
     @Bean

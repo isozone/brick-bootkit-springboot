@@ -42,7 +42,7 @@ public class PluginStaticResourceProcessor implements SpringPluginProcessor {
      *  classpath: static/
      *  file: D://path/test
      */
-    private final static String STATIC_LOCATIONS = "plugins.resources.static-locations";
+    private final static String STATIC_LOCATIONS = "plugin.resources.static-locations";
 
 
     @Override

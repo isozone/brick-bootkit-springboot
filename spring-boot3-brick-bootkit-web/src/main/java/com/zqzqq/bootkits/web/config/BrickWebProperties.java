@@ -11,7 +11,7 @@ import java.util.List;
  * @author brick-bootkit
  */
 @Data
-@ConfigurationProperties(prefix = "plugins.web")
+@ConfigurationProperties(prefix = "plugin.web")
 public class BrickWebProperties {
     
     /**

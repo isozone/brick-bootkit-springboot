@@ -24,7 +24,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Slf4j
 @Configuration
 @Order(Ordered.LOWEST_PRECEDENCE)  // 确保在 SpringDoc 之后加载，避免覆盖其配置
-@ConditionalOnProperty(prefix = "plugins.web", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "plugin.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(BrickWebProperties.class)
 public class BrickWebAutoConfiguration implements WebMvcConfigurer {
 
