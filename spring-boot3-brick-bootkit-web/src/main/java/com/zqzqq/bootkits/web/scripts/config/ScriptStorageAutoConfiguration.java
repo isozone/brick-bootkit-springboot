@@ -25,7 +25,7 @@ import javax.sql.DataSource;
  */
 @Slf4j
 @Configuration
-@ConditionalOnProperty(prefix = "brick.scripts", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "plugins.scripts", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnClass(name = "com.baomidou.mybatisplus.core.mapper.BaseMapper")
 @EnableConfigurationProperties(ScriptStorageProperties.class)
 public class ScriptStorageAutoConfiguration {
@@ -36,7 +36,7 @@ public class ScriptStorageAutoConfiguration {
      */
     @Bean(name = "scriptStorage", initMethod = "initialize")
     @ConditionalOnMissingBean(name = "scriptStorage")
-    @ConditionalOnProperty(prefix = "brick.scripts.storage", name = "type", havingValue = "file", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "plugins.scripts.storage", name = "type", havingValue = "file", matchIfMissing = true)
     public ScriptStorage fileScriptStorage(ScriptStorageProperties properties) {
         log.info("Initializing FileScriptStorage with data-path: {}", properties.getFile().getDataPath());
         return new FileScriptStorage(properties.getFile().getDataPath());
@@ -49,7 +49,7 @@ public class ScriptStorageAutoConfiguration {
     @Bean(name = "jdbcScriptStorage")
     @ConditionalOnBean(DataSource.class)
     @ConditionalOnMissingBean(name = "scriptStorage")
-    @ConditionalOnProperty(prefix = "brick.scripts.storage", name = "type", havingValue = "jdbc")
+    @ConditionalOnProperty(prefix = "plugins.scripts.storage", name = "type", havingValue = "jdbc")
     @Primary
     public ScriptStorage jdbcScriptStorage(ScriptStorageProperties properties,
                                                ScriptInfoMapper scriptInfoMapper,
@@ -76,7 +76,7 @@ public class ScriptStorageAutoConfiguration {
      * 当配置为custom时使用用户自定义的存储实现
      */
     @Bean(name = "scriptStorage")
-    @ConditionalOnProperty(prefix = "brick.scripts.storage", name = "type", havingValue = "custom")
+    @ConditionalOnProperty(prefix = "plugins.scripts.storage", name = "type", havingValue = "custom")
     public ScriptStorage customScriptStorage(ScriptStorageProperties properties,
                                                         org.springframework.context.ApplicationContext context) {
         String beanName = properties.getCustomBeanName();

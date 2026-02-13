@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("${brick.web.api-prefix:/brick-web/api}/monitor")
+@RequestMapping("${plugins.web.api-prefix:/plugins-web/api}/monitor")
 @Tag(name = "系统监控", description = "系统监控相关接口")
 public class MonitorController {
 

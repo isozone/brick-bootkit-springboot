@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author brick-bootkit
  */
 @Data
-@ConfigurationProperties(prefix = "brick.scripts.storage")
+@ConfigurationProperties(prefix = "plugins.scripts.storage")
 public class ScriptStorageProperties {
     
     /**

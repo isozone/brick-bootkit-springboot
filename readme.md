@@ -614,21 +614,21 @@ plugin:
   web:
     enabled: true
     enable-ui: true
-    api-prefix: /brick-web/api
-    page-prefix: /brick-web
+    api-prefix: /plugins-web/api
+    page-prefix: /plugins-web
     monitor-refresh-interval: 5
 ```
 
-4. 访问管理控制台：`http://localhost:8080/brick-web/index`
+4. 访问管理控制台：`http://localhost:8080/plugins-web/index`
 
 #### 🔗 嵌入模式
 Web 管理控制台支持通过 URL 参数 `embedded=true` 以嵌入模式加载，此时会隐藏侧边栏、头部和底部，适合 iframe 嵌入到其他页面中使用。
 
 ```
 # 嵌入模式访问地址
-http://localhost:8080/brick-web/index?embedded=true
-http://localhost:8080/brick-web/scripts?embedded=true
-http://localhost:8080/brick-web/monitor?embedded=true
+http://localhost:8080/plugins-web/index?embedded=true
+http://localhost:8080/plugins-web/scripts?embedded=true
+http://localhost:8080/plugins-web/monitor?embedded=true
 ```
 
 
@@ -968,7 +968,7 @@ mvn spring-boot:run
 
 如果启用了 Web 管理控制台，访问：
 ```
-http://localhost:8080/brick-web/index
+http://localhost:8080/plugins-web/index
 ```
 
 ## 📖 配置说明
@@ -976,7 +976,7 @@ http://localhost:8080/brick-web/index
 ### 主应用配置
 
 ```yaml
-plugin:
+plugins:
   # 是否启用插件
   enable: true
   # 运行模式：dev（开发模式）/ prod（生产模式）
@@ -994,8 +994,8 @@ plugin:
   web:
     enabled: true
     enable-ui: true
-    api-prefix: /brick-web/api
-    page-prefix: /brick-web
+    api-prefix: /plugins-web/api
+    page-prefix: /plugins-web
     monitor-refresh-interval: 5
 ```
 
@@ -1151,7 +1151,7 @@ plugin:
 ### 4. 如何热更新插件？
 
 使用 Web 管理控制台：
-1. 访问 `http://localhost:8080/brick-web/index`
+1. 访问 `http://localhost:8080/plugins-web/index`
 2. 在插件列表中选择要更新的插件
 3. 点击"卸载"按钮
 4. 上传新的插件 jar 包

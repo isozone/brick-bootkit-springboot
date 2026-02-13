@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("${brick.web.api-prefix:/brick-web/api}/plugins")
+@RequestMapping("${plugins.web.api-prefix:/plugins-web/api}/plugins")
 @Tag(name = "插件管理", description = "插件的增删改查和生命周期管理接口")
 public class PluginController {
 

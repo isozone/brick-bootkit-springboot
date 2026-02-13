@@ -32,7 +32,7 @@ public class FileScriptStorage implements ScriptStorage {
     private final ObjectMapper objectMapper;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    public FileScriptStorage(@Value("${brick.scripts.storage.file.data-path:./brick-scripts-data}") String dataPath) {
+    public FileScriptStorage(@Value("${plugins.scripts.storage.file.data-path:./plugins-scripts-data}") String dataPath) {
         this.dataPath = dataPath;
         this.objectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
