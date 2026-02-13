@@ -72,12 +72,11 @@ public class ResourceLoaderFactoryGetter {
 
     private static String parseArg(String... args){
         for (String arg : args) {
-            if(arg.startsWith(PARAMS_KEY)){
+            if(arg != null && arg.startsWith(PARAMS_KEY)){
                 String[] split = arg.split("=");
-                if(split.length != 2){
-                    return null;
+                if(split.length == 2){
+                    return split[1].trim().toLowerCase();
                 }
-                return split[1];
             }
         }
         return null;
@@ -85,8 +84,10 @@ public class ResourceLoaderFactoryGetter {
 
     public static AbstractResourceStorage getResourceStorage(String key){
         if(Objects.equals(resourceMode, RESOURCE_MODE_PERPETUAL)){
+            System.out.println("[ResourceLoaderFactoryGetter] 使用 CachePerpetualResourceStorage (永久缓存模式)");
             return new CachePerpetualResourceStorage();
         } else {
+            System.out.println("[ResourceLoaderFactoryGetter] 使用 CacheFastResourceStorage (快速缓存模式), key=" + key);
             return new CacheFastResourceStorage(key);
         }
     }

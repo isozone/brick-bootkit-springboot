@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 永久缓存
- * 优点: 速度快
+ * 优点: 速度快, 资源永不过期
  * 缺点: 占用内存非常高
  *
  * @author starBlues
@@ -35,52 +35,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CachePerpetualResourceStorage extends AbstractResourceStorage {
 
     protected final Map<String, List<Resource>> resourceStorage = new ConcurrentHashMap<>();
-    
-    /**
-     * 最大缓存条目数，默认为5000，超过时淘汰最早的条目
-     */
-    private static final int MAX_CACHE_SIZE = 5000;
-    
-    /**
-     * 记录资源添加顺序，用于LRU淘汰
-     */
-    private final LinkedHashMap<String, Long> accessOrder = new LinkedHashMap<>();
 
     @Override
     public void addResource(Resource resource) throws Exception {
         resource.resolveByte();
         String name = formatResourceName(resource.getName());
-
-        // 检查是否超过最大容量
-        if (resourceStorage.size() >= MAX_CACHE_SIZE && !resourceStorage.containsKey(name)) {
-            // 优先淘汰非类文件（配置文件、资源文件等），保留类文件
-            String oldestNonClassKey = findOldestNonClassKey();
-            if (oldestNonClassKey != null) {
-                resourceStorage.remove(oldestNonClassKey);
-                accessOrder.remove(oldestNonClassKey);
-            } else {
-                // 如果没有非类文件可淘汰，才淘汰最早的条目
-                String oldestKey = accessOrder.keySet().iterator().next();
-                resourceStorage.remove(oldestKey);
-                accessOrder.remove(oldestKey);
-            }
-        }
-
         List<Resource> resources = resourceStorage.computeIfAbsent(name, k -> new ArrayList<>());
         resources.add(resource);
-        accessOrder.put(name, System.currentTimeMillis());
-    }
-
-    /**
-     * 找到最早的非类文件条目进行淘汰
-     */
-    private String findOldestNonClassKey() {
-        for (String key : accessOrder.keySet()) {
-            if (!key.endsWith(".class")) {
-                return key;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -140,7 +101,6 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
             closeResources(resourceList);
         }
         resourceStorage.clear();
-        accessOrder.clear();
     }
 
 }
