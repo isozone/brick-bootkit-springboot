@@ -12,10 +12,10 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/brick-web/api': {
+      '/plugins-web/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/brick-web\/api/, '/brick-web/api')
+        rewrite: (path) => path.replace(/^\/plugins-web\/api/, '/plugins-web/api')
       },
       '/api': {
         target: 'http://localhost:8080',
@@ -31,9 +31,9 @@ export default defineConfig({
       }
     }
   },
-  base: '/brick-web/',  // 关键：设置 publicPath
+  base: '/plugins-web/',  // 关键：设置 publicPath
   build: {
-    outDir: '../src/main/resources/static/brick-web',  // 输出到 Spring Boot static 目录
+    outDir: '../src/main/resources/static/plugins-web',  // 输出到 Spring Boot static 目录
     assetsDir: 'assets',
     sourcemap: false
   }

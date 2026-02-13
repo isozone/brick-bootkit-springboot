@@ -37,12 +37,12 @@ public class PluginStaticResourceProcessor implements SpringPluginProcessor {
 
 
     /**
-     * 静态文件配置前缀
-     * 静态文件路径
+     * 插件静态资源配置前缀
+     * 插件静态文件路径
      *  classpath: static/
      *  file: D://path/test
      */
-    private final static String STATIC_LOCATIONS = "spring.resources.static-locations";
+    private final static String STATIC_LOCATIONS = "plugin.resources.static-locations";
 
 
     @Override

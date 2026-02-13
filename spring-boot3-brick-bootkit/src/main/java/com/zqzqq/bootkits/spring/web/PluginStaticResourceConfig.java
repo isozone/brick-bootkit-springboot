@@ -29,7 +29,7 @@ import org.springframework.http.CacheControl;
  */
 public class PluginStaticResourceConfig {
 
-    public static final String DEFAULT_PLUGIN_STATIC_RESOURCE_PATH_PREFIX = "static-plugin";
+    public static final String DEFAULT_PLUGIN_STATIC_RESOURCE_PATH_PREFIX = "plugins";
     public static final String DEFAULT_INDEX_PAGE_NAME = "index.html";
     private static final Logger log = LoggerFactory.getLogger(PluginStaticResourceConfig.class);
 
@@ -50,7 +50,7 @@ public class PluginStaticResourceConfig {
 
 
     public void logPathPrefix(){
-        log.info("插件静态资源访问前端配置 /{}/{pluginId}", pathPrefix);
+        log.info("插件静态资源配置: /{}/{{pluginId}}/*", pathPrefix);
     }
 
 
@@ -68,7 +68,7 @@ public class PluginStaticResourceConfig {
     }
 
     public void setIndexPageName(String indexPageName) {
-        Assert.isNotEmpty(pathPrefix, "配置 indexPageName 不能为空");
+        Assert.isNotEmpty(indexPageName, "配置 indexPageName 不能为空");
         this.indexPageName = indexPageName;
     }
 
@@ -77,7 +77,7 @@ public class PluginStaticResourceConfig {
     }
 
     public void setCacheControl(CacheControl cacheControl) {
-        Assert.isNotNull(pathPrefix, "配置 cacheControl 不能为空");
+        Assert.isNotNull(cacheControl, "配置 cacheControl 不能为空");
         this.cacheControl = cacheControl;
     }
 }
