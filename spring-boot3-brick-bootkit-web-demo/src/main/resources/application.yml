@@ -51,7 +51,7 @@ plugin:
  #   - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
 
 # 脚本管理配置 - 默认禁用
-brick:
+plugin:
   scripts:
     storage:
       type: file

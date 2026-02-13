@@ -30,18 +30,18 @@ export const MENU_CONFIG = {
       key: 'dashboard',
       label: '首页',
       icon: 'HomeOutline',
-      path: '/brick-web/'
+      path: '/plugins-web/'
     },
     {
       key: 'scripts',
       label: '脚本管理',
       icon: 'CodeSlashOutline',
       children: [
-        { key: 'scripts-list', label: '脚本列表', path: '/brick-web/scripts' },
-        { key: 'scripts-editor', label: '脚本编辑器', path: '/brick-web/scripts/editor' },
-        { key: 'scripts-templates', label: '脚本模板', path: '/brick-web/scripts/templates' },
-        { key: 'scripts-scheduler', label: '定时任务', path: '/brick-web/scripts/scheduler' },
-        { key: 'scripts-executions', label: '执行记录', path: '/brick-web/scripts/executions' }
+        { key: 'scripts-list', label: '脚本列表', path: '/plugins-web/scripts' },
+        { key: 'scripts-editor', label: '脚本编辑器', path: '/plugins-web/scripts/editor' },
+        { key: 'scripts-templates', label: '脚本模板', path: '/plugins-web/scripts/templates' },
+        { key: 'scripts-scheduler', label: '定时任务', path: '/plugins-web/scripts/scheduler' },
+        { key: 'scripts-executions', label: '执行记录', path: '/plugins-web/scripts/executions' }
       ]
     },
     {
@@ -49,8 +49,8 @@ export const MENU_CONFIG = {
       label: '插件管理',
       icon: 'CubeOutline',
       children: [
-        { key: 'plugins-list', label: '插件列表', path: '/brick-web/plugins' },
-        { key: 'plugins-upload', label: '上传插件', path: '/brick-web/plugins/upload' }
+        { key: 'plugins-list', label: '插件列表', path: '/plugins-web/plugins' },
+        { key: 'plugins-upload', label: '上传插件', path: '/plugins-web/plugins/upload' }
       ]
     },
     {
@@ -58,10 +58,10 @@ export const MENU_CONFIG = {
       label: '系统监控',
       icon: 'StatsChartOutline',
       children: [
-        { key: 'monitor-overview', label: '概览', path: '/brick-web/monitor' },
-        { key: 'monitor-cpu', label: 'CPU监控', path: '/brick-web/monitor/cpu' },
-        { key: 'monitor-memory', label: '内存监控', path: '/brick-web/monitor/memory' },
-        { key: 'monitor-threads', label: '线程监控', path: '/brick-web/monitor/threads' }
+        { key: 'monitor-overview', label: '概览', path: '/plugins-web/monitor' },
+        { key: 'monitor-cpu', label: 'CPU监控', path: '/plugins-web/monitor/cpu' },
+        { key: 'monitor-memory', label: '内存监控', path: '/plugins-web/monitor/memory' },
+        { key: 'monitor-threads', label: '线程监控', path: '/plugins-web/monitor/threads' }
       ]
     }
   ],
@@ -78,39 +78,39 @@ export const MENU_CONFIG = {
 // API 路径常量 - 基于后端 Controller 真实接口
 export const API_PATHS = {
   // === 监控相关接口 ===
-  MONITOR_OVERVIEW: '/brick-web/api/monitor/overview',
-  MONITOR_MEMORY: '/brick-web/api/monitor/memory',
-  MONITOR_CPU: '/brick-web/api/monitor/cpu',
-  MONITOR_THREADS: '/brick-web/api/monitor/threads',
-  MONITOR_THREADS_DETAIL: '/brick-web/api/monitor/threads/detail',
-  MONITOR_THREAD_POOLS: '/brick-web/api/monitor/thread-pools',
-  MONITOR_SYSTEM: '/brick-web/api/monitor/system',
-  MONITOR_HISTORY: '/brick-web/api/monitor/history',
+  MONITOR_OVERVIEW: '/plugins-web/api/monitor/overview',
+  MONITOR_MEMORY: '/plugins-web/api/monitor/memory',
+  MONITOR_CPU: '/plugins-web/api/monitor/cpu',
+  MONITOR_THREADS: '/plugins-web/api/monitor/threads',
+  MONITOR_THREADS_DETAIL: '/plugins-web/api/monitor/threads/detail',
+  MONITOR_THREAD_POOLS: '/plugins-web/api/monitor/thread-pools',
+  MONITOR_SYSTEM: '/plugins-web/api/monitor/system',
+  MONITOR_HISTORY: '/plugins-web/api/monitor/history',
 
   // === 脚本相关接口 ===
-  SCRIPTS_LIST: '/brick-web/api/v1/scripts',
-  SCRIPTS_CREATE: '/brick-web/api/v1/scripts',
-  SCRIPTS_UPDATE: '/brick-web/api/v1/scripts',
-  SCRIPTS_DELETE: '/brick-web/api/v1/scripts',
-  SCRIPTS_CONTENT: '/brick-web/api/v1/scripts/{scriptName}/content',
-  SCRIPTS_VERSIONS: '/brick-web/api/v1/scripts/{scriptName}/versions',
-  SCRIPTS_RESTORE_VERSION: '/brick-web/api/v1/scripts/{scriptName}/versions/{version}/restore',
-  SCRIPTS_TEMPLATES: '/brick-web/api/v1/scripts/templates',
-  SCRIPTS_SCHEDULER: '/brick-web/api/v1/scripts/scheduler',
-  SCRIPTS_EXECUTIONS: '/brick-web/api/v1/scripts/executions',
-  SCRIPTS_EXECUTIONS_LIST: '/brick-web/api/v1/scripts/executions/list',
+  SCRIPTS_LIST: '/plugins-web/api/v1/scripts',
+  SCRIPTS_CREATE: '/plugins-web/api/v1/scripts',
+  SCRIPTS_UPDATE: '/plugins-web/api/v1/scripts',
+  SCRIPTS_DELETE: '/plugins-web/api/v1/scripts',
+  SCRIPTS_CONTENT: '/plugins-web/api/v1/scripts/{scriptName}/content',
+  SCRIPTS_VERSIONS: '/plugins-web/api/v1/scripts/{scriptName}/versions',
+  SCRIPTS_RESTORE_VERSION: '/plugins-web/api/v1/scripts/{scriptName}/versions/{version}/restore',
+  SCRIPTS_TEMPLATES: '/plugins-web/api/v1/scripts/templates',
+  SCRIPTS_SCHEDULER: '/plugins-web/api/v1/scripts/scheduler',
+  SCRIPTS_EXECUTIONS: '/plugins-web/api/v1/scripts/executions',
+  SCRIPTS_EXECUTIONS_LIST: '/plugins-web/api/v1/scripts/executions/list',
 
   // === 插件相关接口 ===
-  PLUGINS_LIST: '/brick-web/api/plugins',
-  PLUGINS_ALL: '/brick-web/api/plugins/all',
-  PLUGINS_DETAIL: '/brick-web/api/plugins/{pluginId}',
-  PLUGINS_UPLOAD: '/brick-web/api/plugins/upload',
-  PLUGINS_INSTALL: '/brick-web/api/plugins/install',
-  PLUGINS_START: '/brick-web/api/plugins/{pluginId}/start',
-  PLUGINS_STOP: '/brick-web/api/plugins/{pluginId}/stop',
-  PLUGINS_RESTART: '/brick-web/api/plugins/{pluginId}/restart',
-  PLUGINS_UNINSTALL: '/brick-web/api/plugins/{pluginId}',
-  PLUGINS_UPLOAD_HISTORY: '/brick-web/api/plugins/upload-history'
+  PLUGINS_LIST: '/plugins-web/api/plugins',
+  PLUGINS_ALL: '/plugins-web/api/plugins/all',
+  PLUGINS_DETAIL: '/plugins-web/api/plugins/{pluginId}',
+  PLUGINS_UPLOAD: '/plugins-web/api/plugins/upload',
+  PLUGINS_INSTALL: '/plugins-web/api/plugins/install',
+  PLUGINS_START: '/plugins-web/api/plugins/{pluginId}/start',
+  PLUGINS_STOP: '/plugins-web/api/plugins/{pluginId}/stop',
+  PLUGINS_RESTART: '/plugins-web/api/plugins/{pluginId}/restart',
+  PLUGINS_UNINSTALL: '/plugins-web/api/plugins/{pluginId}',
+  PLUGINS_UPLOAD_HISTORY: '/plugins-web/api/plugins/upload-history'
 }
 
 // 状态常量

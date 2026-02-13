@@ -206,7 +206,7 @@ const handleUpload = async () => {
 
   try {
     // 使用 axios 直接上传文件
-    const response = await axios.post('/brick-web/api/plugins/upload', formData, {
+    const response = await axios.post('/plugins-web/api/plugins/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },

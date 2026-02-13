@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar" :class="{ collapsed }">
     <div class="sidebar-header">
-      <router-link to="/brick-web/" class="logo">
+      <router-link to="/plugins-web/" class="logo">
         <div class="logo-icon">
           <n-icon size="20" color="#fff">
             <LayersOutline />
