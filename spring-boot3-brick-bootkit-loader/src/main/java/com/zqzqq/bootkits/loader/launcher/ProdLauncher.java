@@ -36,7 +36,7 @@ import java.util.jar.Manifest;
 import static com.zqzqq.bootkits.loader.LoaderConstant.*;
 
 /**
- *  鐢熶骇鐜 Launcher
+ * 生产环境 Launcher
  *
  * @author starBlues
  * @since 3.0.4
@@ -54,7 +54,7 @@ public class ProdLauncher implements Launcher<ClassLoader>{
         String developmentMode;
         try (JarFile jarFile = new JarFile(rootJarFile)){
             Manifest manifest = jarFile.getManifest();
-            IllegalStateException exception = new IllegalStateException("褰撳墠鍚姩鍖呴潪娉曞寘!");
+            IllegalStateException exception = new IllegalStateException("当前启动包非法");
             if(manifest == null || manifest.getMainAttributes() == null){
                 throw exception;
             }
@@ -68,7 +68,7 @@ public class ProdLauncher implements Launcher<ClassLoader>{
         }
 
         if(ObjectUtils.isEmpty(developmentMode)){
-            throw new RuntimeException("鏈彂鐜癲evelopmentMode配置");
+            throw new RuntimeException("未发现 developmentMode 配置");
         }
         DevelopmentModeSetting.setDevelopmentMode(developmentMode);
 

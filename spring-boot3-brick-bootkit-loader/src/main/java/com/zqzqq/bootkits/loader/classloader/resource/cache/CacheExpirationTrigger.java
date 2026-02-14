@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.loader.classloader.resource.cache;
 import java.util.function.Supplier;
 
 /**
- * 缓存过期璋冨害接口
+ * 缓存过期调度接口
  *
  * @author starBlues
  * @since 3.1.1
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 public interface CacheExpirationTrigger {
 
     /**
-     * 添加缓存过期璋冨害
+     * 添加缓存过期调度
      * @param key 缓存的key
      * @param cache 缓存对象
      */
@@ -45,18 +45,18 @@ public interface CacheExpirationTrigger {
     <K, V> Cache<K, V> getCache(String key, Supplier<Cache<K, V>> cacheSupplier);
 
     /**
-     * 移除缓存过期璋冨害
+     * 移除缓存过期调度
      * @param key 缓存的key
      */
     void removeCache(String key);
 
     /**
-     * 鍚姩璋冨害
+     * 启动调度
      */
     void start();
 
     /**
-     * 鍋滄璋冨害
+     * 停止调度
      */
     void stop();
 

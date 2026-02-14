@@ -20,7 +20,7 @@ import com.zqzqq.bootkits.utils.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 涓婁紶鎻掍欢参数
+ * 上传插件参数
  * @author starBlues
  * @version 3.0.0
  */
@@ -29,7 +29,7 @@ public class UploadByMultipartFileParam extends UploadParam{
     private final MultipartFile pluginMultipartFile;
 
     public UploadByMultipartFileParam(MultipartFile pluginMultipartFile) {
-        this.pluginMultipartFile = Assert.isNotNull(pluginMultipartFile, "参数pluginMultipartFile不能涓虹┖");
+        this.pluginMultipartFile = Assert.isNotNull(pluginMultipartFile, "参数 pluginMultipartFile 不能为空");
     }
 
     public MultipartFile getPluginMultipartFile() {

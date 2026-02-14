@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -367,7 +368,7 @@ public class DefaultScriptPermissionManager implements ScriptPermissionManager {
         try {
             String content = scriptContent;
             if (content == null && scriptPath != null) {
-                content = new String(Files.readAllBytes(Paths.get(scriptPath)));
+                content = new String(Files.readAllBytes(Paths.get(scriptPath)), StandardCharsets.UTF_8);
             }
             
             if (content == null) {
@@ -450,7 +451,7 @@ public class DefaultScriptPermissionManager implements ScriptPermissionManager {
     private String calculateContentHash(String content) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(content.getBytes());
+            byte[] hash = digest.digest(content.getBytes(StandardCharsets.UTF_8));
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);

@@ -46,7 +46,7 @@ public interface PluginDescriptor {
     String getPluginVersion();
 
     /**
-     * 获取插件寮曞类
+     * 获取插件引导类
      * @return String
      */
     String getPluginBootstrapClass();
@@ -150,11 +150,11 @@ public interface PluginDescriptor {
      * @param excludeClasses 排除的自动配置类集合
      */
     default void setExcludeAutoConfigurations(Set<String> excludeClasses) {
-        // 榛樿绌哄疄鐜?
+        // 默认空实现
     }
 
     /**
-     * 杞崲涓篒nsidePluginDescriptor
+     * 转换为 InsidePluginDescriptor
      * @return InsidePluginDescriptor
      */
     default InsidePluginDescriptor toInsidePluginDescriptor() {

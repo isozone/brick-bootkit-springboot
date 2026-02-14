@@ -159,7 +159,7 @@ public class DefaultMainResourcePatternDefiner extends JavaMainResourcePatternDe
 
 
     /**
-     * 获取扩展鐨?MainResourcePatternDefiner
+     * 获取扩展的 MainResourcePatternDefiner
      *
      * @return List
      */

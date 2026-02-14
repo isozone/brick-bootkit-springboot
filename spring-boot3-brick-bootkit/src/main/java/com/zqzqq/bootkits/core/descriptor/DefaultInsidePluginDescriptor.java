@@ -119,8 +119,11 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
     public PluginDescriptor toPluginDescriptor() {
         Path pluginPath = getInsidePluginPath();
         if(getType() == PluginType.DEV) {
-            // dev模式 插件璺緞灞曠ず椤圭洰鐩綍
-            pluginPath = pluginPath.getParent().getParent();
+            // DEV 模式下，插件路径展示为项目目录
+            Path parent = pluginPath != null ? pluginPath.getParent() : null;
+            if (parent != null && parent.getParent() != null) {
+                pluginPath = parent.getParent();
+            }
         }
         DefaultPluginDescriptor descriptor = new DefaultPluginDescriptor(
                 getPluginId(), getPluginVersion(), getPluginBootstrapClass(), pluginPath.toAbsolutePath().toString()
@@ -176,7 +179,7 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
 
     /**
      * 设置是否使用主应用数据源
-     * @param useMainDataSource true使用涓绘暟鎹簮锛宖alse使用插件鐙珛数据婧?
+     * @param useMainDataSource true 使用主数据源，false 使用插件独立数据源
      */
     public void setUseMainDataSource(boolean useMainDataSource) {
         this.useMainDataSource = useMainDataSource;
@@ -191,7 +194,7 @@ public class DefaultInsidePluginDescriptor extends DefaultPluginDescriptor imple
     }
 
     /**
-     * 设置插件数据源配置JSON鏍煎紡)
+     * 设置插件数据源配置(JSON格式)
      * @param config 数据源配置
      */
     public void setPluginDataSourceConfig(String config) {

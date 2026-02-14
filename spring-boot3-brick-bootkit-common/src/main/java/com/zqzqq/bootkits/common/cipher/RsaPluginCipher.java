@@ -67,7 +67,7 @@ public class RsaPluginCipher extends AbstractPluginCipher{
         RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, priKey);
-        return new String(cipher.doFinal(inputByte));
+        return new String(cipher.doFinal(inputByte), StandardCharsets.UTF_8);
     }
 
     /**

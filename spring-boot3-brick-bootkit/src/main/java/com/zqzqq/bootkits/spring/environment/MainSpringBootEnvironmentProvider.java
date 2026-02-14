@@ -19,6 +19,7 @@ package com.zqzqq.bootkits.spring.environment;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 import com.zqzqq.bootkits.utils.ObjectValueUtils;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * 主程序搴忛厤缃俊鎭彁渚涜呭疄鐜?
+ * 主程序 Spring Boot 配置信息提供者实现
  *
  * @author starBlues
  * @version 3.0.3
@@ -87,15 +88,28 @@ public class MainSpringBootEnvironmentProvider implements EnvironmentProvider {
         if(ObjectUtils.isEmpty(prefix)){
             return new EmptyEnvironmentProvider();
         }
+        String normalizedPrefix = prefix.endsWith(".") ? prefix : prefix + ".";
         Map<String, Object> collect = new LinkedHashMap<>();
         MutablePropertySources propertySources = environment.getPropertySources();
         for (PropertySource<?> propertySource : propertySources) {
-            String name = propertySource.getName();
-            if(name.startsWith(prefix)){
-                collect.put(MapEnvironmentProvider.resolveKey(prefix, name), propertySource.getSource());
+            if (!(propertySource instanceof EnumerablePropertySource<?>)) {
+                continue;
+            }
+            EnumerablePropertySource<?> enumerablePropertySource = (EnumerablePropertySource<?>) propertySource;
+            for (String propertyName : enumerablePropertySource.getPropertyNames()) {
+                if(!propertyName.startsWith(normalizedPrefix)){
+                    continue;
+                }
+                Object value = enumerablePropertySource.getProperty(propertyName);
+                if (value != null && !collect.containsKey(propertyName)) {
+                    collect.put(propertyName, value);
+                }
             }
         }
-        return new MapEnvironmentProvider(collect);
+        if (collect.isEmpty()) {
+            return new EmptyEnvironmentProvider();
+        }
+        return new MapEnvironmentProvider(normalizedPrefix, collect);
     }
 
     @Override

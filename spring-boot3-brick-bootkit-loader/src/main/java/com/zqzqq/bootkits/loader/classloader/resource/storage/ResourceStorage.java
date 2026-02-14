@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * 资源存储鍣?
+ * 资源存储器
  *
  * @author starBlues
  * @since 3.0.0
@@ -47,42 +47,42 @@ public interface ResourceStorage extends AutoCloseable, Release {
 
     /**
      * 添加资源
-     * @param resource 资源鍚嶇О
+     * @param resource 资源名称
      * @throws Exception 添加资源异常
      */
     void add(Resource resource) throws Exception;
 
     /**
      * 存在资源
-     * @param name 资源鍚嶇О
-     * @return 存在 true, 不存在鍦?false
+     * @param name 资源名称
+     * @return 存在 true, 不存在 false
      */
     boolean exist(String name);
 
     /**
-     * 获取绗竴涓祫婧?
-     * @param name 资源鍚嶇О
+     * 获取第一个资源
+     * @param name 资源名称
      * @return Resource
      */
     Resource getFirst(String name);
 
     /**
-     * 获取所有夎祫婧?
-     * @param name 资源鍚嶇О
+     * 获取所有资源
+     * @param name 资源名称
      * @return Resource
      */
     Enumeration<Resource> get(String name);
 
     /**
-     * 获取绗竴涓祫婧愮殑 InputStream
-     * @param name 资源鍚嶇О
+     * 获取第一个资源的 InputStream
+     * @param name 资源名称
      * @return Resource
      */
     InputStream getFirstInputStream(String name);
 
     /**
-     * 获取所有夎祫婧愮殑 InputStream
-     * @param name 资源鍚嶇О
+     * 获取所有资源的 InputStream
+     * @param name 资源名称
      * @return InputStream
      */
     Enumeration<InputStream> getInputStream(String name);

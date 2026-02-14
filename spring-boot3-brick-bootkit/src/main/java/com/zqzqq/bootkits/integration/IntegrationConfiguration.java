@@ -41,7 +41,7 @@ public interface IntegrationConfiguration {
 
     /**
      * 运行环境。运行项目时的模式。分为开发环境(Dev)、生产环境(Prod)
-     * @return RuntimeMode.DEV銆丷untimeMode.PROD
+     * @return RuntimeMode.DEV、RuntimeMode.PROD
      */
     RuntimeMode environment();
 
@@ -53,20 +53,21 @@ public interface IntegrationConfiguration {
 
     /**
      * 插件的路径。可设置多个插件路径
-     * 开启戠幆澧冨缓璁洿鎺ラ厤缃负插件模式鐨勭埗绾х洰褰曘備緥濡? plugins銆傚鏋滃惎鍔ㄤ富程序鏃? 插件中哄姞杞? 璇锋鏌ヨ配置是否姝ｇ‘銆?
-     * @return 插件鐨勮矾寰?
+     * 开发环境建议直接配置插件项目父目录，例如：plugins。
+     * 若主程序启动时插件未被加载，请检查该配置。
+     * @return 插件路径
      */
     List<String> pluginPath();
 
     /**
      * 上传插件临时存储的临时路径。默认: temp(相对于主程序jar路径)
-     * @return 中婁紶插件鐨勪复鏃朵繚瀛樿矾寰勩?
+     * @return 上传插件的临时保存路径
      */
     String uploadTempPath();
 
     /**
      * 插件备份路径。默认: backupPlugin (相对于主程序jar路径)
-     * @return 插件澶囦唤璺緞銆?
+     * @return 插件备份路径
      */
     String backupPath();
 
@@ -167,7 +168,7 @@ public interface IntegrationConfiguration {
 
 
     /**
-     * 是否琚惎鍔?
+     * 是否启用
      * @param pluginId 插件id
      * @return true: 启用, false: 未启动
      */
@@ -183,7 +184,7 @@ public interface IntegrationConfiguration {
 
 
     /**
-     * 是否琚鐢?
+     * 是否禁用
      * @param pluginId 插件id
      * @return true: 禁用, false: 未禁用
      */

@@ -50,7 +50,7 @@ public interface PluginLaunchInvolved {
      * 启动之后
      * @param pluginInsideInfo 插件信息
      * @param classLoader 插件classloader
-     * @param pluginHook 鍚姩鎴愬姛鍚庢彃浠惰繑鍥炵殑閽╁瓙
+     * @param pluginHook 启动成功后插件返回的钩子
      * @throws Exception 执行异常
      */
     default void after(PluginInsideInfo pluginInsideInfo, ClassLoader classLoader,

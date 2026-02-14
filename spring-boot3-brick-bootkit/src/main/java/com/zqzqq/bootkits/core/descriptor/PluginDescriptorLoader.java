@@ -33,7 +33,7 @@ public interface PluginDescriptorLoader extends AutoCloseable{
 
     /**
      * 加载 PluginDescriptor
-     * @param location 寮曞配置文件璺緞
+     * @param location 引导配置文件路径
      * @return PluginDescriptor
      * @throws PluginException 加载异常
      */

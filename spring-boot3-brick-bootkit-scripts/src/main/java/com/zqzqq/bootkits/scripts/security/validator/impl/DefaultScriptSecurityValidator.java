@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -120,7 +121,7 @@ public class DefaultScriptSecurityValidator implements ScriptSecurityValidator {
             }
             
             // 读取文件内容
-            String content = new String(Files.readAllBytes(scriptFile.toPath()));
+            String content = new String(Files.readAllBytes(scriptFile.toPath()), StandardCharsets.UTF_8);
             
             // 检测脚本类型
             ScriptType scriptType = detectScriptType(scriptPath, content);

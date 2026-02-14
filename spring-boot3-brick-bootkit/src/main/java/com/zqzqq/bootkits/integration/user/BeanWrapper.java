@@ -19,19 +19,19 @@ package com.zqzqq.bootkits.integration.user;
 import java.util.Map;
 
 /**
- * bean閸栧懓顥婄猾?
+ * Bean 包装对象
  * @author starBlues
  * @version 3.0.0
  */
 public class BeanWrapper<T> {
 
     /**
-     * 涓荤▼搴忔惔寤眅an
+     * 主程序 Bean
      */
     private final T mainBean;
 
     /**
-     * 鎻掍欢bean. key娑撶儤褰冩禒绉坉
+     * 插件 Bean。key 为插件 id
      */
     private final Map<String, T> pluginBean;
 

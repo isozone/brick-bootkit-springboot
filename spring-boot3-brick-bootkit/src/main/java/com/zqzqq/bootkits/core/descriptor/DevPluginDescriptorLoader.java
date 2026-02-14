@@ -48,24 +48,36 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
 
     @Override
     protected PluginMeta getPluginMetaInfo(Path location) throws Exception {
-        // 首先检查标准位置: location/PLUGIN.META
-        String pluginMetaPath = FilesUtils.joiningFilePath(location.toString(), PackageStructure.PLUGIN_META_NAME);
-        File file = new File(pluginMetaPath);
-
-        // 如果标准位置不存在，检查 Maven 标准结构: location/META-INF/PLUGIN.META
-        if (!file.exists()) {
-            String mavenStylePath = FilesUtils.joiningFilePath(
-                    location.toString(),
-                    PackageStructure.META_INF_NAME,
-                    PackageStructure.PLUGIN_META_NAME
-            );
-            file = new File(mavenStylePath);
-            if (file.exists()) {
-                pluginMetaPath = mavenStylePath;
+        String pluginMetaPath = null;
+        File file = null;
+        String[] candidates = new String[] {
+                // 标准开发目录
+                FilesUtils.joiningFilePath(location.toString(), PackageStructure.PLUGIN_META_NAME),
+                FilesUtils.joiningFilePath(location.toString(),
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容旧目录结构
+                FilesUtils.joiningFilePath(location.toString(),
+                        "target",
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容 Maven 默认编译输出目录
+                FilesUtils.joiningFilePath(location.toString(),
+                        "target",
+                        PackageStructure.CLASSES_NAME,
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME)
+        };
+        for (String candidate : candidates) {
+            File candidateFile = new File(candidate);
+            if (candidateFile.exists()) {
+                pluginMetaPath = candidate;
+                file = candidateFile;
+                break;
             }
         }
 
-        if (!file.exists()) {
+        if (file == null || !file.exists()) {
             log.debug("Path: [{}] not exist.", location);
             return null;
         }

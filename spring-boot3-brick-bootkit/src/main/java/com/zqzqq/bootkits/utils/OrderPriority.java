@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.utils;
 
 /**
- * 椤哄簭浼樺厛绾?
+ * 顺序优先级
  *
  * @author starBlues
  * @since 1.0.0
@@ -25,17 +25,17 @@ package com.zqzqq.bootkits.utils;
  */
 public class OrderPriority {
     /**
-     * 楂樹紭鍏堢骇
+     * 高优先级
      */
     private static final Integer HIGH_PRIORITY = 1000;
 
     /**
-     * 中紭鍏堢骇
+     * 中优先级
      */
     private static final Integer MIDDLE_PRIORITY = 0;
 
     /**
-     * 浣庝紭鍏堢骇
+     * 低优先级
      */
     private static final Integer LOW_PRIORITY = -1000;
 
@@ -52,7 +52,7 @@ public class OrderPriority {
     }
 
     /**
-     * 得到浣庝紭鍏堢骇
+     * 得到低优先级
      * @return OrderPriority
      */
     public static OrderPriority getLowPriority(){
@@ -61,7 +61,7 @@ public class OrderPriority {
 
 
     /**
-     * 得到中紭鍏堢骇
+     * 得到中优先级
      * @return OrderPriority
      */
     public static OrderPriority getMiddlePriority(){
@@ -70,7 +70,7 @@ public class OrderPriority {
 
 
     /**
-     * 得到楂樹紭鍏堢骇
+     * 得到高优先级
      * @return OrderPriority
      */
     public static OrderPriority getHighPriority(){
@@ -79,8 +79,8 @@ public class OrderPriority {
 
 
     /**
-     * 鍗囦紭鍏堢骇.链楂樺彧鑳藉崌鍒版渶楂樹紭鍏堢骇鍒備篃就是1000
-     * @param number 鍗囩骇鏁伴噺
+     * 升级优先级。最高只能提升到 1000
+     * @param number 升级数量
      * @return OrderPriority
      */
     public OrderPriority up(Integer number){
@@ -97,16 +97,16 @@ public class OrderPriority {
     }
 
     /**
-     * 闄嶄紭鍏堢骇.链浣庡彧鑳介檷鍒版渶浣庝紭鍏堢骇鍒備篃就是-1000
-     * @param number 闄嶇骇鏁伴噺
+     * 降级优先级。最低只能降低到 -1000
+     * @param number 降级数量
      * @return OrderPriority
      */
     public OrderPriority down(Integer number){
         if(number == null){
             return this;
         }
-        if(MIDDLE_PRIORITY.equals(this.priority) || (this.priority - number) < MIDDLE_PRIORITY){
-            this.priority = MIDDLE_PRIORITY;
+        if(LOW_PRIORITY.equals(this.priority) || (this.priority - number) < LOW_PRIORITY){
+            this.priority = LOW_PRIORITY;
             return this;
         } else {
             this.priority = this.priority - number;

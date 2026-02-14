@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * 获取classpath资源璺緞
+ * 获取 classpath 资源路径
  *
  * @author starBlues
  * @version 3.1.0

@@ -28,7 +28,7 @@ import java.io.File;
 import java.util.Set;
 
 /**
- * 插件鐨勯噸鏂版墦鍖?mojo
+ * 插件重新打包 mojo
  *
  * @author starBlues
  * @since 3.0.0

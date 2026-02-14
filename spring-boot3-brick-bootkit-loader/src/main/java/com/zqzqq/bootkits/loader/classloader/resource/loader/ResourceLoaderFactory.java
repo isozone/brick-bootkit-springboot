@@ -27,7 +27,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * 资源加载宸ュ巶
+ * 资源加载工厂
  *
  * @author starBlues
  * @since 3.0.0
@@ -36,8 +36,8 @@ import java.util.List;
 public interface ResourceLoaderFactory extends AutoCloseable, Release {
 
     /**
-     * 根据璺緞瀛楃涓叉坊鍔犺祫婧?
-     * @param path 璺緞瀛楃在
+     * 根据路径字符串添加资源
+     * @param path 路径字符串
      * @throws Exception 添加资源异常
      */
     void addResource(String path) throws Exception;
@@ -50,8 +50,8 @@ public interface ResourceLoaderFactory extends AutoCloseable, Release {
     void addResource(File file) throws Exception;
 
     /**
-     * 根据璺緞添加资源
-     * @param path 璺緞
+     * 根据路径添加资源
+     * @param path 路径
      * @throws Exception 添加资源异常
      */
     void addResource(Path path) throws Exception;
@@ -72,28 +72,28 @@ public interface ResourceLoaderFactory extends AutoCloseable, Release {
 
     /**
      * 根据资源加载器添加资源
-     * @param resourceLoader 资源加载鍣?
+     * @param resourceLoader 资源加载器
      * @throws Exception 添加资源异常
      */
     void addResource(ResourceLoader resourceLoader) throws Exception;
 
     /**
-     * 根据资源鍚嶇О获取绗竴涓祫婧?
-     * @param name 资源鍚嶇О
+     * 根据资源名称获取第一个资源
+     * @param name 资源名称
      * @return Resource
      */
     Resource findFirstResource(String name);
 
     /**
-     * 根据资源鍚嶇О获取资源集合
-     * @param name 资源鍚嶇О
+     * 根据资源名称获取资源集合
+     * @param name 资源名称
      * @return Resource
      */
     Enumeration<Resource> findAllResource(String name);
 
     /**
-     * 根据资源鍚嶇О获取绗竴涓祫婧愮殑 InputStream
-     * @param name 资源鍚嶇О
+     * 根据资源名称获取第一个资源的 InputStream
+     * @param name 资源名称
      * @return Resource
      */
     InputStream getInputStream(String name);

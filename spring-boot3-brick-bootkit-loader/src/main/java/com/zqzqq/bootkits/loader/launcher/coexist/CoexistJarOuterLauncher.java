@@ -31,7 +31,7 @@ import static com.zqzqq.bootkits.loader.LoaderConstant.PROD_CLASSES_URL_SIGN;
 
 
 /**
- * 主程序搴廽ar-outer 妯″紡鍚姩鍣?
+ * 主程序 Jar-outer 共存模式启动器
  *
  * @author starBlues
  * @since 3.1.2

@@ -1,5 +1,10 @@
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   servlet:
@@ -48,10 +53,8 @@ plugin:
   mainPackage: com.zqzqq.bootkits.web.demo.DemoApplication
   pluginPath:
     - D:\codes\brick-bootkit-springboot\plugins
- #   - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
-
-# 脚本管理配置 - 默认禁用
-plugin:
+  #   - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
+  # 脚本管理配置
   scripts:
     storage:
       type: file

@@ -147,9 +147,12 @@ public abstract class ReflectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> T invoke(Object object, String methodName, Object... params) throws RuntimeException {
+        if (params == null) {
+            params = new Object[0];
+        }
         Class<?>[] paramTypes = new Class[params.length];
         for (int i = 0; i < params.length; i++) {
-            paramTypes[i] = params[i].getClass();
+            paramTypes[i] = params[i] == null ? null : params[i].getClass();
         }
         Class<?> aClass = object.getClass();
         Method method = ReflectionUtils.findMethod(aClass, methodName, paramTypes);
@@ -226,6 +229,12 @@ public abstract class ReflectionUtils {
         for (int i = 0; i < paramTypes.length; i++) {
             Class<?> paramType = paramTypes[i];
             Class<?> methodParamType = parameterTypes[i];
+            if (paramType == null) {
+                if (methodParamType.isPrimitive()) {
+                    return false;
+                }
+                continue;
+            }
             if(!CompareClassTypeUtils.compare(methodParamType, paramType)){
                 return false;
             }

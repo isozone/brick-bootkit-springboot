@@ -18,7 +18,7 @@ package com.zqzqq.bootkits.integration.listener;
 
 
 /**
- * 插件初始化监听器?
+ * 插件初始化监听器
  *
  * @author starBlues
  * @version 3.0.0
@@ -26,18 +26,18 @@ package com.zqzqq.bootkits.integration.listener;
 public interface PluginInitializerListener {
 
     /**
-     * 鍒濆鍖栦箣鍓?
+     * 初始化之前
      */
     void before();
 
 
     /**
-     * 鍒濆鍖栧畬鎴?
+     * 初始化完成
      */
     void complete();
 
     /**
-     * 鍒濆鍖栧け璐?
+     * 初始化失败
      * @param throwable 异常
      */
     void failure(Throwable throwable);

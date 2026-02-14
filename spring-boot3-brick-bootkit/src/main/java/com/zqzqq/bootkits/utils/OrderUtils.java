@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * 閫氱敤工具
+ * 通用工具
  *
  * @author starBlues
  * @since 3.0.0

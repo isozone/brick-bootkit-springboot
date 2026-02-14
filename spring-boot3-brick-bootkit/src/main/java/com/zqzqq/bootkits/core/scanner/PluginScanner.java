@@ -28,9 +28,9 @@ import java.util.List;
 public interface PluginScanner {
 
     /**
-     * 浠?rootDir 集合中壂鎻忓嚭插件璺緞
-     * @param rootDir 鏍圭洰褰?
-     * @return 鎵弿鍑虹殑鐩綍
+     * 从 rootDir 集合中扫描出插件路径
+     * @param rootDir 根目录
+     * @return 扫描出的目录
      */
     List<Path> scan(List<String> rootDir);
 

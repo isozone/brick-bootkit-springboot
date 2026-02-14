@@ -205,7 +205,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     }
 
     /**
-     * 璁＄畻key
+     * 计算 key
      * @param request request
      * @param requestPath 请求路径
      * @return 返回key
@@ -244,7 +244,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
 
 
     /**
-     * 每当新增一个插件。都必须调用该方法, 来解析该插件的 StaticResourceConfig 配置。并将其保存到StaticResourceConfig bean 中?
+     * 每当新增一个插件，都必须调用该方法解析 StaticResourceConfig，并保存到配置缓存中
      * @param pluginDescriptor 插件信息
      * @param pluginClassLoader 插件classloader
      * @param webConfig web配置
@@ -347,7 +347,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         private Set<String> classPaths;
 
         /**
-         * 定义的文件路径集合?
+         * 定义的文件路径集合
          */
         private Set<String> filePaths;
 

@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * map类型的配置信息提供者?
+ * map 类型的配置信息提供者
  *
  * @author starBlues
  * @version 3.0.3

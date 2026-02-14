@@ -166,7 +166,7 @@ public class FilesUtils {
                 return file;
             }
             File parentFile = file.getParentFile();
-            if(!parentFile.exists()){
+            if(parentFile != null && !parentFile.exists()){
                 if(!parentFile.mkdirs()){
                     throw new IOException("Create " + parentFile + " dir error");
                 }
@@ -176,7 +176,7 @@ public class FilesUtils {
             }
             throw new IOException("Create " + path + " file error");
         } catch (Exception e){
-            throw new IOException("Create " + path + " file error");
+            throw new IOException("Create " + path + " file error", e);
         }
     }
 
@@ -201,8 +201,8 @@ public class FilesUtils {
     /**
      * 解决存在的相对路径
      * @param rootPath 根路徑
-     * @param path 以~开头的相对路径或者呭畬整路径
-     * @return File 或者卬ull(不存在鍦?
+     * @param path 以~开头的相对路径或者完整路径
+     * @return File 或者 null(不存在)
      */
     public static File resolveExistRelativePathFile(String rootPath, String path){
         if(ObjectUtils.isEmpty(path)){
@@ -225,7 +225,7 @@ public class FilesUtils {
     /**
      * 是否是相对路径
      * @param path 路徑
-     * @return true 为相对路径 false 鏈潑鐩稿路徑
+     * @return true 为相对路径 false 为非相对路径
      */
     public static boolean isRelativePath(String path){
         if(ObjectUtils.isEmpty(path)){

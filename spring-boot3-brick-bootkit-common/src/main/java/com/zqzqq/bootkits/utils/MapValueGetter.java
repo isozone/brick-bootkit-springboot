@@ -92,7 +92,7 @@ public class MapValueGetter {
     }
 
     /**
-     * 获取鍊煎苟根据鑷畾涔夊疄鐜拌浆鎹㈢被鍨?
+     * 获取值并根据自定义实现转换类型
      * @param key map key
      * @param function 自定义类型转换
      * @param <T> 转换后的类型泛型

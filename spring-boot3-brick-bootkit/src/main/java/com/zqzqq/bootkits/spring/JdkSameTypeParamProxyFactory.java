@@ -16,14 +16,12 @@
 
 package com.zqzqq.bootkits.spring;
 
-import com.zqzqq.bootkits.utils.ReflectionUtils;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * jdk 鍚岀被鍨嬪弬鏁扮殑浠ｇ悊宸ュ巶
+ * JDK 同类型参数代理工厂
  * @author starBlues
  * @version 3.0.0
  */
@@ -45,7 +43,7 @@ public class JdkSameTypeParamProxyFactory implements ProxyFactory, InvocationHan
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return ReflectionUtils.invoke(target, method.getName(), args);
+        return method.invoke(target, args);
     }
 
 }

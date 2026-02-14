@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * rsa 闁告梻濮撮惁鎴︽嚀?
+ * AES 算法插件加密
  *
  * @author starBlues
  * @since 3.0.1

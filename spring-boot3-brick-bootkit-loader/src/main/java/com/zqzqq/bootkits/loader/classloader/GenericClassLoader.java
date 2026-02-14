@@ -391,7 +391,7 @@ protected Class<?> findClassFromLocal(String name) {
         Class<?> aClass;
         String formatClassName = formatClassName(name);
 
-        aClass = pluginClassCache.get(formatClassName);
+        aClass = pluginClassCache.get(name);
         if (aClass != null) {
             return aClass;
         }
@@ -418,11 +418,19 @@ protected Class<?> findClassFromLocal(String name) {
             return null;
         }
         if (aClass.getPackage() == null) {
-            int lastDotIndex = name.lastIndexOf( '.' );
-            String packageName = (lastDotIndex >= 0) ? name.substring( 0, lastDotIndex) : "";
-            super.definePackage(packageName, null, null,
-                    null, null, null, null,
-                    null);
+            int lastDotIndex = name.lastIndexOf('.');
+            if (lastDotIndex > 0) {
+                String packageName = name.substring(0, lastDotIndex);
+                try {
+                    if (getPackage(packageName) == null) {
+                        super.definePackage(packageName, null, null,
+                                null, null, null, null,
+                                null);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // 并发定义包时允许忽略，后续使用已定义包
+                }
+            }
         }
         pluginClassCache.put(name, aClass);
         return aClass;

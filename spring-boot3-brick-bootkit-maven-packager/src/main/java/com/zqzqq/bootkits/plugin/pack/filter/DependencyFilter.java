@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 娓氭繆绂嗘潻鍥ㄦ姢
+ * 依赖过滤器
  *
  * @author starBlues
  * @since 3.0.0
@@ -55,7 +55,7 @@ public abstract class DependencyFilter extends AbstractArtifactsFilter {
     }
 
     /**
-     * 瀛愮被鏉╁洦鎶ょ紒鎾寸亯
+     * 子类实现过滤逻辑
      * @param artifact artifact
      * @return boolean
      */

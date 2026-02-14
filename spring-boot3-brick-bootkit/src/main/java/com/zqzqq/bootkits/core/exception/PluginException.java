@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 
 
 /**
- * 鎻掍欢异常
+ * 插件异常
  * @author starBlues
  * @since 3.0.0
  * @version 3.0.0
@@ -55,11 +55,11 @@ public class PluginException extends RuntimeException{
     }
 
     public PluginException(String pluginId, String opType, Throwable cause) {
-        super("鎻掍欢[" + pluginId + "]" + opType + "澶辫触. " + MsgUtils.getThrowableMsg(cause), cause);
+        super("插件[" + pluginId + "]" + opType + "失败. " + MsgUtils.getThrowableMsg(cause), cause);
     }
 
     public PluginException(String pluginId, String message) {
-        super("鎻掍欢[" + pluginId + "]" + MsgUtils.getThrowableMsg(message));
+        super("插件[" + pluginId + "]" + MsgUtils.getThrowableMsg(message));
     }
 
     public static PluginException getPluginException(Throwable throwable, Supplier<PluginException> getException){

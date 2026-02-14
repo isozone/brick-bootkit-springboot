@@ -44,12 +44,35 @@ public enum RuntimeMode {
         return mode;
     }
 
-    public static RuntimeMode byName(String model){
-        if(DEV.name().equalsIgnoreCase(model)){
+    public static RuntimeMode byName(String modeName){
+        if(modeName == null){
             return RuntimeMode.DEV;
-        } else {
+        }
+        String normalized = modeName.trim().toLowerCase();
+        if(normalized.isEmpty()){
+            return RuntimeMode.DEV;
+        }
+        if(isDevMode(normalized)){
+            return RuntimeMode.DEV;
+        }
+        if(isProdMode(normalized)){
             return RuntimeMode.PROD;
         }
+        return RuntimeMode.DEV;
+    }
+
+    private static boolean isDevMode(String normalized){
+        return DEV.name().equalsIgnoreCase(normalized)
+                || DEV.getMode().equalsIgnoreCase(normalized)
+                || "development".equalsIgnoreCase(normalized);
+    }
+
+    private static boolean isProdMode(String normalized){
+        return PROD.name().equalsIgnoreCase(normalized)
+                || PROD.getMode().equalsIgnoreCase(normalized)
+                || "production".equalsIgnoreCase(normalized)
+                || "deployment".equalsIgnoreCase(normalized)
+                || "deploy".equalsIgnoreCase(normalized);
     }
 
     @Override

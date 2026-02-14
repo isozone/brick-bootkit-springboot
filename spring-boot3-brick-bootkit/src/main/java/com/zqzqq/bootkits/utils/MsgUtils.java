@@ -20,7 +20,7 @@ package com.zqzqq.bootkits.utils;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
 
 /**
- * msg 宸ュ叿
+ * 消息工具
  *
  * @author starBlues
  * @since 3.0.0

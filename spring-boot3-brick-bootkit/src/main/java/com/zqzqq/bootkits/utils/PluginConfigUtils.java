@@ -32,12 +32,12 @@ public class PluginConfigUtils {
     private PluginConfigUtils(){}
 
     /**
-     * 根据椤圭洰杩愯鐜妯″紡鏉ヨ幏可栭厤缃枃浠跺悕绉?
-     * @param fileName 文件的嶇О
-     * @param prodSuffix 鐢熶骇鐜鍓嶇紑
-     * @param devSuffix 开启戠幆澧冨墠缂
-     * @param runtimeMode 杩愯妯″紡
-     * @return 文件的嶇О
+     * 根据运行环境模式获取配置文件名后缀信息
+     * @param fileName 文件名
+     * @param prodSuffix 生产环境后缀
+     * @param devSuffix 开发环境后缀
+     * @param runtimeMode 运行模式
+     * @return 文件名打包对象
      */
     public static FileNamePack getConfigFileName(String fileName,
                                                  String prodSuffix,
@@ -48,10 +48,10 @@ public class PluginConfigUtils {
         }
         String suffix = "";
         if(runtimeMode == RuntimeMode.PROD){
-            // 鐢熶骇鐜
+            // 生产环境
             suffix = prodSuffix;
         } else if(runtimeMode == RuntimeMode.DEV){
-            // 开启戠幆澧?
+            // 开发环境
             suffix = devSuffix;
         }
 
@@ -83,17 +83,17 @@ public class PluginConfigUtils {
         if(suffix == null){
             suffix = "";
         }
-        if(ObjectUtils.isEmpty(suffix) && !suffix.startsWith(CONFIG_NAME_SEPARATOR)){
+        if(!ObjectUtils.isEmpty(suffix) && !suffix.startsWith(CONFIG_NAME_SEPARATOR)){
             suffix = CONFIG_NAME_SEPARATOR + suffix;
         }
         return fileNamePrefix + suffix + fileNamePrefixSuffix;
     }
 
     /**
-     * 得到插件接口鍓嶇紑
+     * 获取插件接口前缀
      * @param configuration 配置
      * @param pluginId 插件id
-     * @return 接口鍓嶇紑
+     * @return 接口前缀
      */
     public static String getPluginRestPrefix(IntegrationConfiguration configuration, String pluginId){
         String pathPrefix = configuration.pluginRestPathPrefix();

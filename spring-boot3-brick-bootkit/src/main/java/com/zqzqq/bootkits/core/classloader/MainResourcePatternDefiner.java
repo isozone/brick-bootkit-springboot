@@ -28,8 +28,8 @@ import java.util.Set;
 public interface MainResourcePatternDefiner {
 
     /**
-     * 鍖呭惈资源鍚嶇О.
-     * @return 资源鍚嶇О集合
+     * 包含资源名称
+     * @return 资源名称集合
      */
     Set<String> getIncludePatterns();
 

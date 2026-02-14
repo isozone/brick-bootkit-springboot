@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.spring.invoke;
 import com.zqzqq.bootkits.spring.ApplicationContext;
 
 /**
- * 提供者鑰呯紦瀛樺寘瑁?
+ * 提供者缓存包装
  * @author starBlues
  * @version 3.0.0
  */

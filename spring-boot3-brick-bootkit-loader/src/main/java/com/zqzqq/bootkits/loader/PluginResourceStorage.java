@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 插件资源存储搴?
+ * 插件资源存储器
  *
  * @author starBlues
  * @since 3.0.0
@@ -42,7 +42,7 @@ public class PluginResourceStorage {
     /**
      * 添加插件资源
      * @param pluginId 插件id
-     * @param pluginFileName 插件文件鍚嶇О
+     * @param pluginFileName 插件文件名
      */
     public static void addPlugin(String pluginId, String pluginFileName, List<String> libPath){
         if(STORAGE_MAP.containsKey(pluginId)){
@@ -61,10 +61,10 @@ public class PluginResourceStorage {
             return;
         }
         try {
-            // 纭繚资源琚畬鍏ㄩ噴鏀?
+            // 确保资源被完全释放
             storage.close();
         } catch (IOException e) {
-            // 忽略异常锛岀‘淇濈Щ闄ゆ搷浣滅户缁?
+            // 忽略异常，确保移除操作继续
         } finally {
             STORAGE_MAP.remove(pluginId);
         }
@@ -146,7 +146,7 @@ public class PluginResourceStorage {
         @Override
         public void close() throws IOException {
             try {
-                // 先不叧闂櫘閫歫ar文件
+                // 先关闭普通 jar 文件
                 for (List<AbstractJarFile> value : jarFileMap.values()) {
                     for (AbstractJarFile jarFile : value) {
                         if(jarFile == null){
@@ -158,12 +158,12 @@ public class PluginResourceStorage {
                             }
                             jarFile.close();
                         } catch (Exception e) {
-                            // 忽略关闭异常锛岀‘淇濇墍鏈夎祫婧愰兘尝试关闭
+                            // 忽略关闭异常，确保所有资源都尝试关闭
                         }
                     }
                 }
                 
-                // 鍐嶅叧闂牴jar文件
+                // 再关闭根 jar 文件
                 for (JarFileWrapper jarFile : rootJarFileMap.values()) {
                     if(jarFile == null){
                         continue;
@@ -172,16 +172,16 @@ public class PluginResourceStorage {
                         jarFile.canClosed();
                         jarFile.close();
                     } catch (Exception e) {
-                        // 忽略关闭异常锛岀‘淇濇墍鏈夎祫婧愰兘尝试关闭
+                        // 忽略关闭异常，确保所有资源都尝试关闭
                     }
                 }
             } finally {
-                // 纭繚集合琚竻绌猴紝闃叉内容瓨娉勬紡
+                // 确保集合被清空，防止内容驻留
                 jarFileMap.clear();
                 rootJarFileMap.clear();
             }
             
-            // 寤鸿JVM杩涜鍨冨溇鍥炴敹
+            // 建议 JVM 进行垃圾回收
             System.gc();
         }
 

@@ -83,7 +83,7 @@ public interface EnvironmentProvider {
     EnvironmentProvider getByPrefix(String prefix);
 
     /**
-     * 获取所有配置集合?
+     * 获取所有配置集合
      * @param action 每个项目执行的动作
      */
     void forEach(BiConsumer<String, Object> action);

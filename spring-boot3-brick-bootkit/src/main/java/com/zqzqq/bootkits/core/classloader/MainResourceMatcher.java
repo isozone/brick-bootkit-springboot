@@ -28,7 +28,7 @@ public interface MainResourceMatcher {
     /**
      * 匹配主程序资源
      * @param resourceUrl 主程序资源url
-     * @return true 鍖归厤鎴愬姛, false 鍖归厤失败
+     * @return true 匹配成功, false 匹配失败
      */
     Boolean match(String resourceUrl);
 

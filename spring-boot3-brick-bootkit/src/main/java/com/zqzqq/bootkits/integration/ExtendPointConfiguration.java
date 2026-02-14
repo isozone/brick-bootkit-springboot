@@ -34,10 +34,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
 
-;
-
 /**
- * 绯荤粺Bean配置
+ * 系统 Bean 配置
  * @author starBlues
  * @version 3.0.3
  */

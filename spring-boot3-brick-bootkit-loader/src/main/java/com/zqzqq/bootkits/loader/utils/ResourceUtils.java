@@ -103,8 +103,8 @@ public class ResourceUtils {
     }
 
     /**
-     * 灏嗚祫婧愬悕绉扮粺中鏍煎紡鍖栦负标准鏍煎紡
-     * 标准鏍煎紡锛歛/b/c
+     * 将资源名称统一格式化为标准格式
+     * 标准格式：a/b/c
      * @param name 原始资源名称
      * @return 标准资源名称
      */
@@ -132,7 +132,7 @@ public class ResourceUtils {
 
     /**
      * 释放资源
-     * @param object 释放资源鐨勫璞?
+     * @param object 释放资源的对象
      */
     public static void release(final Object object) {
         release(object, null);
@@ -140,7 +140,7 @@ public class ResourceUtils {
 
     /**
      * 释放资源
-     * @param object 释放资源鐨勫璞?
+     * @param object 释放资源的对象
      * @param consumer 释放异常消费
      */
     public static void release(final Object object, final Consumer<Exception> consumer) {

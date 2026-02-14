@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -450,7 +451,7 @@ public class SimpleScriptImportExportManager {
             
             // 写入文件
             Path outputFile = Paths.get(outputPath);
-            Files.write(outputFile, serializedData.getBytes());
+            Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
                 "配置导出成功: " + outputPath, 
@@ -477,7 +478,7 @@ public class SimpleScriptImportExportManager {
                 return ImportExportResult.failure("文件不存在: " + inputPath, Arrays.asList("文件未找到"));
             }
             
-            String content = new String(Files.readAllBytes(inputFile));
+            String content = new String(Files.readAllBytes(inputFile), StandardCharsets.UTF_8);
             ExportFormat format = ExportFormat.fromFileName(inputPath);
             
             FormatHandler handler = formatHandlers.get(format);
@@ -518,7 +519,7 @@ public class SimpleScriptImportExportManager {
             String serializedData = handler.serialize(environmentVariables);
             
             Path outputFile = Paths.get(outputPath);
-            Files.write(outputFile, serializedData.getBytes());
+            Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
                 "环境变量导出成功: " + outputPath, 
@@ -541,7 +542,7 @@ public class SimpleScriptImportExportManager {
     public ImportExportResult importEnvironment(String inputPath, boolean overwrite) {
         try {
             Path inputFile = Paths.get(inputPath);
-            String content = new String(Files.readAllBytes(inputFile));
+            String content = new String(Files.readAllBytes(inputFile), StandardCharsets.UTF_8);
             ExportFormat format = ExportFormat.fromFileName(inputPath);
             
             FormatHandler handler = formatHandlers.get(format);
@@ -590,7 +591,7 @@ public class SimpleScriptImportExportManager {
             String serializedData = handler.serialize(scriptsData);
             
             Path outputFile = Paths.get(outputPath);
-            Files.write(outputFile, serializedData.getBytes());
+            Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
                 "脚本配置导出成功: " + outputPath, 
@@ -613,7 +614,7 @@ public class SimpleScriptImportExportManager {
     public ImportExportResult importScripts(String inputPath, boolean overwrite) {
         try {
             Path inputFile = Paths.get(inputPath);
-            String content = new String(Files.readAllBytes(inputFile));
+            String content = new String(Files.readAllBytes(inputFile), StandardCharsets.UTF_8);
             ExportFormat format = ExportFormat.fromFileName(inputPath);
             
             FormatHandler handler = formatHandlers.get(format);

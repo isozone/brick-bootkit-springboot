@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.loader;
 
 /**
- * 开启戞ā寮弅ey瀹氫箟
+ * 开发模式 Key 定义
  *
  * @author starBlues
  * @since 3.0.4
@@ -26,12 +26,12 @@ package com.zqzqq.bootkits.loader;
 public abstract class DevelopmentMode {
 
     /**
-     * 闅旂妯″紡
+     * 隔离模式
      */
     public static final String ISOLATION = "isolation";
 
     /**
-     * 鍏卞瓨妯″紡
+     * 共存模式
      */
     public static final String COEXIST = "coexist";
 

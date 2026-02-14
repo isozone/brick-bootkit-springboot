@@ -56,7 +56,7 @@ public enum PluginType {
     ZIP_OUTER(PackageType.PLUGIN_PACKAGE_TYPE_ZIP_OUTER),
 
     /**
-     * 鐢熶骇妯″紡鐩綍
+     * 生产模式目录
      */
     DIR(PackageType.PLUGIN_PACKAGE_TYPE_DIR);
 

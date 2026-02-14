@@ -20,7 +20,7 @@ import com.zqzqq.bootkits.common.AbstractDependencyPlugin;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /**
- * 依赖鐨勬彃浠?
+ * 依赖插件
  *
  * @author starBlues
  * @since 3.0.0

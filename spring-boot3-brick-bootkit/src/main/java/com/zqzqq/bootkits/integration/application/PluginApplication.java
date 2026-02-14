@@ -22,29 +22,29 @@ import com.zqzqq.bootkits.integration.user.PluginUser;
 import org.springframework.context.ApplicationContext;
 
 /**
- * 插件搴旂敤銆?
+ * 插件应用
  * @author starBlues
  * @version 3.0.0
  */
 public interface PluginApplication{
 
     /**
-     * 鍒濆鍖?
-     * @param applicationContext Spring上下?
-     * @param listener 插件初始化监听器?
+     * 初始化
+     * @param applicationContext Spring 上下文
+     * @param listener 插件初始化监听器
      */
     void initialize(ApplicationContext applicationContext, PluginInitializerListener listener);
 
 
     /**
-     * 获取插件操作权?
-     * @return 插件操作鑰?
+     * 获取插件操作器
+     * @return 插件操作器
      */
     PluginOperator getPluginOperator();
 
     /**
-     * 获取插件操作权?
-     * @return 插件操作鑰?
+     * 获取插件用户能力
+     * @return 插件用户能力
      */
     PluginUser getPluginUser();
 }

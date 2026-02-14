@@ -17,17 +17,17 @@
 package com.zqzqq.bootkits.spring;
 
 /**
- * 浠ｇ悊宸ュ巶
+ * 代理工厂
  * @author starBlues
  * @version 3.0.0
  */
 public interface ProxyFactory {
 
     /**
-     * 获取浠ｇ悊类
-     * @param interfacesClass 闇浠ｇ悊鐨勬帴可
-     * @param <T> 浠ｇ悊实现鐨勬硾鍨?
-     * @return 浠ｇ悊实现
+     * 获取代理类
+     * @param interfacesClass 需要代理的接口
+     * @param <T> 代理实现的泛型
+     * @return 代理实现
      */
     <T> T getObject(Class<T> interfacesClass);
 

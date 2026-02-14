@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -1166,7 +1167,7 @@ public class DefaultScriptBatchManager implements ScriptBatchManager, AutoClosea
                 Path path = Paths.get(update.getScriptPath());
                 
                 // 写入新内容
-                Files.write(path, update.getNewContent().getBytes());
+                Files.write(path, update.getNewContent().getBytes(StandardCharsets.UTF_8));
                 
                 ScriptExecutionResult result = ScriptExecutionResult.success(0,
                     Arrays.asList("更新成功: " + update.getScriptPath()),

@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.loader.launcher;
 import com.zqzqq.bootkits.loader.jar.JarFile;
 
 /**
- * 涓荤▼搴忕敓浜х幆澧冨惎鍔ㄥ紩瀵煎櫒
+ * 主程序生产环境启动引导器
  *
  * @author starBlues
  * @since 3.0.0

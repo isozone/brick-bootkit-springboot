@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * 澶栭儴 PluginWrapperFace
+ * 外部 PluginWrapperFace
  *
  * @author starBlues
  * @since 3.0.0
@@ -43,7 +43,7 @@ public class PluginInfoFace implements PluginInfo {
     private final long stopTime;
 
     public PluginInfoFace(PluginInsideInfo pluginInsideInfo) {
-        Assert.isNotNull(pluginInsideInfo, "参数 pluginInsideInfo 不能涓虹┖");
+        Assert.isNotNull(pluginInsideInfo, "参数 pluginInsideInfo 不能为空");
         this.pluginDescriptor = pluginInsideInfo.getPluginDescriptor().toPluginDescriptor();
         this.pluginState = pluginInsideInfo.getPluginState();
         this.followSystem = pluginInsideInfo.isFollowSystem();

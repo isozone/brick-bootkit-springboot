@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -403,10 +404,10 @@ public class DefaultScriptPerformanceMonitor implements ScriptPerformanceMonitor
         
         // 设置输出大小
         if (result.getStdout() != null) {
-            metrics.setOutputSizeBytes(String.join("\n", result.getStdout()).getBytes().length);
+            metrics.setOutputSizeBytes(String.join("\n", result.getStdout()).getBytes(StandardCharsets.UTF_8).length);
         }
         if (result.getStderr() != null) {
-            metrics.setErrorOutputSizeBytes(String.join("\n", result.getStderr()).getBytes().length);
+            metrics.setErrorOutputSizeBytes(String.join("\n", result.getStderr()).getBytes(StandardCharsets.UTF_8).length);
         }
         
         // 从元数据中获取其他指标

@@ -365,9 +365,10 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                     String line;
                     while (running && (line = stdoutReader.readLine()) != null) {
                         synchronized (stdout) {
-                            if (currentSize[0] + line.getBytes().length <= maxOutputSize) {
+                            int lineBytes = line.getBytes(configuration.getEncoding()).length;
+                            if (currentSize[0] + lineBytes <= maxOutputSize) {
                                 stdout.add(line);
-                                currentSize[0] += line.getBytes().length;
+                                currentSize[0] += lineBytes;
                             } else {
                                 stdout.add("... [输出被截断，超出最大大小限制]");
                                 break;
@@ -387,9 +388,10 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                     String line;
                     while (running && (line = stderrReader.readLine()) != null) {
                         synchronized (stderr) {
-                            if (currentSize[0] + line.getBytes().length <= maxOutputSize) {
+                            int lineBytes = line.getBytes(configuration.getEncoding()).length;
+                            if (currentSize[0] + lineBytes <= maxOutputSize) {
                                 stderr.add(line);
-                                currentSize[0] += line.getBytes().length;
+                                currentSize[0] += lineBytes;
                             } else {
                                 stderr.add("... [错误输出被截断，超出最大大小限制]");
                                 break;

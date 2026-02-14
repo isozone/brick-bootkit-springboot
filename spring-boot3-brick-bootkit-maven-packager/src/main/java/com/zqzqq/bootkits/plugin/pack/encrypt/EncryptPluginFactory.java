@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 加密插件宸ュ巶
+ * 加密插件工厂
  *
  * @author starBlues
  * @since 3.0.1

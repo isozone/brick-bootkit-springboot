@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 /**
- * 鍙紦瀛樼殑资源
+ * 可缓存的资源
  *
  * @author starBlues
  * @since 3.1.1
@@ -65,8 +65,10 @@ public class CacheResource extends DefaultResource {
 
     @Override
     public void release() {
-        Arrays.fill(bytes, (byte) 0);
-        bytes = null;
+        if (bytes != null) {
+            Arrays.fill(bytes, (byte) 0);
+            bytes = null;
+        }
     }
 }
 

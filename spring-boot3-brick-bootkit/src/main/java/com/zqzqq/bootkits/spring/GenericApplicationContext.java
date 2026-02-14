@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.spring;
 import com.zqzqq.bootkits.utils.Assert;
 
 /**
- * 閸╃儤婀伴惃鍑檖plicationContext
+ * GenericApplicationContext
  * @author starBlues
  * @version 3.0.0
  */
@@ -39,7 +39,7 @@ public class GenericApplicationContext implements ApplicationContext{
     }
 
     public void setSpringBeanFactory(SpringBeanFactory springBeanFactory){
-        this.springBeanFactory = Assert.isNotNull(springBeanFactory, "参数 springBeanFactory 不能涓虹┖");
+        this.springBeanFactory = Assert.isNotNull(springBeanFactory, "参数 springBeanFactory 不能为空");
     }
 
     public void setSourcesBeanFactory(Object sourcesBeanFactory) {

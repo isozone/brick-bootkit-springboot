@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -419,16 +420,18 @@ public class DefaultScriptManager implements ScriptManager {
      */
     private void loadArrayProperty(java.util.Properties props, String baseKey) {
         // 首先尝试加载索引数组格式 (script.paths[0], script.paths[1], etc.)
+        boolean hasIndexedPath = false;
         for (int i = 0; i < 10; i++) { // 限制最大索引
             String key = baseKey + "[" + i + "]";
             String value = props.getProperty(key);
             if (value != null && !value.trim().isEmpty()) {
+                hasIndexedPath = true;
                 addScriptPath(value.trim());
             }
         }
         
         // 如果没有索引数组，尝试加载逗号分隔格式
-        if (!scriptPaths.isEmpty()) {
+        if (!hasIndexedPath) {
             String commaSeparated = props.getProperty(baseKey);
             if (commaSeparated != null) {
                 String[] paths = commaSeparated.split(",");
@@ -500,7 +503,7 @@ public class DefaultScriptManager implements ScriptManager {
             File tempFile = File.createTempFile(prefix, suffix);
             
             // 写入内容
-            java.nio.file.Files.write(tempFile.toPath(), content.getBytes("UTF-8"));
+            java.nio.file.Files.write(tempFile.toPath(), content.getBytes(StandardCharsets.UTF_8));
             
             // 设置执行权限（Unix系统）
             if (!OperatingSystem.isWindows()) {
@@ -527,10 +530,10 @@ public class DefaultScriptManager implements ScriptManager {
                 try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(file, "r")) {
                     byte[] buffer = new byte[maxLength];
                     raf.read(buffer);
-                    return new String(buffer, "UTF-8");
+                    return new String(buffer, StandardCharsets.UTF_8);
                 }
             } else {
-                return new String(java.nio.file.Files.readAllBytes(file.toPath()), "UTF-8");
+                return new String(java.nio.file.Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
             }
         } catch (Exception e) {
             log.warn("Failed to read file header: {}", file.getName(), e);

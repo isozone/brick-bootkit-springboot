@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * LRU MultiMap List 缓存实现銆俵ist 集合中殑元素统一过期
+ * LRU MultiMap List 缓存实现，list 集合中的元素统一过期
  *
  * @author starBlues
  * @since 3.1.1

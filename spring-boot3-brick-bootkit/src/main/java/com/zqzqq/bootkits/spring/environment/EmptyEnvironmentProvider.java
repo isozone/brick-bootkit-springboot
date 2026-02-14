@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.spring.environment;
 import java.util.function.BiConsumer;
 
 /**
- * 绌虹殑配置信息提供者鑰?
+ * 空的配置信息提供者
  *
  * @author starBlues
  * @version 3.0.3

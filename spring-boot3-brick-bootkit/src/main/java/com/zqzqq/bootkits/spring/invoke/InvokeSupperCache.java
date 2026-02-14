@@ -18,36 +18,36 @@ package com.zqzqq.bootkits.spring.invoke;
 
 
 /**
- * 插件调用提供者鑰呯紦瀛?
+ * 插件调用提供者缓存
  * @author starBlues
  * @version 3.0.0
  */
 public interface InvokeSupperCache {
 
     /**
-     * 获取提供者鑰卋ean
+     * 获取提供者 Bean
      * @param pluginId 插件id
-     * @param supperKey 提供者鑰卥ey
+     * @param supperKey 提供者 Key
      * @return Object
      */
     Object getSupperBean(String pluginId, String supperKey);
 
     /**
-     * 获取提供者鑰卋ean
-     * @param supperKey 提供者鑰卥ey
+     * 获取提供者 Bean
+     * @param supperKey 提供者 Key
      * @return Object
      */
     Object getSupperBean(String supperKey);
 
     /**
-     * 添加提供者鑰?
+     * 添加提供者
      * @param pluginId 插件id
-     * @param cache 提供者鑰呯紦瀛?
+     * @param cache 提供者缓存
      */
     void add(String pluginId, SupperCache cache);
 
     /**
-     * 移除插件提供者鑰?
+     * 移除插件提供者
      * @param pluginId 插件id
      */
     void remove(String pluginId);

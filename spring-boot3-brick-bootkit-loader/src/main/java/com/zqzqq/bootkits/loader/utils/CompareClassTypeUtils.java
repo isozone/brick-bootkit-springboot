@@ -17,7 +17,7 @@
 package com.zqzqq.bootkits.loader.utils;
 
 /**
- * 比较涓や釜类鍨?
+ * 比较两个类类型
  *
  * @author starBlues
  * @since 3.0.0

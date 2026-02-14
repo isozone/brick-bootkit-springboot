@@ -113,10 +113,10 @@ public class SpringPluginHookWrapper implements SpringPluginHook {
             log.error("移除插件资源存储异常: {}", e.getMessage(), e);
         }
         
-        // 5. 寤鸿JVM杩涜鍨冨溇鍥炴敹
+        // 5. 建议 JVM 进行垃圾回收
         try {
             System.gc();
-            log.debug("插件[{}]关闭瀹屾垚", pluginId);
+            log.debug("插件[{}]关闭完成", pluginId);
         } catch (Exception e) {
             log.error("插件关闭后内存回收异常 {}", e.getMessage(), e);
         }

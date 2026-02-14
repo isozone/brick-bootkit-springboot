@@ -30,12 +30,12 @@ import java.util.Properties;
 public interface PluginDescriptorDecrypt {
 
     /**
-     * 瑙ｅ瘑 properties
+     * 解密 properties
      *
      * @param pluginId 插件id
      * @param properties properties
-     * @return 瑙ｅ瘑鍚庣殑 Properties
-     * @throws PluginDecryptException 插件瑙ｅ瘑异常
+     * @return 解密后的 Properties
+     * @throws PluginDecryptException 插件解密异常
      */
     Properties decrypt(String pluginId, Properties properties) throws PluginDecryptException;
 

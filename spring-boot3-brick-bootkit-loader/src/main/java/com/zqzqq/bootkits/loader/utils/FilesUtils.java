@@ -80,8 +80,11 @@ public class FilesUtils {
     public static File createFile(String path) throws IOException {
         try {
             File file = new File(path);
+            if(file.exists()){
+                return file;
+            }
             File parentFile = file.getParentFile();
-            if(!parentFile.exists()){
+            if(parentFile != null && !parentFile.exists()){
                 if(!parentFile.mkdirs()){
                     throw new IOException("Create " + parentFile + " dir error");
                 }
@@ -91,7 +94,7 @@ public class FilesUtils {
             }
             throw new IOException("Create " + path + " file error");
         } catch (Exception e){
-            throw new IOException("Create " + path + " file error");
+            throw new IOException("Create " + path + " file error", e);
         }
     }
 
@@ -116,7 +119,7 @@ public class FilesUtils {
     /**
      * 是否是相对路径
      * @param path 路径
-     * @return true 涓虹浉瀵硅矾寰?false 涓洪潪鐩稿路径
+     * @return true 为相对路径 false 为非相对路径
      */
     public static boolean isRelativePath(String path){
         if(ObjectUtils.isEmpty(path)){

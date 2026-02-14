@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 主程序搴廽ar in jar 妯″紡鍚姩鍣?
+ * 主程序 Jar-in-Jar 共存模式启动器
  *
  * @author starBlues
  * @since 3.0.2

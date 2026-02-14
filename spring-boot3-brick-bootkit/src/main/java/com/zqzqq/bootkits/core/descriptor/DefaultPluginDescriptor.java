@@ -64,7 +64,7 @@ public class DefaultPluginDescriptor implements PluginDescriptor {
         this.pluginId = Assert.isNotEmpty(pluginId, PLUGIN_ID + "不能为空");
         this.pluginVersion = Assert.isNotEmpty(pluginVersion, PLUGIN_VERSION + "不能为空");
         this.pluginBootstrapClass = Assert.isNotEmpty(pluginClass, PLUGIN_BOOTSTRAP_CLASS + "不能为空");
-        this.pluginPath = Assert.isNotNull(pluginPath, "插件璺緞[pluginPath]不能为空");
+        this.pluginPath = Assert.isNotNull(pluginPath, "插件路径[pluginPath]不能为空");
         check();
     }
 

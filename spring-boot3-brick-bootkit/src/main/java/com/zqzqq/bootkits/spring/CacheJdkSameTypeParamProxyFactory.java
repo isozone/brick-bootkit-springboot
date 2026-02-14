@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 鍙紦瀛樼殑浠ｇ悊宸ュ巶
+ * 可缓存的代理工厂
  * @author starBlues
  * @version 3.0.0
  */
@@ -39,14 +39,15 @@ public class CacheJdkSameTypeParamProxyFactory extends JdkSameTypeParamProxyFact
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Method targetMethod = methodCache.get(method);
         if(targetMethod == null){
-            Class<?>[] paramTypes = null;
-            if(args != null){
-                paramTypes = new Class[args.length];
-                for (int i = 0; i < args.length; i++) {
-                    paramTypes[i] = args[i].getClass();
-                }
-            }
+            Class<?>[] paramTypes = method.getParameterTypes();
             targetMethod = ReflectionUtils.findMethod(target.getClass(), method.getName(), paramTypes);
+            if(targetMethod == null && args != null){
+                Class<?>[] runtimeParamTypes = new Class[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    runtimeParamTypes[i] = args[i] == null ? paramTypes[i] : args[i].getClass();
+                }
+                targetMethod = ReflectionUtils.findMethod(target.getClass(), method.getName(), runtimeParamTypes);
+            }
             if(targetMethod != null){
                 methodCache.put(method, targetMethod);
             } else {

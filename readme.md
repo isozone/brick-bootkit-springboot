@@ -1070,14 +1070,26 @@ com.zqzqq.bootkits.*
 > 
 
 ### 版本号更新脚本
-Windows 下使用 update-4.0.5.bat，同步更新项目所有模块的版本号：
+
+项目提供跨平台版本更新脚本，会同步更新各模块 `pom.xml` 及相关文件中的版本号。
+
+Windows：
 
 ```bash
-update-4.0.5.bat 4.1.0
+update-version.bat 4.1.0
 ```
 
-执行位置建议为项目根目录，脚本会自动探测 Git 根目录并更新相关 pom.xml。
+Linux / macOS：
 
+```bash
+./update-version.sh 4.1.0
+```
+
+参数规则：
+- 仅接受一个版本参数。
+- 支持格式：`x.y.z` 或 `x.y.z-suffix`（例如：`4.0.1-beta`）。
+
+建议在项目任意子目录执行，脚本会自动探测 Git 根目录，并在执行前生成 `pom.xml.backup.*` 备份文件。
 
 ## ❓ 常见问题 (FAQ)
 

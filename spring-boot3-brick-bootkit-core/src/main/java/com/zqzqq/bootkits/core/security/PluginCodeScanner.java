@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -118,7 +119,7 @@ public class PluginCodeScanner {
      */
     private void scanClassFile(byte[] classBytes, String className, PluginCodeScanResult result) {
         try {
-            String classContent = new String(classBytes);
+            String classContent = new String(classBytes, StandardCharsets.ISO_8859_1);
             
             // 检查危险模式
             for (String pattern : dangerousPatterns) {

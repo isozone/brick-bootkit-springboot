@@ -20,12 +20,11 @@ import com.zqzqq.bootkits.spring.ApplicationContext;
 import com.zqzqq.bootkits.spring.SpringBeanFactory;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 榛樿鐨?InvokeSupperCache
+ * 默认的 InvokeSupperCache
  * @author starBlues
  * @version 3.0.0
  */
@@ -58,7 +57,7 @@ public class DefaultInvokeSupperCache implements InvokeSupperCache{
 
     @Override
     public void add(String pluginId, SupperCache cache){
-        Map<String, SupperCache> supperCache = invokeSupplierCache.computeIfAbsent(pluginId, k -> new HashMap<>());
+        Map<String, SupperCache> supperCache = invokeSupplierCache.computeIfAbsent(pluginId, k -> new ConcurrentHashMap<>());
         supperCache.put(cache.getSupperKey(), cache);
     }
 

@@ -45,6 +45,10 @@ public class DevPathResolve implements PathResolve{
     protected void addCompilePackageName(){
         // 添加插件信息查询目标目录
         devCompilePackageNames.add("target".concat(File.separator).concat(PackageStructure.META_INF_NAME));
+        devCompilePackageNames.add("target".concat(File.separator)
+                .concat(PackageStructure.CLASSES_NAME)
+                .concat(File.separator)
+                .concat(PackageStructure.META_INF_NAME));
     }
 
     @Override
@@ -54,12 +58,12 @@ public class DevPathResolve implements PathResolve{
             return path;
         }
 
-        // 检查是否符合旧的target/META-INF结构
+        // 检查是否符合 target/META-INF 或 target/classes/META-INF 结构
         for (String devCompilePackageName : devCompilePackageNames) {
             String compilePackagePathStr = path.toString() + File.separator + devCompilePackageName;
             Path compilePackagePath = Paths.get(compilePackagePathStr);
             if(Files.exists(compilePackagePath)){
-                // 返回 target 目录，让 DevPluginDescriptorLoader 从 target/META-INF/PLUGIN.META 加载
+                // 返回项目目录，让 DevPluginDescriptorLoader 从标准开发目录加载 PLUGIN.META
                 return path;
             }
         }

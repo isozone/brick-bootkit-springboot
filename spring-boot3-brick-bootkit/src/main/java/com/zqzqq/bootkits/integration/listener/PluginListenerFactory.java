@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.integration.listener;
 import java.util.List;
 
 /**
- * 插件监听宸ュ巶
+ * 插件监听工厂
  *
  * @author starBlues
  * @version 3.0.0
