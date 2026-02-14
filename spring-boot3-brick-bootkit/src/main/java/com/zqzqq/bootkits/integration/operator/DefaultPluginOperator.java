@@ -17,12 +17,9 @@
 package com.zqzqq.bootkits.integration.operator;
 
 import com.zqzqq.bootkits.core.PluginInfo;
-import com.zqzqq.bootkits.core.PluginInsideInfo;
 import com.zqzqq.bootkits.core.PluginLauncherManager;
 import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.RealizeProvider;
-import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
-import com.zqzqq.bootkits.core.descriptor.PluginType;
 import com.zqzqq.bootkits.core.exception.PluginDisabledException;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
