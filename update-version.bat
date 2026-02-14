@@ -1,127 +1,144 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul
-set "POWERSHELL=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+set "POWERSHELL=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 set "SCRIPT_DIR=%~dp0"
 set "PROJECT_ROOT="
+
 for /f "delims=" %%i in ('git rev-parse --show-toplevel 2^>nul') do set "PROJECT_ROOT=%%i"
+if defined PROJECT_ROOT set "PROJECT_ROOT=%PROJECT_ROOT:/=\%"
+
 if not defined PROJECT_ROOT (
     if exist "%SCRIPT_DIR%pom.xml" (
         set "PROJECT_ROOT=%SCRIPT_DIR%"
     ) else (
-        set "PROJECT_ROOT=%cd%"
+        set "PROJECT_ROOT=%CD%"
     )
 )
 
-if "%~1"=="" (
-    echo 错误: 请提供新版本号
-    echo 用法: %~nx0 ^<new-version^>
-    echo 示例: %~nx0 4.1.0
-    exit /b 1
-)
-
+if "%~1"=="" goto :Usage
+if not "%~2"=="" goto :Usage
 set "NEW_VERSION=%~1"
-set "VERSION_OK="
-echo %NEW_VERSION%| findstr /r "^^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" >nul && set "VERSION_OK=1"
-if not defined VERSION_OK (
-    echo %NEW_VERSION%| findstr /r "^^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*-[A-Za-z0-9][A-Za-z0-9]*$" >nul && set "VERSION_OK=1"
-)
-if not defined VERSION_OK (
-    echo 错误: 版本号格式不正确
-    echo 示例格式: 4.0.0, 4.1.0, 4.0.1-beta
+
+call :ValidateVersion "%NEW_VERSION%"
+if errorlevel 1 (
+    echo Error: invalid version format.
+    echo Example: 4.0.0, 4.1.0, 4.0.1-beta
     exit /b 1
 )
 
-cd /d "%PROJECT_ROOT%"
+pushd "%PROJECT_ROOT%" 2>nul
+if errorlevel 1 (
+    if exist "%SCRIPT_DIR%pom.xml" (
+        set "PROJECT_ROOT=%SCRIPT_DIR%"
+    ) else (
+        set "PROJECT_ROOT=%CD%"
+    )
+    pushd "%PROJECT_ROOT%" 2>nul
+    if errorlevel 1 (
+        echo Error: failed to switch to project root: %PROJECT_ROOT%
+        exit /b 1
+    )
+)
 
-echo === Brick BootKit SpringBoot 版本号更新工具 ===
-echo 新版本号: %NEW_VERSION%
-echo 项目根目录: %PROJECT_ROOT%
+echo === Brick BootKit SpringBoot Version Update Tool ===
+echo New version: %NEW_VERSION%
+echo Project root: %PROJECT_ROOT%
 echo.
 
 git rev-parse --is-inside-work-tree >nul 2>nul
 if errorlevel 1 (
-    echo 警告: 当前目录不是git仓库
+    echo Warning: current directory is not a git repository.
 )
 
 call :GetFirstVersion "pom.xml" CURRENT_VERSION
-echo === 当前版本信息 ===
-echo 当前版本: %CURRENT_VERSION%
+if not defined CURRENT_VERSION (
+    echo Error: failed to read current version from pom.xml
+    popd >nul 2>nul
+    exit /b 1
+)
+
+echo === Current Version ===
+echo Current version: %CURRENT_VERSION%
 echo.
 
-for /f "delims=" %%i in ('"%POWERSHELL%" -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "TS=%%i"
-echo 正在备份pom.xml文件...
+for /f "delims=" %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "TS=%%i"
+if not defined TS set "TS=backup"
+
+echo Backing up pom files...
 copy /y "pom.xml" "pom.xml.backup.%TS%" >nul
 if exist "spring-boot3-brick-bootkit-core\pom.xml" (
     copy /y "spring-boot3-brick-bootkit-core\pom.xml" "spring-boot3-brick-bootkit-core\pom.xml.backup.%TS%" >nul
 )
-echo 备份完成
+echo Backup complete.
 echo.
 
-echo === 更新根目录pom.xml ===
+echo === Update Root pom.xml ===
 call :ReplaceInFile "pom.xml" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-if "%ERRORLEVEL%"=="0" (
-    echo 根目录pom.xml版本号已更新
+if !ERRORLEVEL! EQU 0 (
+    echo Root pom.xml version updated.
 ) else (
-    echo 在根目录pom.xml中未找到版本号 %CURRENT_VERSION%
+    echo Warning: version %CURRENT_VERSION% not found in root pom.xml
 )
 
-echo === 更新子模块版本号 ===
+echo === Update Module Versions ===
 if exist "spring-boot3-brick-bootkit\pom.xml" (
-    echo 正在更新特殊模块: spring-boot3-brick-bootkit
+    echo Updating module: spring-boot3-brick-bootkit
     call :ReplaceInFile "spring-boot3-brick-bootkit\pom.xml" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-    if "%ERRORLEVEL%"=="0" (
-        echo   [OK] 模块版本号已更新
+    if !ERRORLEVEL! EQU 0 (
+        echo   [OK] module version updated
     ) else (
-        echo   [WARN] 未找到模块版本号 %CURRENT_VERSION%
+        echo   [WARN] module version %CURRENT_VERSION% not found
     )
+
     findstr /c:"<artifactId>spring-boot3-brick-bootkit-parent</artifactId>" "spring-boot3-brick-bootkit\pom.xml" >nul
     if not errorlevel 1 (
         call :ReplaceInFile "spring-boot3-brick-bootkit\pom.xml" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-        if "%ERRORLEVEL%"=="0" (
-            echo   [OK] 父模块引用版本号已更新
+        if !ERRORLEVEL! EQU 0 (
+            echo   [OK] parent version updated
         ) else (
-            echo   [WARN] 未找到父模块引用版本号 %CURRENT_VERSION%
+            echo   [WARN] parent version %CURRENT_VERSION% not found
         )
     )
 )
 
 for /d %%D in (spring-boot3-brick-bootkit-*) do (
     if exist "%%D\pom.xml" (
-        echo 正在更新模块: %%D
+        echo Updating module: %%D
         call :ReplaceInFile "%%D\pom.xml" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-        if "!ERRORLEVEL!"=="0" (
-            echo   [OK] 版本号已更新
+        if !ERRORLEVEL! EQU 0 (
+            echo   [OK] module version updated
         ) else (
-            echo   [WARN] 未找到版本号 %CURRENT_VERSION%
+            echo   [WARN] module version %CURRENT_VERSION% not found
         )
+
         findstr /c:"<artifactId>spring-boot3-brick-bootkit-parent</artifactId>" "%%D\pom.xml" >nul
         if not errorlevel 1 (
             call :ReplaceInFile "%%D\pom.xml" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-            if "!ERRORLEVEL!"=="0" (
-                echo   [OK] 父模块版本号已更新
+            if !ERRORLEVEL! EQU 0 (
+                echo   [OK] parent version updated
             ) else (
-                echo   [WARN] 未找到父模块版本号 %CURRENT_VERSION%
+                echo   [WARN] parent version %CURRENT_VERSION% not found
             )
         )
     )
 )
 
-echo === 更新其他文件中的版本号 ===
+echo === Update Other Files ===
 if exist "README.md" (
     call :ReplaceInFile "README.md" "%CURRENT_VERSION%" "%NEW_VERSION%"
-    if "%ERRORLEVEL%"=="0" echo README.md 版本号已更新
+    if !ERRORLEVEL! EQU 0 echo README.md updated.
 )
 
 if exist "doc" (
     for %%F in (doc\*.md) do (
         call :ReplaceInFile "%%F" "%CURRENT_VERSION%" "%NEW_VERSION%"
-        if "!ERRORLEVEL!"=="0" echo %%F 版本号已更新
+        if !ERRORLEVEL! EQU 0 echo %%F updated.
     )
 )
 
-echo 正在更新Maven插件描述文件...
+echo Updating Maven plugin descriptor files...
 set "PLUGIN_FILE1=spring-boot3-brick-bootkit-maven-packager\src\main\resources\META-INF\maven\com.gitee.starblues.springboot-plugin-maven-packager\plugin-help.xml"
 set "PLUGIN_FILE2=spring-boot3-brick-bootkit-maven-packager\src\main\resources\META-INF\maven\plugin.xml"
 
@@ -129,12 +146,12 @@ call :UpdatePluginFile "%PLUGIN_FILE1%"
 call :UpdatePluginFile "%PLUGIN_FILE2%"
 
 echo.
-echo === 验证更新结果 ===
+echo === Verify Results ===
 call :GetFirstVersion "pom.xml" NEW_ROOT_VERSION
 if "%NEW_ROOT_VERSION%"=="%NEW_VERSION%" (
-    echo 根目录pom.xml: [OK] 版本号正确 (%NEW_VERSION%)
+    echo Root pom.xml: [OK] %NEW_VERSION%
 ) else (
-    echo 根目录pom.xml: [FAIL] 版本号不正确 ^(期望: %NEW_VERSION%, 实际: %NEW_ROOT_VERSION%^) 
+    echo Root pom.xml: [FAIL] expected %NEW_VERSION%, got %NEW_ROOT_VERSION%
 )
 
 if exist "spring-boot3-brick-bootkit\pom.xml" (
@@ -142,75 +159,83 @@ if exist "spring-boot3-brick-bootkit\pom.xml" (
     if "%SPRING_BOOT_KIT_VERSION%"=="%NEW_VERSION%" (
         echo   spring-boot3-brick-bootkit: [OK] %SPRING_BOOT_KIT_VERSION%
     ) else (
-        echo   spring-boot3-brick-bootkit: [FAIL] %SPRING_BOOT_KIT_VERSION% ^(期望: %NEW_VERSION%^) 
+        echo   spring-boot3-brick-bootkit: [FAIL] %SPRING_BOOT_KIT_VERSION%, expected %NEW_VERSION%
     )
 )
 
-echo 检查子模块版本号...
+echo Checking module versions...
 for /d %%D in (spring-boot3-brick-bootkit-*) do (
     if exist "%%D\pom.xml" (
         call :GetFirstVersion "%%D\pom.xml" MODULE_VERSION
         if "!MODULE_VERSION!"=="%NEW_VERSION%" (
             echo   %%D: [OK] !MODULE_VERSION!
         ) else (
-            echo   %%D: [FAIL] !MODULE_VERSION! ^(期望: %NEW_VERSION%^) 
+            echo   %%D: [FAIL] !MODULE_VERSION!, expected %NEW_VERSION%
         )
     )
 )
 
-echo 检查Maven插件描述文件版本号...
+echo Checking Maven plugin descriptor versions...
 call :CheckPluginFile "%PLUGIN_FILE1%"
 call :CheckPluginFile "%PLUGIN_FILE2%"
 
 echo.
-echo [OK] 版本号更新验证完成
+echo [OK] Version update verification completed.
 echo.
-echo === 后续操作提示 ===
-echo 版本号更新已完成，如需验证构建，请手动执行：
-echo   编译检查: mvn compile -o
-echo   完整构建: mvn clean compile -U
-echo   完整打包: mvn clean package
+echo === Next Steps ===
+echo Version update is done. Run one of the following manually:
+echo   Compile check: mvn compile -o
+echo   Full compile:  mvn clean compile -U
+echo   Full package:  mvn clean package
 
 git rev-parse --is-inside-work-tree >nul 2>nul
 if not errorlevel 1 (
     echo.
-    echo === Git 状态 ===
-    echo 检测到git仓库，已修改的文件:
+    echo === Git Status ===
     git status --short 2>nul
     echo.
-    echo 建议的后续操作:
-    echo   1. 检查所有修改: git diff
-echo   2. 提交变更: git add . ^&^& git commit -m "升级版本到 %NEW_VERSION%"
-    echo   3. 创建标签: git tag v%NEW_VERSION%
+    echo Suggested next commands:
+    echo   1. git diff
+    echo   2. git add . ^&^& git commit -m "Bump version to %NEW_VERSION%"
+    echo   3. git tag v%NEW_VERSION%
 )
 
 echo.
-echo 备份文件列表:
+echo Backup files:
 dir /b "pom.xml.backup.*" 2>nul
-echo 提示: 如需清理备份文件，请手动删除
+if errorlevel 1 echo   ^(none in repository root^)
+
 echo.
-echo === 版本号更新完成! ===
-echo 旧版本: %CURRENT_VERSION%
-echo 新版本: %NEW_VERSION%
-echo 请检查所有修改，然后提交到版本控制系统。
+echo === Version Update Complete ===
+echo Old version: %CURRENT_VERSION%
+echo New version: %NEW_VERSION%
+popd >nul 2>nul
 exit /b 0
+
+:Usage
+echo Error: missing version argument.
+echo Usage: %~nx0 ^<new-version^>
+echo Example: %~nx0 4.1.0
+exit /b 1
+
+:ValidateVersion
+set "VALUE=%~1"
+"%POWERSHELL%" -NoProfile -Command "$v='%VALUE%'; if ($v -match '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?$') { exit 0 } else { exit 1 }"
+exit /b %ERRORLEVEL%
 
 :ReplaceInFile
 set "FILE=%~1"
 set "OLD=%~2"
 set "NEW=%~3"
-"%POWERSHELL%" -NoProfile -Command "$path='%FILE%'; if (-not (Test-Path $path)) { exit 1 } $text=[IO.File]::ReadAllText($path); $pattern=[regex]::Escape('%OLD%'); $new='%NEW%'; $updated=[regex]::Replace($text,$pattern,$new); if ($updated -eq $text) { exit 2 } [IO.File]::WriteAllText($path,$updated)"
+"%POWERSHELL%" -NoProfile -Command "$path='%FILE%'; if (-not (Test-Path $path)) { exit 1 }; $text=[IO.File]::ReadAllText($path); $pattern=[regex]::Escape('%OLD%'); $updated=[regex]::Replace($text, $pattern, '%NEW%'); if ($updated -eq $text) { exit 2 }; [IO.File]::WriteAllText($path, $updated); exit 0"
 exit /b %ERRORLEVEL%
 
 :GetFirstVersion
 set "FILE=%~1"
 set "OUTVAR=%~2"
 set "VALUE="
-for /f "delims=" %%i in ('findstr /r /c:"<version>.*</version>" "%FILE%"') do (
-    set "LINE=%%i"
-    set "LINE=!LINE:*<version>=!"
-    set "LINE=!LINE:</version>=!"
-    set "VALUE=!LINE!"
+for /f "usebackq tokens=3 delims=<>" %%i in (`findstr /r /c:"<version>[^<][^<]*</version>" "%FILE%"`) do (
+    set "VALUE=%%i"
     goto :GetFirstVersionDone
 )
 :GetFirstVersionDone
@@ -221,13 +246,13 @@ exit /b 0
 set "PLUGIN_FILE=%~1"
 if exist "%PLUGIN_FILE%" (
     call :ReplaceInFile "%PLUGIN_FILE%" "<version>%CURRENT_VERSION%</version>" "<version>%NEW_VERSION%</version>"
-    if "%ERRORLEVEL%"=="0" (
-        echo   [OK] %PLUGIN_FILE% 版本号已更新
+    if !ERRORLEVEL! EQU 0 (
+        echo   [OK] %PLUGIN_FILE% updated
     ) else (
-        echo   [WARN] %PLUGIN_FILE% 中未找到版本号 %CURRENT_VERSION%
+        echo   [WARN] %PLUGIN_FILE% does not contain %CURRENT_VERSION%
     )
 ) else (
-    echo   [WARN] 文件不存在: %PLUGIN_FILE%
+    echo   [WARN] file not found: %PLUGIN_FILE%
 )
 exit /b 0
 
@@ -238,7 +263,7 @@ if exist "%PLUGIN_FILE%" (
     if "%PLUGIN_VERSION%"=="%NEW_VERSION%" (
         echo   %~nx1: [OK] %PLUGIN_VERSION%
     ) else (
-        echo   %~nx1: [FAIL] %PLUGIN_VERSION% ^(期望: %NEW_VERSION%^) 
+        echo   %~nx1: [FAIL] %PLUGIN_VERSION%, expected %NEW_VERSION%
     )
 )
 exit /b 0

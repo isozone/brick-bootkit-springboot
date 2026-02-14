@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-green.svg)](https://spring.io/projects/spring-boot)
 [![JDK](https://img.shields.io/badge/JDK-17+-orange.svg)](https://openjdk.org/)
-[![Version](https://img.shields.io/badge/version-4.0.4-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
+[![Version](https://img.shields.io/badge/4.0.5-4.0.5-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
 [![Java](https://img.shields.io/badge/Java-17-yellow.svg)](https://openjdk.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.6+-red.svg)](https://maven.apache.org/)
 
@@ -291,7 +291,7 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
 - `state`：状态管理
   - 插件状态定义
   - 状态转换管理
-- `version`：版本管理
+- `4.0.5`：版本管理
   - 版本号解析和比较
   - 版本兼容性检查
 - `dependency`：依赖管理
@@ -537,7 +537,7 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.4</version>
+            <4.0.5>4.0.5</4.0.5>
             <configuration>
                 <mode>plugin</mode>
                 <pluginConfig>
@@ -593,7 +593,7 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
 <dependency>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-    <version>4.0.4</version>
+    <4.0.5>4.0.5</4.0.5>
 </dependency>
 ```
 
@@ -665,7 +665,7 @@ package com.example.plugin.service.impl;
 
 @PluginService(
     interfaceClass = UserService.class,
-    version = "1.0.0",
+    4.0.5 = "1.0.0",
     name = "user-service",
     priority = 100
 )
@@ -691,7 +691,7 @@ package com.example.consumer.plugin;
 @ServiceDependency(
     pluginId = "user-plugin",
     serviceInterface = UserService.class,
-    versionRange = "[1.0,2.0)"
+    4.0.5Range = "[1.0,2.0)"
 )
 public class UserConsumer {
     
@@ -725,7 +725,7 @@ public void registerUserService() {
         UserService.class,               // service interface
         userService,                      // service instance
         ServiceMetadata.builder()
-            .version("1.0.0")
+            .4.0.5("1.0.0")
             .priority(100)
             .healthCheckEnabled(true)
             .build()
@@ -811,7 +811,7 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
 | `registerService(pluginId, interface, instance, metadata)` | 注册服务 |
 | `getService(pluginId, interface)` | 获取服务 |
 | `getServices(interface)` | 获取所有实现 |
-| `getServicesByVersion(interface, versionRange)` | 按版本获取 |
+| `getServicesByVersion(interface, 4.0.5Range)` | 按版本获取 |
 | `checkDependencies(pluginId)` | 检查依赖 |
 | `subscribe(interface, listener)` | 订阅变化 |
 | `unregisterService(pluginId, interface)` | 注销服务 |
@@ -836,14 +836,14 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit</artifactId>
-        <version>4.0.4</version>
+        <4.0.5>4.0.5</4.0.5>
     </dependency>
     
     <!-- Web 管理控制台（可选） -->
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-        <version>4.0.4</version>
+        <4.0.5>4.0.5</4.0.5>
     </dependency>
 </dependencies>
 ```
@@ -889,7 +889,7 @@ plugin:
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-        <version>4.0.4</version>
+        <4.0.5>4.0.5</4.0.5>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -903,7 +903,7 @@ plugin:
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.4</version>
+            <4.0.5>4.0.5</4.0.5>
             <configuration>
                 <mode>plugin</mode>
                 <pluginConfig>
@@ -1015,7 +1015,7 @@ plugins:
 ```yaml
 plugin:
   id: my-plugin
-  version: 1.0.0
+  4.0.5: 1.0.0
   name: My Plugin
   description: This is my first plugin
   author: Your Name
@@ -1031,7 +1031,7 @@ plugin:
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
-<version>4.0.4</version>
+<4.0.5>4.0.5</4.0.5>
 </dependency>
 
 ```
@@ -1042,7 +1042,7 @@ plugin:
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-<version>4.0.4</version>
+<4.0.5>4.0.5</4.0.5>
 </dependency>
 
 ```
@@ -1053,7 +1053,7 @@ plugin:
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-<version>4.0.4</version>
+<4.0.5>4.0.5</4.0.5>
 <scope>provided</scope>
 </dependency>
 
@@ -1070,10 +1070,10 @@ com.zqzqq.bootkits.*
 > 
 
 ### 版本号更新脚本
-Windows 下使用 update-version.bat，同步更新项目所有模块的版本号：
+Windows 下使用 update-4.0.5.bat，同步更新项目所有模块的版本号：
 
 ```bash
-update-version.bat 4.1.0
+update-4.0.5.bat 4.1.0
 ```
 
 执行位置建议为项目根目录，脚本会自动探测 Git 根目录并更新相关 pom.xml。
@@ -1204,7 +1204,7 @@ logging:
 5. 开启 Pull Request
 
 ### 更新
-- [4.0.4](./doc/updates/4.0.4.md) - 最新版本
+- [4.0.5](./doc/updates/4.0.5.md) - 最新版本
 - [4.0.1](./doc/updates/4.0.1.md)
 
 

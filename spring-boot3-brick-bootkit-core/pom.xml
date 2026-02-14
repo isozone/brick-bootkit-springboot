@@ -13,7 +13,7 @@
     <parent>
         <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
         <groupId>com.zqzqq</groupId>
-        <version>4.0.4</version>
+        <version>4.0.5</version>
     </parent>
 
     <artifactId>spring-boot3-brick-bootkit-core</artifactId>
