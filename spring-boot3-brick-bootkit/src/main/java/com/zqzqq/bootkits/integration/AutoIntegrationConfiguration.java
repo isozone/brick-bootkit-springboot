@@ -22,7 +22,6 @@ import com.zqzqq.bootkits.utils.ResourceUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +45,6 @@ import java.util.Set;
 public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguration{
 
     public static final String ENABLE_KEY = "plugin.enable";
-    public static final String ENABLE_STARTER_KEY = "plugin.enableStarter";
 
     /**
      * 是否启用插件功能

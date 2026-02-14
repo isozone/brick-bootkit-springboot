@@ -15,13 +15,6 @@
       "defaultValue": true
     },
     {
-      "name": "plugin.enableStarter",
-      "type": "java.lang.Boolean",
-      "sourceType": "com.zqzqq.bootkits.integration.AutoIntegrationConfiguration",
-      "description": "是否启用starter自动装配功能",
-      "defaultValue": true
-    },
-    {
       "name": "plugin.runMode",
       "type": "java.lang.String",
       "sourceType": "com.zqzqq.bootkits.integration.AutoIntegrationConfiguration",

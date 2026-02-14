@@ -74,7 +74,7 @@ public class ConfigurePluginEnvironment {
         if(!ObjectUtils.isEmpty(configFileLocation)){
             env.put(SPRING_CONFIG_LOCATION, getConfigFileLocation(configFileLocation));
         }
-        env.put(AutoIntegrationConfiguration.ENABLE_STARTER_KEY, false);
+        env.put(AutoIntegrationConfiguration.ENABLE_KEY, false);
         env.put(SPRING_JMX_UNIQUE_NAMES, true);
         // 直接禁用插件spring-admin mbean
         env.put(SPRING_ADMIM_ENABLED, false);
@@ -85,7 +85,7 @@ public class ConfigurePluginEnvironment {
         // LiveBeansView removed in Spring Boot 3.x
         // JMX monitoring can be configured via other means if needed
         if(DevelopmentModeSetting.coexist()){
-            env.put(AutoIntegrationConfiguration.ENABLE_STARTER_KEY, false);
+            env.put(AutoIntegrationConfiguration.ENABLE_KEY, false);
         }
         configProfiles(environment);
         environment.getPropertySources().addFirst(new MapPropertySource(PLUGIN_PROPERTY_NAME, env));

@@ -1069,6 +1069,15 @@ com.zqzqq.bootkits.*
 > 
 > 
 
+### 版本号更新脚本
+Windows 下使用 update-version.bat，同步更新项目所有模块的版本号：
+
+```bash
+update-version.bat 4.1.0
+```
+
+执行位置建议为项目根目录，脚本会自动探测 Git 根目录并更新相关 pom.xml。
+
 
 ## ❓ 常见问题 (FAQ)
 

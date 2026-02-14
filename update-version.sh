@@ -29,6 +29,16 @@ detect_project_root() {
     fi
 }
 
+sed_in_place() {
+    local expression="$1"
+    local file="$2"
+    if sed --version > /dev/null 2>&1; then
+        sed -i "$expression" "$file"
+    else
+        sed -i '' "$expression" "$file"
+    fi
+}
+
 PROJECT_ROOT="$(detect_project_root)"
 
 # 检查参数
@@ -77,7 +87,7 @@ echo
 # 更新根目录pom.xml中的parent版本号
 echo -e "${BLUE}=== 更新根目录pom.xml ===${NC}"
 if grep -q "<version>$CURRENT_VERSION</version>" pom.xml; then
-    sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" pom.xml
+    sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" pom.xml
     echo -e "${GREEN}根目录pom.xml版本号已更新${NC}"
 else
     echo -e "${YELLOW}在根目录pom.xml中未找到版本号 $CURRENT_VERSION${NC}"
@@ -92,7 +102,7 @@ if [ -f "spring-boot3-brick-bootkit/pom.xml" ]; then
     
     # 更新模块中的version标签
     if grep -q "<version>$CURRENT_VERSION</version>" spring-boot3-brick-bootkit/pom.xml; then
-        sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" spring-boot3-brick-bootkit/pom.xml
+        sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" spring-boot3-brick-bootkit/pom.xml
         echo -e "  ${GREEN}✓ 模块版本号已更新${NC}"
     else
         echo -e "  ${YELLOW}⚠ 未找到模块版本号 $CURRENT_VERSION${NC}"
@@ -101,7 +111,7 @@ if [ -f "spring-boot3-brick-bootkit/pom.xml" ]; then
     # 更新parent引用版本号
     if grep -q "<artifactId>spring-boot3-brick-bootkit-parent</artifactId>" spring-boot3-brick-bootkit/pom.xml; then
         if grep -q "<version>$CURRENT_VERSION</version>" spring-boot3-brick-bootkit/pom.xml; then
-            sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" spring-boot3-brick-bootkit/pom.xml
+            sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" spring-boot3-brick-bootkit/pom.xml
             echo -e "  ${GREEN}✓ 父模块引用版本号已更新${NC}"
         else
             echo -e "  ${YELLOW}⚠ 未找到父模块引用版本号 $CURRENT_VERSION${NC}"
@@ -115,7 +125,7 @@ for module_dir in spring-boot3-brick-bootkit-*/; do
         
         # 更新模块中的version标签
         if grep -q "<version>$CURRENT_VERSION</version>" "$module_dir/pom.xml"; then
-            sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$module_dir/pom.xml"
+            sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$module_dir/pom.xml"
             echo -e "  ${GREEN}✓ 版本号已更新${NC}"
         else
             echo -e "  ${YELLOW}⚠ 未找到版本号 $CURRENT_VERSION${NC}"
@@ -124,7 +134,7 @@ for module_dir in spring-boot3-brick-bootkit-*/; do
         # 检查并更新parent版本号（如果引用了父模块）
         if grep -q "<artifactId>spring-boot3-brick-bootkit-parent</artifactId>" "$module_dir/pom.xml"; then
             if grep -q "<version>$CURRENT_VERSION</version>" "$module_dir/pom.xml"; then
-                sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$module_dir/pom.xml"
+                sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$module_dir/pom.xml"
                 echo -e "  ${GREEN}✓ 父模块版本号已更新${NC}"
             else
                 echo -e "  ${YELLOW}⚠ 未找到父模块版本号 $CURRENT_VERSION${NC}"
@@ -139,7 +149,7 @@ echo -e "${BLUE}=== 更新其他文件中的版本号 ===${NC}"
 # 更新README.md中的版本号（如果存在）
 if [ -f "README.md" ]; then
     if grep -q "$CURRENT_VERSION" README.md; then
-        sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/g" README.md
+        sed_in_place "s/$CURRENT_VERSION/$NEW_VERSION/g" README.md
         echo -e "${GREEN}README.md版本号已更新${NC}"
     fi
 fi
@@ -148,7 +158,7 @@ fi
 if [ -d "doc" ]; then
     for doc_file in doc/*.md; do
         if [ -f "$doc_file" ] && grep -q "$CURRENT_VERSION" "$doc_file"; then
-            sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/g" "$doc_file"
+            sed_in_place "s/$CURRENT_VERSION/$NEW_VERSION/g" "$doc_file"
             echo -e "${GREEN}$doc_file 版本号已更新${NC}"
         fi
     done
@@ -168,7 +178,7 @@ for plugin_file in "${MAVEN_PLUGIN_FILES[@]}"; do
         # 使用XML特定的替换，避免影响其他版本号格式
         # 更新 <version> 标签中的版本号
         if grep -q "<version>$CURRENT_VERSION</version>" "$plugin_file"; then
-            sed -i '' "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$plugin_file"
+            sed_in_place "s/<version>$CURRENT_VERSION<\/version>/<version>$NEW_VERSION<\/version>/g" "$plugin_file"
             echo -e "  ${GREEN}✓ $plugin_file 版本号已更新${NC}"
         else
             echo -e "  ${YELLOW}⚠ $plugin_file 中未找到版本号 $CURRENT_VERSION${NC}"
