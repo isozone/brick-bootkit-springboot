@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-bootstrap/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-bootstrap/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-loader/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-loader/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-maven-packager/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-maven-packager/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-scripts/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-scripts/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-web/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

@@ -142,6 +142,21 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
      */
     private DecryptConfiguration decrypt;
 
+    /**
+     * 是否启用集群协同锁
+     */
+    private Boolean clusterEnabled = false;
+
+    /**
+     * 集群共享路径（锁文件和状态文件）
+     */
+    private String clusterSharedPath = "";
+
+    /**
+     * 集群锁获取超时（毫秒）
+     */
+    private Long clusterLockTimeoutMs = 30000L;
+
     @Override
     public Boolean enable() {
         if(enable == null){
@@ -257,6 +272,30 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
             return super.decrypt();
         }
         return decrypt;
+    }
+
+    @Override
+    public Boolean clusterEnabled() {
+        if (clusterEnabled == null) {
+            return super.clusterEnabled();
+        }
+        return clusterEnabled;
+    }
+
+    @Override
+    public String clusterSharedPath() {
+        if (ObjectUtils.isEmpty(clusterSharedPath)) {
+            return super.clusterSharedPath();
+        }
+        return clusterSharedPath;
+    }
+
+    @Override
+    public Long clusterLockTimeoutMs() {
+        if (clusterLockTimeoutMs == null || clusterLockTimeoutMs <= 0L) {
+            return super.clusterLockTimeoutMs();
+        }
+        return clusterLockTimeoutMs;
     }
 }
 

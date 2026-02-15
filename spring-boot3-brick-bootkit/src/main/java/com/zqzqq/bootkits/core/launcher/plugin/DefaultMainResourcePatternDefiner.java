@@ -39,6 +39,14 @@ public class DefaultMainResourcePatternDefiner extends JavaMainResourcePatternDe
     private static final String FRAMEWORK = "com/zqzqq/bootkits/**";
 
     public static final String FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories";
+    public static final String AUTO_CONFIGURATION_IMPORTS_RESOURCE_LOCATION =
+            "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
+    public static final String AUTO_CONFIGURATION_IMPORT_FILTER_IMPORTS_RESOURCE_LOCATION =
+            "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfigurationImportFilter.imports";
+    public static final String AUTO_CONFIGURATION_REPLACEMENTS_RESOURCE_LOCATION =
+            "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.replacements";
+    public static final String SPRING_IMPORTS_RESOURCE_LOCATION_PATTERN = "META-INF/spring/*.imports";
+    public static final String SPRING_REPLACEMENTS_RESOURCE_LOCATION_PATTERN = "META-INF/spring/*.replacements";
 
     private final String mainPackage;
     private final IntegrationConfiguration configuration;
@@ -81,6 +89,11 @@ public class DefaultMainResourcePatternDefiner extends JavaMainResourcePatternDe
     public Set<String> getExcludePatterns() {
         Set<String> excludeResourcePatterns = new HashSet<>();
         excludeResourcePatterns.add(FACTORIES_RESOURCE_LOCATION);
+        excludeResourcePatterns.add(AUTO_CONFIGURATION_IMPORTS_RESOURCE_LOCATION);
+        excludeResourcePatterns.add(AUTO_CONFIGURATION_IMPORT_FILTER_IMPORTS_RESOURCE_LOCATION);
+        excludeResourcePatterns.add(AUTO_CONFIGURATION_REPLACEMENTS_RESOURCE_LOCATION);
+        excludeResourcePatterns.add(SPRING_IMPORTS_RESOURCE_LOCATION_PATTERN);
+        excludeResourcePatterns.add(SPRING_REPLACEMENTS_RESOURCE_LOCATION_PATTERN);
 
         // add extension
         List<MainResourcePatternDefiner> extensionPatternDefiners = getExtensionPatternDefiners();

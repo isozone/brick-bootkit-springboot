@@ -26,6 +26,10 @@ import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptorLoader;
 import com.zqzqq.bootkits.core.exception.PluginDisabledException;
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.core.lock.ClusterLock;
+import com.zqzqq.bootkits.core.lock.ClusterLockProvider;
+import com.zqzqq.bootkits.core.lock.FileClusterLockProvider;
+import com.zqzqq.bootkits.core.lock.NoOpClusterLockProvider;
 import com.zqzqq.bootkits.core.lock.PluginLockManager;
 import com.zqzqq.bootkits.core.resource.DefaultResourceManager;
 import com.zqzqq.bootkits.core.resource.ResourceManager;
@@ -47,6 +51,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,16 +60,21 @@ import java.util.stream.Collectors;
 public class DefaultPluginManager implements PluginManager{
 
     private final Logger log = LoggerFactory.getLogger(DefaultPluginManager.class);
+    private static final String GLOBAL_CLUSTER_LOCK_KEY = "plugin:lifecycle:global";
     private final ResourceManager resourceManager = new DefaultResourceManager();
     private final PluginLockManager lockManager = new PluginLockManager();
+    private final ClusterLockProvider clusterLockProvider;
+    private final Duration clusterLockTimeout;
+    private final Path clusterSharedRoot;
     
     // 使用锁管理器的示例方法
     private void withPluginLock(String pluginId, Runnable action) {
-        lockManager.executeWithPluginLock(pluginId, action);
+        lockManager.executeWithPluginLock(pluginId,
+                () -> withClusterLock(getPluginClusterLockKey(pluginId), action));
     }
     
     private void withGlobalWriteLock(Runnable action) {
-        lockManager.executeWithGlobalWriteLock(action);
+        lockManager.executeWithGlobalWriteLock(() -> withClusterLock(GLOBAL_CLUSTER_LOCK_KEY, action));
     }
     
     private void withGlobalReadLock(Runnable action) {
@@ -72,11 +82,12 @@ public class DefaultPluginManager implements PluginManager{
     }
     
     private <T> T withPluginLock(String pluginId, java.util.function.Supplier<T> action) {
-        return lockManager.executeWithPluginLock(pluginId, action);
+        return lockManager.executeWithPluginLock(pluginId,
+                () -> withClusterLock(getPluginClusterLockKey(pluginId), action));
     }
     
     private <T> T withGlobalWriteLock(java.util.function.Supplier<T> action) {
-        return lockManager.executeWithGlobalWriteLock(action);
+        return lockManager.executeWithGlobalWriteLock(() -> withClusterLock(GLOBAL_CLUSTER_LOCK_KEY, action));
     }
     
     private <T> T withGlobalReadLock(java.util.function.Supplier<T> action) {
@@ -106,7 +117,11 @@ public class DefaultPluginManager implements PluginManager{
     public DefaultPluginManager(RealizeProvider realizeProvider, IntegrationConfiguration configuration) {
         this.provider = Assert.isNotNull(realizeProvider, "参数 realizeProvider 不能为空");
         this.configuration = Assert.isNotNull(configuration, "参数 configuration 不能为空");
-        this.pluginRootDirs = resolvePath(String.join(",",configuration.pluginPath()));
+        this.pluginRootDirs = resolvePath(String.join(",", configuration.pluginPath()));
+        this.clusterSharedRoot = resolveClusterSharedRoot();
+        long timeoutMillis = Optional.ofNullable(configuration.clusterLockTimeoutMs()).orElse(30000L);
+        this.clusterLockTimeout = Duration.ofMillis(Math.max(1000L, timeoutMillis));
+        this.clusterLockProvider = createClusterLockProvider();
         this.pathResolve = getComposePathResolve();
         this.basicChecker = realizeProvider.getPluginBasicChecker();
         this.launcherChecker = getComposeLauncherChecker(realizeProvider);
@@ -258,6 +273,18 @@ public class DefaultPluginManager implements PluginManager{
                 if (pluginInsideInfo.getPluginDescriptor() instanceof DefaultInsidePluginDescriptor) {
                     ((DefaultInsidePluginDescriptor) pluginInsideInfo.getPluginDescriptor()).setPluginPath(targetPath);
                 }
+                try {
+                    beforeInstall(pluginInsideInfo);
+                } catch (Exception e) {
+                    try {
+                        if (Files.exists(targetPath)) {
+                            FileUtils.forceDelete(targetPath.toFile());
+                        }
+                    } catch (Exception deleteError) {
+                        log.warn("Install rollback delete plugin file failed: {}", targetPath, deleteError);
+                    }
+                    throw e;
+                }
                 
                 // 将插件添加到已解析插件列表
                 resolvedPlugins.put(pluginId, pluginInsideInfo);
@@ -267,7 +294,7 @@ public class DefaultPluginManager implements PluginManager{
             } catch (IOException e) {
                 throw new PluginException("插件安装失败", e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new PluginException("Install plugin failed", e);
             }
         });
     }
@@ -468,6 +495,7 @@ public class DefaultPluginManager implements PluginManager{
                 
                 // 从两个 Map 中移除插件
                 startedPlugins.remove(pluginId);
+                beforeUninstall(pluginInsideInfo);
                 resolvedPlugins.remove(pluginId);
 
                 // 删除插件文件
@@ -572,7 +600,7 @@ public class DefaultPluginManager implements PluginManager{
         withPluginLock(pluginId, () -> {
             try {
                 boolean wasStarted = startedPlugins.containsKey(pluginId);
-                log.info("重启插件: {}, 原始状态: {}", pluginId, wasStarted ? "已启动" : "已停止");
+                log.info("Reload plugin: {}, previous started: {}", pluginId, wasStarted ? "STARTED" : "STOPPED");
                 
                 // 先停止插件（如果已启动）
                 if (wasStarted) {
@@ -600,8 +628,8 @@ public class DefaultPluginManager implements PluginManager{
                 // 重启插件：总是尝试启动插件
                 log.info("重新启动插件: {}", pluginId);
                 start(pluginId);
-                log.info("插件重新启动完成: {}, 当前状态: {}", pluginId, 
-                    startedPlugins.containsKey(pluginId) ? "已启动" : "未启动");
+                log.info("Plugin reload finished: {}, current state: {}", pluginId,
+                    startedPlugins.containsKey(pluginId) ? "STARTED" : "NOT_STARTED");
                 
                 log.info("插件重新加载成功: {}", pluginId);
             } catch (Exception e) {
@@ -683,7 +711,7 @@ public class DefaultPluginManager implements PluginManager{
                 
                 log.info("插件管理器已关闭");
             } catch (Exception e) {
-                log.error("关闭插件管理器失败", e);
+                log.error("Close plugin manager failed", e);
             }
         });
     }
@@ -706,6 +734,62 @@ public class DefaultPluginManager implements PluginManager{
         pluginInsideInfo.setPluginState(EnhancedPluginState.STOPPED);
     }
 
+    /**
+     * Hook before plugin registration on install.
+     */
+    protected void beforeInstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+    }
+
+    /**
+     * Hook before plugin metadata/files are removed on uninstall.
+     */
+    protected void beforeUninstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+    }
+
+    protected Path getClusterSharedRoot() {
+        return clusterSharedRoot;
+    }
+
+    private ClusterLockProvider createClusterLockProvider() {
+        if (!Boolean.TRUE.equals(configuration.clusterEnabled())) {
+            return new NoOpClusterLockProvider();
+        }
+        Path lockDir = clusterSharedRoot.resolve(".plugin-locks");
+        log.info("Plugin cluster lock enabled. lockDir={}, timeout={}ms", lockDir, clusterLockTimeout.toMillis());
+        return new FileClusterLockProvider(lockDir);
+    }
+
+    private Path resolveClusterSharedRoot() {
+        String basePath = configuration.clusterSharedPath();
+        if (ObjectUtils.isEmpty(basePath)) {
+            if (ObjectUtils.isEmpty(pluginRootDirs)) {
+                basePath = System.getProperty("user.dir");
+            } else {
+                basePath = pluginRootDirs.get(0);
+            }
+        }
+        if (FilesUtils.isRelativePath(basePath)) {
+            basePath = FilesUtils.resolveRelativePath(System.getProperty("user.dir"), basePath);
+        }
+        return Paths.get(basePath).toAbsolutePath().normalize();
+    }
+
+    private String getPluginClusterLockKey(String pluginId) {
+        return "plugin:lifecycle:" + pluginId;
+    }
+
+    private void withClusterLock(String key, Runnable action) {
+        try (ClusterLock ignored = clusterLockProvider.acquire(key, clusterLockTimeout)) {
+            action.run();
+        }
+    }
+
+    private <T> T withClusterLock(String key, java.util.function.Supplier<T> action) {
+        try (ClusterLock ignored = clusterLockProvider.acquire(key, clusterLockTimeout)) {
+            return action.get();
+        }
+    }
+
     private PluginInsideInfo getPluginInsideInfo(String pluginId) {
         PluginInsideInfo insideInfo = startedPlugins.get(pluginId);
         if (insideInfo == null) {
@@ -722,6 +806,6 @@ public class DefaultPluginManager implements PluginManager{
     }
 
     private void printOfNotFoundPlugins() {
-        log.warn("未在目录 {} 中发现插件", pluginRootDirs);
+        log.warn("No plugin found in directories {}", pluginRootDirs);
     }
 }

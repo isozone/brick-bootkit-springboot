@@ -19,6 +19,8 @@ package com.zqzqq.bootkits.core.classloader;
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.loader.classloader.GenericClassLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
+import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -35,6 +37,11 @@ import java.util.Enumeration;
  */
 @Slf4j
 public class PluginClassLoader extends GenericClassLoader implements PluginResourceLoaderFactory{
+
+    private static final String SPRING_FACTORIES_RESOURCE = "META-INF/spring.factories";
+    private static final String SPRING_RESOURCE_PREFIX = "META-INF/spring/";
+    private static final String SPRING_IMPORTS_SUFFIX = ".imports";
+    private static final String SPRING_REPLACEMENTS_SUFFIX = ".replacements";
 
     private final MainResourceMatcher mainResourceMatcher;
 
@@ -68,6 +75,9 @@ public class PluginClassLoader extends GenericClassLoader implements PluginResou
 
     @Override
     protected InputStream findInputStreamFromParent(String name) {
+        if(prohibitParentSpringAutoConfigurationResource(name)){
+            return null;
+        }
         if(mainResourceMatcher.match(name)){
             try {
                 return super.findInputStreamFromParent(name);
@@ -80,6 +90,9 @@ public class PluginClassLoader extends GenericClassLoader implements PluginResou
 
     @Override
     protected URL findResourceFromParent(String name) {
+        if(prohibitParentSpringAutoConfigurationResource(name)){
+            return null;
+        }
         if(mainResourceMatcher.match(name)){
             return super.findResourceFromParent(name);
         }
@@ -88,10 +101,31 @@ public class PluginClassLoader extends GenericClassLoader implements PluginResou
 
     @Override
     protected Enumeration<URL> findResourcesFromParent(String name) throws IOException {
+        if(prohibitParentSpringAutoConfigurationResource(name)){
+            return null;
+        }
         if(mainResourceMatcher.match(name)){
             return super.findResourcesFromParent(name);
         }
         return null;
+    }
+
+    private boolean prohibitParentSpringAutoConfigurationResource(String name){
+        if(ObjectUtils.isEmpty(name)){
+            return false;
+        }
+        String normalizedName = UrlUtils.formatMatchUrl(name);
+        if(normalizedName.startsWith("/")){
+            normalizedName = normalizedName.substring(1);
+        }
+        if(SPRING_FACTORIES_RESOURCE.equals(normalizedName)){
+            return true;
+        }
+        if(!normalizedName.startsWith(SPRING_RESOURCE_PREFIX)){
+            return false;
+        }
+        return normalizedName.endsWith(SPRING_IMPORTS_SUFFIX)
+                || normalizedName.endsWith(SPRING_REPLACEMENTS_SUFFIX);
     }
 
     @Override

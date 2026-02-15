@@ -27,6 +27,7 @@ import com.zqzqq.bootkits.core.launcher.plugin.PluginInteractive;
 import com.zqzqq.bootkits.core.launcher.plugin.PluginIsolationLauncher;
 import com.zqzqq.bootkits.core.launcher.plugin.involved.PluginLaunchInvolved;
 import com.zqzqq.bootkits.core.launcher.plugin.involved.PluginLaunchInvolvedFactory;
+import com.zqzqq.bootkits.core.migration.PluginMigrationService;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.listener.DefaultPluginListenerFactory;
@@ -41,6 +42,7 @@ import com.zqzqq.bootkits.spring.invoke.InvokeSupperCache;
 import com.zqzqq.bootkits.utils.SpringBeanUtils;
 import org.springframework.context.support.GenericApplicationContext;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +63,7 @@ public class PluginLauncherManager extends DefaultPluginManager{
     private final IntegrationConfiguration configuration;
     private final InvokeSupperCache invokeSupperCache;
     private final PluginLaunchInvolved pluginLaunchInvolved;
+    private final PluginMigrationService migrationService;
 
     public PluginLauncherManager(RealizeProvider realizeProvider,
                                  GenericApplicationContext applicationContext,
@@ -71,6 +74,8 @@ public class PluginLauncherManager extends DefaultPluginManager{
         this.configuration = configuration;
         this.invokeSupperCache = new DefaultInvokeSupperCache();
         this.pluginLaunchInvolved = new PluginLaunchInvolvedFactory();
+        Path migrationStateDir = getClusterSharedRoot().resolve(".plugin-state").resolve("migrations");
+        this.migrationService = new PluginMigrationService(applicationContext, migrationStateDir);
         addCustomPluginChecker();
     }
 
@@ -147,6 +152,16 @@ public class PluginLauncherManager extends DefaultPluginManager{
             pluginInsideInfo.setPluginState(EnhancedPluginState.STOPPED_FAILURE);
             throw e;
         }
+    }
+
+    @Override
+    protected void beforeInstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+        migrationService.applyInstallMigrations(pluginInsideInfo.getPluginDescriptor());
+    }
+
+    @Override
+    protected void beforeUninstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+        migrationService.applyUninstallMigrations(pluginInsideInfo.getPluginDescriptor());
     }
 
 

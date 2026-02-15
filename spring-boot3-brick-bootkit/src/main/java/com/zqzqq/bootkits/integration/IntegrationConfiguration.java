@@ -198,5 +198,30 @@ public interface IntegrationConfiguration {
         return disablePluginIds().contains(pluginId);
     }
 
+    /**
+     * 是否启用集群协同锁。启用后插件生命周期操作会在跨实例间互斥执行。
+     * @return true 启用，false 禁用
+     */
+    default Boolean clusterEnabled() {
+        return Boolean.FALSE;
+    }
+
+    /**
+     * 集群共享目录路径。用于存放跨实例锁文件和状态文件。
+     * 支持相对路径（以 ~ 开头），相对当前工作目录解析。
+     * @return 共享目录路径
+     */
+    default String clusterSharedPath() {
+        return null;
+    }
+
+    /**
+     * 集群锁获取超时时间（毫秒）。
+     * @return 超时时间
+     */
+    default Long clusterLockTimeoutMs() {
+        return 30000L;
+    }
+
 }
 
