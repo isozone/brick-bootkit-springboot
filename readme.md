@@ -291,7 +291,7 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
 - `state`：状态管理
   - 插件状态定义
   - 状态转换管理
-- `4.0.5`：版本管理
+- `version`：版本管理
   - 版本号解析和比较
   - 版本兼容性检查
 - `dependency`：依赖管理
@@ -537,13 +537,14 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <4.0.5>4.0.5</4.0.5>
+            <version>4.0.5</version>
             <configuration>
-                <mode>plugin</mode>
-                <pluginConfig>
-                    <pluginId>your-plugin-id</pluginId>
-                    <pluginVersion>1.0.0</pluginVersion>
-                </pluginConfig>
+                <mode>prod</mode>
+                <pluginInfo>
+                    <id>your-plugin-id</id>
+                    <bootstrapClass>com.example.plugin.YourPluginBootstrap</bootstrapClass>
+                    <version>1.0.0</version>
+                </pluginInfo>
             </configuration>
             <executions>
                 <execution>
@@ -593,7 +594,7 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
 <dependency>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-    <4.0.5>4.0.5</4.0.5>
+    <version>4.0.5</version>
 </dependency>
 ```
 
@@ -665,7 +666,7 @@ package com.example.plugin.service.impl;
 
 @PluginService(
     interfaceClass = UserService.class,
-    4.0.5 = "1.0.0",
+    version = "1.0.0",
     name = "user-service",
     priority = 100
 )
@@ -691,7 +692,7 @@ package com.example.consumer.plugin;
 @ServiceDependency(
     pluginId = "user-plugin",
     serviceInterface = UserService.class,
-    4.0.5Range = "[1.0,2.0)"
+    versionRange = "[1.0,2.0)"
 )
 public class UserConsumer {
     
@@ -725,7 +726,7 @@ public void registerUserService() {
         UserService.class,               // service interface
         userService,                      // service instance
         ServiceMetadata.builder()
-            .4.0.5("1.0.0")
+            .version("1.0.0")
             .priority(100)
             .healthCheckEnabled(true)
             .build()
@@ -811,7 +812,7 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
 | `registerService(pluginId, interface, instance, metadata)` | 注册服务 |
 | `getService(pluginId, interface)` | 获取服务 |
 | `getServices(interface)` | 获取所有实现 |
-| `getServicesByVersion(interface, 4.0.5Range)` | 按版本获取 |
+| `getServicesByVersion(interface, versionRange)` | 按版本获取 |
 | `checkDependencies(pluginId)` | 检查依赖 |
 | `subscribe(interface, listener)` | 订阅变化 |
 | `unregisterService(pluginId, interface)` | 注销服务 |
@@ -836,14 +837,14 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit</artifactId>
-        <4.0.5>4.0.5</4.0.5>
+        <version>4.0.5</version>
     </dependency>
     
     <!-- Web 管理控制台（可选） -->
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-        <4.0.5>4.0.5</4.0.5>
+        <version>4.0.5</version>
     </dependency>
 </dependencies>
 ```
@@ -854,7 +855,7 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
 
 ```java
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.zqzqq.bootkits.*", "你的应用包路径"})
+@ComponentScan(basePackages = {"com.zqzqq.bootkits", "你的应用包路径"})
 public class MainApplication {
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);
@@ -882,18 +883,8 @@ plugin:
 
 #### 2.1 添加依赖
 
-在插件的 `pom.xml` 中添加：
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>com.zqzqq</groupId>
-        <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-        <4.0.5>4.0.5</4.0.5>
-        <scope>provided</scope>
-    </dependency>
-</dependencies>
-```
+按插件业务需要引入运行时依赖即可。  
+`spring-boot3-brick-bootkit-maven-packager` 是 **Maven 打包插件**，应配置在 `<build><plugins>` 中（见下节），不要放在 `<dependencies>` 中。
 
 #### 2.2 配置 Maven 打包插件
 
@@ -903,14 +894,14 @@ plugin:
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <4.0.5>4.0.5</4.0.5>
+            <version>4.0.5</version>
             <configuration>
-                <mode>plugin</mode>
-                <pluginConfig>
-                    <pluginId>my-plugin</pluginId>
-                    <pluginVersion>1.0.0</pluginVersion>
-                    <pluginClass>com.example.MyPluginConfig</pluginClass>
-                </pluginConfig>
+                <mode>prod</mode>
+                <pluginInfo>
+                    <id>my-plugin</id>
+                    <bootstrapClass>com.example.MyPluginConfig</bootstrapClass>
+                    <version>1.0.0</version>
+                </pluginInfo>
             </configuration>
             <executions>
                 <execution>
@@ -976,7 +967,7 @@ http://localhost:8080/plugins-web/index
 ### 主应用配置
 
 ```yaml
-plugins:
+plugin:
   # 是否启用插件
   enable: true
   # 运行模式：dev（开发模式）/ prod（生产模式）
@@ -989,6 +980,14 @@ plugins:
   pluginPath:
     - ./plugins
     - /path/to/second/plugins
+
+  # 是否启用集群协同锁（多实例部署建议开启）
+  clusterEnabled: false
+  # 集群共享路径（锁文件和迁移状态文件）
+  # 开启 clusterEnabled 后建议配置为所有实例都可读写的共享存储（如 NFS/NAS）
+  clusterSharedPath: /data/shared/plugins
+  # 集群锁获取超时（毫秒）
+  clusterLockTimeoutMs: 30000
   
   # Web 管理控制台配置（可选）
   web:
@@ -1007,61 +1006,101 @@ plugins:
 - `plugin-follow-log`：是否将插件日志输出到主应用日志
 - `mainPackage`：主应用启动类的全限定名，用于类加载器隔离
 - `pluginPath`：插件存储路径，支持配置多个路径，数组格式
+- `clusterEnabled`：是否启用跨实例插件生命周期互斥锁，默认 `false`
+- `clusterSharedPath`：集群共享目录。用于保存锁文件（`.plugin-locks`）和插件迁移状态（`.plugin-state/migrations`）
+- `clusterLockTimeoutMs`：集群锁超时时间（毫秒），默认 `30000`
+
+#### 主应用依赖隔离说明
+
+- 框架默认会屏蔽主应用依赖中的 Spring 自动装配元数据文件（如 `META-INF/spring.factories`、`META-INF/spring/*.imports`），避免主应用引入 Liquibase 等依赖时干扰插件启动。
+- 若插件确实需要放开部分主应用依赖资源，可在主应用中自定义 `MainResourcePatternDefiner` 扩展 `includePatterns`，按包路径精确放开。
 
 ### 插件配置
 
-在插件项目的 `plugin.yaml` 中配置：
+在插件包的 `META-INF/PLUGIN.META` 中配置插件元信息（`properties` 格式）：
 
-```yaml
-plugin:
-  id: my-plugin
-  4.0.5: 1.0.0
-  name: My Plugin
-  description: This is my first plugin
-  author: Your Name
-  main-class: com.example.MyPluginConfig
+```properties
+plugin.id=my-plugin
+plugin.version=1.0.0
+plugin.bootstrapClass=com.example.MyPluginBootstrap
+plugin.description=This is my first plugin
+plugin.provider=Your Name
 ```
+
+#### 插件数据库迁移脚本（可选）
+
+在同一个 `META-INF/PLUGIN.META` 中追加以下配置：
+
+```properties
+# 安装时按顺序执行（逗号分隔）
+plugin.migration.up=db/migration/V1__init.sql,db/migration/V2__seed.sql
+# 卸载时按逆序执行，按索引与 up 一一对应
+plugin.migration.down=db/migration/U1__init.sql,db/migration/U2__seed.sql
+# 数据源：main（默认）或 bean:<beanName>
+plugin.migration.datasource=main
+```
+
+- 安装插件时会执行 `plugin.migration.up`，已执行过的脚本会被跳过（幂等）。
+- 卸载插件时会按逆序执行 `plugin.migration.down`，且仅回滚已执行过的 up 脚本。
+- up/down 必须按索引一一对应；缺失 down 脚本会直接报错并终止卸载流程。
+- 脚本路径支持目录插件和 jar 插件。推荐将 SQL 放在 `classes/db/migration` 下，并在配置中使用 `db/migration/*.sql`。
+- 迁移执行记录保存在 `${clusterSharedPath}/.plugin-state/migrations`；未配置 `clusterSharedPath` 时，默认使用首个 `pluginPath`（若为空则退回主进程工作目录）。
+- 多实例场景下，建议开启 `clusterEnabled=true`，插件安装/卸载及迁移会通过 `${clusterSharedPath}/.plugin-locks` 进行跨实例互斥。
 
 ## 🔧 如何引入
 
 ### 主应用
 
-```
+```xml
 
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
-<4.0.5>4.0.5</4.0.5>
+<version>4.0.5</version>
 </dependency>
 
 ```
 
 ### Web 管理控制台（可选）
 
-```
+```xml
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-<4.0.5>4.0.5</4.0.5>
+<version>4.0.5</version>
 </dependency>
 
 ```
 
 ### 插件开发
 
-```
-<dependency>
-<groupId>com.zqzqq</groupId>
-<artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-<4.0.5>4.0.5</4.0.5>
-<scope>provided</scope>
-</dependency>
+```xml
+<plugin>
+    <groupId>com.zqzqq</groupId>
+    <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
+    <version>4.0.5</version>
+    <configuration>
+        <mode>prod</mode>
+        <pluginInfo>
+            <id>my-plugin</id>
+            <bootstrapClass>com.example.MyPluginConfig</bootstrapClass>
+            <version>1.0.0</version>
+        </pluginInfo>
+    </configuration>
+    <executions>
+        <execution>
+            <goals>
+                <goal>repackage</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
 
 ```
 
 **注意**：主应用启动类需要扫描以下包路径：
-``` 
-com.zqzqq.bootkits.*
+```
+com.zqzqq.bootkits
 ```
 
 ### 打包
@@ -1162,12 +1201,8 @@ public class PluginController {
 
 ### 3. 插件之间如何共享数据？
 
-**推荐方式**：使用共享模式加载插件，并通过 Spring 容器共享 Bean
-
-```yaml
-plugin:
-  load-mode: shared
-```
+**推荐方式**：优先使用“插件服务通信”能力共享数据（`@PluginService` + `@ServiceDependency`），
+避免通过共享类加载器直接共享实现类。
 
 ### 4. 如何热更新插件？
 
