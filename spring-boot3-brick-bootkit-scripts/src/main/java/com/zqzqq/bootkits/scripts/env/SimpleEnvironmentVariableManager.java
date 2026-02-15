@@ -60,7 +60,12 @@ public class SimpleEnvironmentVariableManager implements EnvironmentVariableMana
         );
         
         Map<String, EnvironmentVariable> scopeVars = scopeVariables.get(scope);
-        return scopeVars != null && scopeVars.put(key, variable) != null;
+        if (scopeVars == null) {
+            return false;
+        }
+        scopeVars.put(key, variable);
+        variableCounter.incrementAndGet();
+        return true;
     }
     
     @Override

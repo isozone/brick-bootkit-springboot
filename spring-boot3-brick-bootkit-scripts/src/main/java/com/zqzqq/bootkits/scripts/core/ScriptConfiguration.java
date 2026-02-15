@@ -117,7 +117,7 @@ public class ScriptConfiguration {
     }
     
     public ScriptConfiguration setEnvironmentVariables(Map<String, String> environmentVariables) {
-        this.environmentVariables = environmentVariables;
+        this.environmentVariables = (environmentVariables == null) ? new HashMap<>() : environmentVariables;
         return this;
     }
     

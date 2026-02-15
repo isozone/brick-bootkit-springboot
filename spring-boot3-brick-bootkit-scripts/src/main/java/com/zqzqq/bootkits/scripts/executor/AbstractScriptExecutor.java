@@ -1,11 +1,10 @@
 package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
-import com.zqzqq.bootkits.scripts.utils.OSDetectionUtils;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -14,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 脚本执行器抽象基类
@@ -40,6 +41,7 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
      * 线程池关闭超时时间（秒）
      */
     private static final long EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
+    private static final long OUTPUT_COLLECTION_WAIT_TIMEOUT_MS = 2000;
     
     static {
         // 注册JVM关闭钩子，确保线程池被正确关闭
@@ -216,7 +218,10 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
         
         // 设置环境变量
         Map<String, String> env = processBuilder.environment();
-        env.putAll(configuration.getEnvironmentVariables());
+        Map<String, String> customEnv = configuration.getEnvironmentVariables();
+        if (customEnv != null && !customEnv.isEmpty()) {
+            env.putAll(customEnv);
+        }
         
         // 设置输出重定向
         if (configuration.isMergeOutputStreams()) {
@@ -286,7 +291,13 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                 scriptFile.getAbsolutePath(),
                 ScriptType.fromFileName(scriptFile.getName()),
                 OperatingSystem.detectCurrentOS()
-            ).setExecutionTimeMs(executionTimeMs);
+            ).setExecutionTimeMs(executionTimeMs)
+             .setStatus(exitCode == 0
+                 ? ScriptExecutionResult.ExecutionStatus.SUCCESS
+                 : ScriptExecutionResult.ExecutionStatus.FAILED)
+             .setErrorMessage(exitCode == 0
+                 ? null
+                 : "脚本执行失败，退出码: " + exitCode);
             
         } catch (InterruptedException e) {
             process.destroyForcibly();
@@ -303,115 +314,125 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
      * 输出收集器
      * 负责收集进程的标准输出和错误输出
      */
-    protected static class OutputCollector implements Runnable {
-        private final Process process;
+    protected static class OutputCollector {
         private final java.util.List<String> stdout = new ArrayList<>();
         private final java.util.List<String> stderr = new ArrayList<>();
         private final java.io.BufferedReader stdoutReader;
         private final java.io.BufferedReader stderrReader;
         private final long maxOutputSize;
+        private final Charset outputCharset;
+        private final AtomicLong currentOutputSize = new AtomicLong(0);
+        private Future<?> stdoutTask;
+        private Future<?> stderrTask;
         private volatile boolean running = false;
-        
-        public OutputCollector(Process process, ScriptConfiguration configuration) throws UnsupportedEncodingException {
-            this.process = process;
+
+        public OutputCollector(Process process, ScriptConfiguration configuration) {
             this.maxOutputSize = configuration.getMaxOutputSize();
+            String encoding = configuration.getEncoding();
+            this.outputCharset = (encoding == null || encoding.trim().isEmpty())
+                ? DEFAULT_CHARSET
+                : Charset.forName(encoding);
             this.stdoutReader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream(), configuration.getEncoding()));
+                new java.io.InputStreamReader(process.getInputStream(), outputCharset));
             this.stderrReader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getErrorStream(), configuration.getEncoding()));
+                new java.io.InputStreamReader(process.getErrorStream(), outputCharset));
         }
-        
+
         public void start() {
             if (!running) {
                 running = true;
-                OUTPUT_COLLECTOR_EXECUTOR.submit(this);
+                stdoutTask = OUTPUT_COLLECTOR_EXECUTOR.submit(() ->
+                    collectOutput(stdoutReader, stdout, "... [输出被截断，超出最大大小限制]", "标准输出收集异常: "));
+                stderrTask = OUTPUT_COLLECTOR_EXECUTOR.submit(() ->
+                    collectOutput(stderrReader, stderr, "... [错误输出被截断，超出最大大小限制]", "错误输出收集异常: "));
             }
         }
-        
+
         public void stop() {
-            running = false;
+            awaitCollectionTasks(OUTPUT_COLLECTION_WAIT_TIMEOUT_MS);
             closeQuietly(stdoutReader);
             closeQuietly(stderrReader);
+            awaitCollectionTasks(OUTPUT_COLLECTION_WAIT_TIMEOUT_MS);
+            running = false;
         }
-        
-        private void closeQuietly(java.io.Closeable closeable) {
+
+        private void closeQuietly(Closeable closeable) {
             if (closeable != null) {
                 try {
                     closeable.close();
                 } catch (IOException e) {
-                    // 静默关闭，忽略异常
+                    // ignore
                 }
             }
         }
-        
-        @Override
-        public void run() {
+
+        private void awaitCollectionTasks(long timeoutMs) {
+            waitTask(stdoutTask, timeoutMs);
+            waitTask(stderrTask, timeoutMs);
+        }
+
+        private void waitTask(Future<?> task, long timeoutMs) {
+            if (task == null) {
+                return;
+            }
             try {
-                collectOutput();
+                task.get(timeoutMs, TimeUnit.MILLISECONDS);
+            } catch (java.util.concurrent.TimeoutException e) {
+                task.cancel(true);
+            } catch (java.util.concurrent.ExecutionException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        private void collectOutput(java.io.BufferedReader reader, List<String> target, String overflowMessage, String errorPrefix) {
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!appendLine(target, line, overflowMessage)) {
+                        break;
+                    }
+                }
             } catch (Exception e) {
                 if (running) {
-                    // 记录异常但不中断收集
-                    stderr.add("输出收集异常: " + e.getMessage());
+                    appendError(errorPrefix + e.getMessage());
                 }
             }
         }
-        
-        private void collectOutput() {
-            final long[] currentSize = {0};
-            
-            // 收集标准输出
-            OUTPUT_COLLECTOR_EXECUTOR.submit(() -> {
-                try {
-                    String line;
-                    while (running && (line = stdoutReader.readLine()) != null) {
-                        synchronized (stdout) {
-                            int lineBytes = line.getBytes(configuration.getEncoding()).length;
-                            if (currentSize[0] + lineBytes <= maxOutputSize) {
-                                stdout.add(line);
-                                currentSize[0] += lineBytes;
-                            } else {
-                                stdout.add("... [输出被截断，超出最大大小限制]");
-                                break;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    if (running) {
-                        stderr.add("标准输出收集异常: " + e.getMessage());
-                    }
+
+        private boolean appendLine(List<String> target, String line, String overflowMessage) {
+            int lineBytes = line.getBytes(outputCharset).length;
+            long current = currentOutputSize.addAndGet(lineBytes);
+            if (current <= maxOutputSize) {
+                synchronized (target) {
+                    target.add(line);
                 }
-            });
-            
-            // 收集错误输出
-            OUTPUT_COLLECTOR_EXECUTOR.submit(() -> {
-                try {
-                    String line;
-                    while (running && (line = stderrReader.readLine()) != null) {
-                        synchronized (stderr) {
-                            int lineBytes = line.getBytes(configuration.getEncoding()).length;
-                            if (currentSize[0] + lineBytes <= maxOutputSize) {
-                                stderr.add(line);
-                                currentSize[0] += lineBytes;
-                            } else {
-                                stderr.add("... [错误输出被截断，超出最大大小限制]");
-                                break;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    if (running) {
-                        stderr.add("错误输出收集异常: " + e.getMessage());
-                    }
-                }
-            });
+                return true;
+            }
+            currentOutputSize.addAndGet(-lineBytes);
+            synchronized (target) {
+                target.add(overflowMessage);
+            }
+            return false;
         }
-        
+
+        private void appendError(String message) {
+            synchronized (stderr) {
+                stderr.add(message);
+            }
+        }
+
         public java.util.List<String> getStdout() {
-            return new ArrayList<>(stdout);
+            synchronized (stdout) {
+                return new ArrayList<>(stdout);
+            }
         }
-        
+
         public java.util.List<String> getStderr() {
-            return new ArrayList<>(stderr);
+            synchronized (stderr) {
+                return new ArrayList<>(stderr);
+            }
         }
     }
 }

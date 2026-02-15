@@ -82,6 +82,19 @@ class ScriptConfigurationTest {
     }
 
     @Test
+    @DisplayName("test null environment variables handling")
+    void testNullEnvironmentVariablesHandling() {
+        ScriptConfiguration config = new ScriptConfiguration();
+        config.setEnvironmentVariables(null);
+
+        assertThat(config.getEnvironmentVariables()).isNotNull();
+        assertThat(config.getEnvironmentVariables()).isEmpty();
+
+        config.addEnvironmentVariable("KEY", "value");
+        assertThat(config.getEnvironmentVariables().get("KEY")).isEqualTo("value");
+    }
+
+    @Test
     @DisplayName("测试输出流合并配置")
     void testOutputStreamsMergeConfiguration() {
         ScriptConfiguration config = new ScriptConfiguration();
