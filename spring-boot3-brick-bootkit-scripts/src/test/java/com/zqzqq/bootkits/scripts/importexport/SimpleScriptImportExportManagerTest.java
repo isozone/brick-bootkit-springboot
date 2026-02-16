@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -165,6 +166,271 @@ public class SimpleScriptImportExportManagerTest {
             Files.deleteIfExists(tempFile);
         }
     }
+
+    @Test
+    @DisplayName("测试导入完整配置时的旧版本兼容")
+    void testLegacyImportAllCompatibility() throws Exception {
+        Path tempFile = Files.createTempFile("legacy-import-all", ".json");
+
+        try {
+            String legacyJson = "{"
+                + "\"exportTime\":\"2024-01-01T00:00:00\","
+                + "\"exporter\":\"legacy-exporter\","
+                + "\"scriptConfigs\":{"
+                + "  \"legacy_script\":{"
+                + "    \"id\":\"legacy_script\","
+                + "    \"name\":\"Legacy Script\","
+                + "    \"script_type\":\"SHELL\","
+                + "    \"script_path\":\"echo legacy\","
+                + "    \"enabled\":true"
+                + "  }"
+                + "},"
+                + "\"environmentVariables\":{"
+                + "  \"LEGACY_ENV\":\"legacy_value\""
+                + "}"
+                + "}";
+            Files.writeString(tempFile, legacyJson, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("legacy_script");
+            importExportManager.removeEnvironmentVariable("LEGACY_ENV");
+
+            SimpleScriptImportExportManager.ImportExportOptions options =
+                SimpleScriptImportExportManager.ImportExportOptions.newBuilder()
+                    .includeEnvironment(true)
+                    .overwriteExisting(true)
+                    .validateData(true)
+                    .build();
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importAll(tempFile.toString(), options);
+
+            assertTrue(result.isSuccess(), "旧版本完整配置导入应该成功");
+            assertFalse(result.getWarnings().isEmpty(), "兼容迁移应产生提示");
+            assertEquals("legacy", result.getStatistics().get("schemaVersion.original"));
+            assertEquals("4.0.1", result.getStatistics().get("schemaVersion.final"));
+            assertEquals(Boolean.FALSE, result.getStatistics().get("dryRun"));
+
+            SimpleScriptImportExportManager.SimpleScriptConfig config = importExportManager.getScriptConfig("legacy_script");
+            assertNotNull(config, "旧版本脚本配置应该被迁移并导入");
+            assertEquals("Legacy Script", config.getName());
+            assertEquals("SHELL", config.getScriptType());
+            assertEquals("echo legacy", config.getScriptPath());
+            assertEquals("legacy_value", importExportManager.getEnvironmentVariable("LEGACY_ENV"));
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    @DisplayName("测试导入完整配置预检模式不写入数据")
+    void testImportAllDryRun() throws Exception {
+        Path tempFile = Files.createTempFile("import-all-dry-run", ".json");
+
+        try {
+            String payload = "{"
+                + "\"version\":\"4.0.1\","
+                + "\"schemaVersion\":\"4.0.1\","
+                + "\"scripts\":{"
+                + "  \"dry_run_script\":{"
+                + "    \"id\":\"dry_run_script\","
+                + "    \"name\":\"Dry Run Script\","
+                + "    \"scriptType\":\"SHELL\","
+                + "    \"scriptPath\":\"echo dry-run\","
+                + "    \"enabled\":true"
+                + "  }"
+                + "},"
+                + "\"environment\":{"
+                + "  \"DRY_ENV\":\"dry_value\""
+                + "}"
+                + "}";
+            Files.writeString(tempFile, payload, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("dry_run_script");
+            importExportManager.removeEnvironmentVariable("DRY_ENV");
+
+            SimpleScriptImportExportManager.ImportExportOptions dryRunOptions =
+                SimpleScriptImportExportManager.ImportExportOptions.newBuilder()
+                    .includeEnvironment(true)
+                    .overwriteExisting(true)
+                    .dryRun(true)
+                    .build();
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importAll(tempFile.toString(), dryRunOptions);
+
+            assertTrue(result.isSuccess(), "预检模式应该成功");
+            assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
+            assertEquals("4.0.1", result.getStatistics().get("schemaVersion.original"));
+            assertEquals("4.0.1", result.getStatistics().get("schemaVersion.final"));
+            assertTrue(result.getItemsSucceeded() >= 2);
+
+            assertNull(importExportManager.getScriptConfig("dry_run_script"), "预检模式不应写入脚本配置");
+            assertNull(importExportManager.getEnvironmentVariable("DRY_ENV"), "预检模式不应写入环境变量");
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    @DisplayName("测试导入脚本配置时支持snake_case字段")
+    void testImportScriptsWithSnakeCaseFields() throws Exception {
+        Path tempFile = Files.createTempFile("snake-script-config", ".json");
+
+        try {
+            String scriptsJson = "{"
+                + "\"snake_script\":{"
+                + "  \"id\":\"snake_script\","
+                + "  \"name\":\"Snake Script\","
+                + "  \"script_type\":\"PYTHON\","
+                + "  \"script_path\":\"python main.py\","
+                + "  \"working_directory\":\"/tmp\","
+                + "  \"retry_count\":2,"
+                + "  \"timeout_ms\":15000,"
+                + "  \"is_enabled\":true"
+                + "}"
+                + "}";
+            Files.writeString(tempFile, scriptsJson, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("snake_script");
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importScripts(tempFile.toString(), true);
+            assertTrue(result.isSuccess(), "snake_case 脚本配置导入应该成功");
+
+            SimpleScriptImportExportManager.SimpleScriptConfig config = importExportManager.getScriptConfig("snake_script");
+            assertNotNull(config, "脚本配置应该被导入");
+            assertEquals("Snake Script", config.getName());
+            assertEquals("PYTHON", config.getScriptType());
+            assertEquals("python main.py", config.getScriptPath());
+            assertEquals("/tmp", config.getWorkingDirectory());
+            assertEquals(2, config.getRetryCount());
+            assertEquals(15000, config.getTimeout());
+            assertTrue(config.isEnabled());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    @DisplayName("测试脚本导入预检模式不写入配置")
+    void testImportScriptsDryRun() throws Exception {
+        Path tempFile = Files.createTempFile("import-scripts-dry-run", ".json");
+
+        try {
+            String scriptsJson = "{"
+                + "\"dry_script\":{"
+                + "  \"id\":\"dry_script\","
+                + "  \"name\":\"Dry Script\","
+                + "  \"script_type\":\"SHELL\","
+                + "  \"script_path\":\"echo dry\","
+                + "  \"is_enabled\":true"
+                + "}"
+                + "}";
+            Files.writeString(tempFile, scriptsJson, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("dry_script");
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importScripts(tempFile.toString(), true, true);
+
+            assertTrue(result.isSuccess(), "脚本导入预检应该成功");
+            assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
+            assertTrue(result.getItemsSucceeded() >= 1);
+            assertNull(importExportManager.getScriptConfig("dry_script"), "脚本导入预检不应写入配置");
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    @DisplayName("测试严格Schema校验拒绝未知版本")
+    void testStrictSchemaValidationRejectsUnknownVersion() throws Exception {
+        Path tempFile = Files.createTempFile("unknown-schema-strict", ".json");
+
+        try {
+            String payload = "{"
+                + "\"version\":\"9.9.9\","
+                + "\"schemaVersion\":\"9.9.9\","
+                + "\"scripts\":{"
+                + "  \"unknown_schema_script\":{"
+                + "    \"id\":\"unknown_schema_script\","
+                + "    \"name\":\"Unknown Schema Script\","
+                + "    \"scriptType\":\"SHELL\","
+                + "    \"scriptPath\":\"echo unknown\","
+                + "    \"enabled\":true"
+                + "  }"
+                + "}"
+                + "}";
+            Files.writeString(tempFile, payload, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("unknown_schema_script");
+
+            SimpleScriptImportExportManager.ImportExportOptions options =
+                SimpleScriptImportExportManager.ImportExportOptions.newBuilder()
+                    .strictSchemaValidation(true)
+                    .validateData(true)
+                    .build();
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importAll(tempFile.toString(), options);
+
+            assertFalse(result.isSuccess(), "严格Schema校验应拒绝未知版本");
+            assertTrue(result.getMessage().contains("未知 schemaVersion"));
+            assertNull(importExportManager.getScriptConfig("unknown_schema_script"), "失败时不应写入脚本配置");
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    @DisplayName("测试注册自定义Schema迁移后可导入未来版本")
+    void testRegisterSchemaMigrationForFutureVersion() throws Exception {
+        Path tempFile = Files.createTempFile("future-schema-import", ".json");
+
+        try {
+            importExportManager.registerSchemaMigration("9.9.9", (data, context) -> {
+                context.addWarning("自定义迁移: 9.9.9 -> 4.0.1");
+                return "4.0.1";
+            });
+
+            String payload = "{"
+                + "\"version\":\"9.9.9\","
+                + "\"schemaVersion\":\"9.9.9\","
+                + "\"scripts\":{"
+                + "  \"future_schema_script\":{"
+                + "    \"id\":\"future_schema_script\","
+                + "    \"name\":\"Future Schema Script\","
+                + "    \"scriptType\":\"SHELL\","
+                + "    \"scriptPath\":\"echo future\","
+                + "    \"enabled\":true"
+                + "  }"
+                + "}"
+                + "}";
+            Files.writeString(tempFile, payload, StandardCharsets.UTF_8);
+
+            importExportManager.removeScriptConfig("future_schema_script");
+
+            SimpleScriptImportExportManager.ImportExportOptions options =
+                SimpleScriptImportExportManager.ImportExportOptions.newBuilder()
+                    .strictSchemaValidation(true)
+                    .validateData(true)
+                    .build();
+
+            SimpleScriptImportExportManager.ImportExportResult result =
+                importExportManager.importAll(tempFile.toString(), options);
+
+            assertTrue(result.isSuccess(), "注册迁移后应可导入未来版本");
+            assertEquals("9.9.9", result.getStatistics().get("schemaVersion.original"));
+            assertEquals("4.0.1", result.getStatistics().get("schemaVersion.final"));
+            assertTrue(result.getWarnings().stream().anyMatch(msg -> msg.contains("自定义迁移")));
+
+            SimpleScriptImportExportManager.SimpleScriptConfig config = importExportManager.getScriptConfig("future_schema_script");
+            assertNotNull(config, "脚本配置应该被导入");
+            assertEquals("Future Schema Script", config.getName());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
     
     @Test
     @DisplayName("测试导入导出选项")
@@ -177,6 +443,8 @@ public class SimpleScriptImportExportManagerTest {
         assertFalse(defaultOptions.isIncludeCache(), "默认不应该包含缓存");
         assertFalse(defaultOptions.isOverwriteExisting(), "默认不应该覆盖已存在的数据");
         assertTrue(defaultOptions.isValidateData(), "默认应该验证数据");
+        assertFalse(defaultOptions.isDryRun(), "默认不应该启用预检模式");
+        assertFalse(defaultOptions.isStrictSchemaValidation(), "默认不应该严格校验Schema版本");
         assertTrue(defaultOptions.isCreateBackup(), "默认应该创建备份");
         
         // 测试自定义选项
@@ -186,6 +454,8 @@ public class SimpleScriptImportExportManagerTest {
                 .includeCache(true)
                 .overwriteExisting(true)
                 .validateData(false)
+                .dryRun(true)
+                .strictSchemaValidation(true)
                 .createBackup(false)
                 .backupLocation("/custom/backup")
                 .addMetadata("author", "test")
@@ -196,6 +466,8 @@ public class SimpleScriptImportExportManagerTest {
         assertTrue(customOptions.isIncludeCache(), "自定义选项应该包含缓存");
         assertTrue(customOptions.isOverwriteExisting(), "自定义选项应该覆盖已存在的数据");
         assertFalse(customOptions.isValidateData(), "自定义选项不应该验证数据");
+        assertTrue(customOptions.isDryRun(), "自定义选项应该启用预检模式");
+        assertTrue(customOptions.isStrictSchemaValidation(), "自定义选项应该严格校验Schema版本");
         assertFalse(customOptions.isCreateBackup(), "自定义选项不应该创建备份");
         assertEquals("/custom/backup", customOptions.getBackupLocation(), "自定义备份位置应该正确");
         assertEquals("test", customOptions.getMetadata().get("author"), "自定义元数据应该正确");

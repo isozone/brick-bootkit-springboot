@@ -30,7 +30,12 @@ class ShellExecutorTest {
     void testDefaultConstructor() {
         ShellExecutor defaultExecutor = new ShellExecutor();
         assertThat(defaultExecutor).isNotNull();
-        assertThat(defaultExecutor.getShellPath()).isNotNull();
+        if (OperatingSystem.isWindows()) {
+            assertThat(defaultExecutor.getShellPath()).isNull();
+        } else {
+            assertThat(defaultExecutor.getShellPath()).isNotNull();
+            assertThat(defaultExecutor.getShellPath().trim()).isNotEmpty();
+        }
     }
 
     @Test

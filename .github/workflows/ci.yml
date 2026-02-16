@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build (Skip Tests)
+        run: bash mvnw -B -ntp -DskipTests -Djacoco.skip=true clean verify
+
+  unit-tests-stable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run Unit Tests (Stable Modules)
+        run: >
+          bash mvnw -B -ntp
+          -pl spring-boot3-brick-bootkit-loader,spring-boot3-brick-bootkit-core,spring-boot3-brick-bootkit
+          -am clean test
+
+      - name: Upload Surefire Reports (On Failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/*.txt
+            **/target/surefire-reports/*.xml

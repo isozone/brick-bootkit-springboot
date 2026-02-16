@@ -19,9 +19,11 @@ public class SimpleEnvironmentVariableManager implements EnvironmentVariableMana
     private final Map<Scope, Map<String, EnvironmentVariable>> scopeVariables;
     private final Pattern keyPattern = Pattern.compile("^[A-Z][A-Z0-9_]*$");
     private final AtomicLong variableCounter = new AtomicLong(0);
+    private final Map<String, Map<Scope, Map<String, EnvironmentVariable>>> backups;
     
     public SimpleEnvironmentVariableManager() {
         this.scopeVariables = new EnumMap<>(Scope.class);
+        this.backups = new ConcurrentHashMap<>();
         
         // 初始化各个作用域的变量映射
         for (Scope scope : Scope.values()) {
@@ -755,27 +757,68 @@ public class SimpleEnvironmentVariableManager implements EnvironmentVariableMana
     
     @Override
     public String backupVariables(Scope scope) {
-        String backupId = "backup_" + System.currentTimeMillis();
-        // 简化实现：只是返回备份ID
+        String backupId = "backup_" + System.currentTimeMillis() + "_" + variableCounter.get();
+        Map<Scope, Map<String, EnvironmentVariable>> snapshot = new EnumMap<>(Scope.class);
+
+        Collection<Scope> scopesToBackup = scope == null
+                ? Arrays.asList(Scope.values())
+                : Collections.singletonList(scope);
+
+        for (Scope currentScope : scopesToBackup) {
+            Map<String, EnvironmentVariable> sourceVars = scopeVariables.get(currentScope);
+            if (sourceVars == null || sourceVars.isEmpty()) {
+                snapshot.put(currentScope, new HashMap<>());
+                continue;
+            }
+
+            Map<String, EnvironmentVariable> scopeSnapshot = new HashMap<>();
+            for (Map.Entry<String, EnvironmentVariable> entry : sourceVars.entrySet()) {
+                scopeSnapshot.put(entry.getKey(), copyVariable(entry.getValue(), currentScope));
+            }
+            snapshot.put(currentScope, scopeSnapshot);
+        }
+
+        backups.put(backupId, snapshot);
         return backupId;
     }
     
     @Override
     public boolean restoreVariables(String backupId, boolean overwrite) {
-        // 简化实现：不执行实际恢复
-        return false;
+        Map<Scope, Map<String, EnvironmentVariable>> snapshot = backups.get(backupId);
+        if (snapshot == null) {
+            return false;
+        }
+
+        boolean restored = false;
+        for (Map.Entry<Scope, Map<String, EnvironmentVariable>> scopeEntry : snapshot.entrySet()) {
+            Scope scope = scopeEntry.getKey();
+            Map<String, EnvironmentVariable> targetScopeVars = scopeVariables.get(scope);
+            if (targetScopeVars == null) {
+                continue;
+            }
+
+            for (Map.Entry<String, EnvironmentVariable> variableEntry : scopeEntry.getValue().entrySet()) {
+                String key = variableEntry.getKey();
+                if (overwrite || !targetScopeVars.containsKey(key)) {
+                    targetScopeVars.put(key, copyVariable(variableEntry.getValue(), scope));
+                    restored = true;
+                }
+            }
+        }
+
+        return restored;
     }
     
     @Override
     public List<String> listBackups() {
-        // 简化实现：返回空列表
-        return Collections.emptyList();
+        List<String> backupIds = new ArrayList<>(backups.keySet());
+        Collections.sort(backupIds);
+        return backupIds;
     }
     
     @Override
     public boolean deleteBackup(String backupId) {
-        // 简化实现：不执行实际删除
-        return false;
+        return backups.remove(backupId) != null;
     }
     
     @Override
@@ -789,29 +832,53 @@ public class SimpleEnvironmentVariableManager implements EnvironmentVariableMana
     
     @Override
     public boolean supportsFeature(String feature) {
-        // 简化实现：支持基础功能
+        if (feature == null || feature.trim().isEmpty()) {
+            return false;
+        }
+
         Set<String> supportedFeatures = new HashSet<>(Arrays.asList(
+            "basic-operations",
             "scope-management",
             "type-conversion",
-            "basic-operations"
+            "inheritance",
+            "backup-restore",
+            "import-export",
+            "query-filtering"
         ));
-        return supportedFeatures.contains(feature);
+        return supportedFeatures.contains(feature.toLowerCase());
     }
     
     @Override
     public List<String> getCapabilities() {
         return Arrays.asList(
-            "基础环境变量管理",
-            "作用域支持",
-            "类型转换",
-            "导入导出",
-            "查询和搜索",
-            "统计分析"
+            "Environment scope management",
+            "Variable type validation and conversion",
+            "Import and export",
+            "Backup and restore",
+            "Search and filtering",
+            "Statistics and integrity checks"
         );
     }
     
     // ==================== 私有辅助方法 ====================
-    
+
+    private EnvironmentVariable copyVariable(EnvironmentVariable source, Scope targetScope) {
+        if (source == null) {
+            return null;
+        }
+        return new EnvironmentVariable(
+            source.getKey(),
+            source.getValue(),
+            source.getType(),
+            targetScope,
+            source.isReadOnly(),
+            source.getDescription(),
+            source.getCreatedTime(),
+            source.getLastModifiedTime(),
+            source.getSource()
+        );
+    }
+
     /**
      * 匹配模式（支持通配符*）
      */

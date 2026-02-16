@@ -22,6 +22,9 @@ import java.util.zip.ZipOutputStream;
  * @since 4.0.1
  */
 public class SimpleScriptImportExportManager {
+
+    private static final String CURRENT_SCHEMA_VERSION = "4.0.1";
+    private static final String LEGACY_SCHEMA_VERSION = "legacy";
     
     /**
      * 导入导出格式枚举
@@ -62,6 +65,8 @@ public class SimpleScriptImportExportManager {
         private final boolean includeCache;
         private final boolean overwriteExisting;
         private final boolean validateData;
+        private final boolean dryRun;
+        private final boolean strictSchemaValidation;
         private final boolean createBackup;
         private final String backupLocation;
         private final Map<String, Object> metadata;
@@ -71,6 +76,8 @@ public class SimpleScriptImportExportManager {
             this.includeCache = builder.includeCache;
             this.overwriteExisting = builder.overwriteExisting;
             this.validateData = builder.validateData;
+            this.dryRun = builder.dryRun;
+            this.strictSchemaValidation = builder.strictSchemaValidation;
             this.createBackup = builder.createBackup;
             this.backupLocation = builder.backupLocation;
             this.metadata = new HashMap<>(builder.metadata);
@@ -81,6 +88,8 @@ public class SimpleScriptImportExportManager {
             private boolean includeCache = false;
             private boolean overwriteExisting = false;
             private boolean validateData = true;
+            private boolean dryRun = false;
+            private boolean strictSchemaValidation = false;
             private boolean createBackup = true;
             private String backupLocation = "backups";
             private Map<String, Object> metadata = new HashMap<>();
@@ -102,6 +111,16 @@ public class SimpleScriptImportExportManager {
             
             public Builder validateData(boolean validate) {
                 this.validateData = validate;
+                return this;
+            }
+
+            public Builder dryRun(boolean dryRun) {
+                this.dryRun = dryRun;
+                return this;
+            }
+
+            public Builder strictSchemaValidation(boolean strictSchemaValidation) {
+                this.strictSchemaValidation = strictSchemaValidation;
                 return this;
             }
             
@@ -133,6 +152,8 @@ public class SimpleScriptImportExportManager {
         public boolean isIncludeCache() { return includeCache; }
         public boolean isOverwriteExisting() { return overwriteExisting; }
         public boolean isValidateData() { return validateData; }
+        public boolean isDryRun() { return dryRun; }
+        public boolean isStrictSchemaValidation() { return strictSchemaValidation; }
         public boolean isCreateBackup() { return createBackup; }
         public String getBackupLocation() { return backupLocation; }
         public Map<String, Object> getMetadata() { return metadata; }
@@ -246,6 +267,7 @@ public class SimpleScriptImportExportManager {
     
     private final Gson gson;
     private final Map<ExportFormat, FormatHandler> formatHandlers;
+    private final Map<String, SchemaMigration> schemaMigrations;
     
     /**
      * 格式处理器接口
@@ -258,6 +280,41 @@ public class SimpleScriptImportExportManager {
         String serialize(Object data) throws Exception;
         Object deserialize(String content, Class<?> typeClass) throws Exception;
         String getFileExtension();
+    }
+
+    public interface SchemaMigration {
+        String migrate(Map<String, Object> data, MigrationContext context);
+    }
+
+    public static class MigrationContext {
+        private final List<String> warnings;
+        private final Map<String, Object> statistics;
+        private final List<String> path = new ArrayList<>();
+
+        private MigrationContext(List<String> warnings, Map<String, Object> statistics) {
+            this.warnings = warnings;
+            this.statistics = statistics;
+        }
+
+        public void addWarning(String warning) {
+            warnings.add(warning);
+        }
+
+        public void addPathStep(String fromVersion, String toVersion) {
+            path.add(fromVersion + " -> " + toVersion);
+        }
+
+        public int getStepCount() {
+            return path.size();
+        }
+
+        public List<String> getPath() {
+            return new ArrayList<>(path);
+        }
+
+        public void putStatistic(String key, Object value) {
+            statistics.put(key, value);
+        }
     }
     
     /**
@@ -414,10 +471,12 @@ public class SimpleScriptImportExportManager {
     public SimpleScriptImportExportManager() {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.formatHandlers = new EnumMap<>(ExportFormat.class);
+        this.schemaMigrations = new LinkedHashMap<>();
         this.scriptConfigs = new ConcurrentHashMap<>();
         this.environmentVariables = new ConcurrentHashMap<>();
         
         initializeFormatHandlers();
+        initializeSchemaMigrations();
     }
     
     /**
@@ -426,6 +485,31 @@ public class SimpleScriptImportExportManager {
     private void initializeFormatHandlers() {
         formatHandlers.put(ExportFormat.JSON, new JsonFormatHandler());
         formatHandlers.put(ExportFormat.PROPERTIES, new PropertiesFormatHandler());
+    }
+
+    private void initializeSchemaMigrations() {
+        registerSchemaMigration(LEGACY_SCHEMA_VERSION, (data, context) -> {
+            if (!data.containsKey("exporter")) {
+                data.put("exporter", "legacy-import");
+            }
+            context.addWarning("legacy 数据已迁移到 schemaVersion 4.0.0");
+            return "4.0.0";
+        });
+
+        registerSchemaMigration("4.0.0", (data, context) -> {
+            context.addWarning("schemaVersion 4.0.0 已迁移到 4.0.1");
+            return CURRENT_SCHEMA_VERSION;
+        });
+    }
+
+    public void registerSchemaMigration(String fromVersion, SchemaMigration migration) {
+        if (fromVersion == null || fromVersion.trim().isEmpty()) {
+            throw new IllegalArgumentException("fromVersion must not be empty");
+        }
+        if (migration == null) {
+            throw new IllegalArgumentException("migration must not be null");
+        }
+        schemaMigrations.put(normalizeSchemaVersion(fromVersion), migration);
     }
     
     /**
@@ -487,15 +571,41 @@ public class SimpleScriptImportExportManager {
             }
             
             // 反序列化数据
-            ImportExportData data = (ImportExportData) handler.deserialize(content, ImportExportData.class);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> rawData = (Map<String, Object>) handler.deserialize(content, Map.class);
+
+            String originalSchemaVersion = resolveSchemaVersion(rawData);
+            List<String> migrationWarnings = new ArrayList<>();
+            Map<String, Object> migrationStats = new HashMap<>();
+            Map<String, Object> data = normalizeImportData(rawData, migrationWarnings);
+            String finalSchemaVersion = applySchemaMigrations(
+                data,
+                migrationWarnings,
+                migrationStats,
+                options.isStrictSchemaValidation()
+            );
             
             // 验证数据
             if (options.isValidateData() && !validateData(data)) {
                 return ImportExportResult.failure("数据验证失败", Arrays.asList("导入的数据格式不正确"));
             }
+
+            if (options.isDryRun()) {
+                ImportExportResult previewResult = previewImportData(data, options, migrationWarnings);
+                previewResult.addStatistic("dryRun", true);
+                previewResult.addStatistic("schemaVersion.original", originalSchemaVersion);
+                previewResult.addStatistic("schemaVersion.final", finalSchemaVersion);
+                migrationStats.forEach(previewResult::addStatistic);
+                return previewResult;
+            }
             
             // 导入数据
-            return importData(data, options);
+            ImportExportResult result = importData(data, options, migrationWarnings);
+            result.addStatistic("dryRun", false);
+            result.addStatistic("schemaVersion.original", originalSchemaVersion);
+            result.addStatistic("schemaVersion.final", finalSchemaVersion);
+            migrationStats.forEach(result::addStatistic);
+            return result;
             
         } catch (Exception e) {
             return ImportExportResult.failure("导入失败: " + e.getMessage(), Arrays.asList(e.getMessage()));
@@ -612,26 +722,48 @@ public class SimpleScriptImportExportManager {
      * @return 导入结果
      */
     public ImportExportResult importScripts(String inputPath, boolean overwrite) {
+        return importScripts(inputPath, overwrite, false);
+    }
+
+    /**
+     * 导入脚本配置（支持预检模式）
+     *
+     * @param inputPath 输入路径
+     * @param overwrite 是否覆盖已存在的配置
+     * @param dryRun 是否仅预检不写入
+     * @return 导入结果
+     */
+    public ImportExportResult importScripts(String inputPath, boolean overwrite, boolean dryRun) {
         try {
             Path inputFile = Paths.get(inputPath);
             String content = new String(Files.readAllBytes(inputFile), StandardCharsets.UTF_8);
             ExportFormat format = ExportFormat.fromFileName(inputPath);
             
             FormatHandler handler = formatHandlers.get(format);
+            if (handler == null || !handler.canImport()) {
+                return ImportExportResult.failure("不支持的格式: " + format, Arrays.asList("格式处理器不支持导入"));
+            }
             @SuppressWarnings("unchecked")
-            Map<String, SimpleScriptConfig> scriptsData = (Map<String, SimpleScriptConfig>) handler.deserialize(content, Map.class);
+            Map<String, Object> scriptsData = (Map<String, Object>) handler.deserialize(content, Map.class);
             
             long imported = 0;
             long failed = 0;
             List<String> errors = new ArrayList<>();
             
-            for (Map.Entry<String, SimpleScriptConfig> entry : scriptsData.entrySet()) {
+            for (Map.Entry<String, Object> entry : scriptsData.entrySet()) {
                 try {
                     String scriptId = entry.getKey();
-                    SimpleScriptConfig config = entry.getValue();
+                    SimpleScriptConfig config = toScriptConfig(entry.getValue());
+                    if (config == null) {
+                        failed++;
+                        errors.add("导入脚本失败: 配置为空, scriptId=" + scriptId);
+                        continue;
+                    }
                     
                     if (overwrite || !scriptConfigs.containsKey(scriptId)) {
-                        scriptConfigs.put(scriptId, config);
+                        if (!dryRun) {
+                            scriptConfigs.put(scriptId, config);
+                        }
                         imported++;
                     }
                 } catch (Exception e) {
@@ -641,7 +773,7 @@ public class SimpleScriptImportExportManager {
             }
             
             if (failed > 0) {
-                return ImportExportResult.partialSuccess(
+                ImportExportResult result = ImportExportResult.partialSuccess(
                     "脚本导入完成， 部分失败", 
                     imported + failed, 
                     imported, 
@@ -649,8 +781,16 @@ public class SimpleScriptImportExportManager {
                     new ArrayList<>(), 
                     errors
                 );
+                result.addStatistic("dryRun", dryRun);
+                return result;
             } else {
-                return ImportExportResult.success("脚本导入成功", imported, imported);
+                ImportExportResult result = ImportExportResult.success(
+                    dryRun ? "脚本导入预检成功（未写入）" : "脚本导入成功",
+                    imported,
+                    imported
+                );
+                result.addStatistic("dryRun", dryRun);
+                return result;
             }
             
         } catch (Exception e) {
@@ -723,7 +863,8 @@ public class SimpleScriptImportExportManager {
         Map<String, Object> data = new HashMap<>();
         
         // 基本信息
-        data.put("version", "4.0.1");
+        data.put("version", CURRENT_SCHEMA_VERSION);
+        data.put("schemaVersion", CURRENT_SCHEMA_VERSION);
         data.put("exportTime", LocalDateTime.now().toString());
         data.put("exporter", "SimpleScriptImportExportManager");
         data.put("options", options);
@@ -750,30 +891,170 @@ public class SimpleScriptImportExportManager {
     /**
      * 验证导入数据
      */
-    private boolean validateData(ImportExportData data) {
-        return data != null && 
-               data.getVersion() != null && 
-               !data.getVersion().trim().isEmpty();
+    private boolean validateData(Map<String, Object> data) {
+        if (data == null) {
+            return false;
+        }
+        Object version = data.get("version");
+        if (version == null || String.valueOf(version).trim().isEmpty()) {
+            return false;
+        }
+
+        boolean hasScripts = data.get("scripts") instanceof Map;
+        boolean hasEnvironment = data.get("environment") instanceof Map;
+        return hasScripts || hasEnvironment;
+    }
+
+    private String resolveSchemaVersion(Map<String, Object> data) {
+        if (data == null) {
+            return LEGACY_SCHEMA_VERSION;
+        }
+
+        Object schemaVersion = data.get("schemaVersion");
+        if (schemaVersion != null && !String.valueOf(schemaVersion).trim().isEmpty()) {
+            return normalizeSchemaVersion(String.valueOf(schemaVersion));
+        }
+
+        Object version = data.get("version");
+        if (version != null && !String.valueOf(version).trim().isEmpty()) {
+            return normalizeSchemaVersion(String.valueOf(version));
+        }
+
+        return LEGACY_SCHEMA_VERSION;
+    }
+
+    private String normalizeSchemaVersion(String rawVersion) {
+        if (rawVersion == null) {
+            return LEGACY_SCHEMA_VERSION;
+        }
+        String normalized = rawVersion.trim();
+        if (normalized.isEmpty()) {
+            return LEGACY_SCHEMA_VERSION;
+        }
+        if (LEGACY_SCHEMA_VERSION.equalsIgnoreCase(normalized)) {
+            return LEGACY_SCHEMA_VERSION;
+        }
+        return normalized;
+    }
+
+    private String applySchemaMigrations(
+            Map<String, Object> data,
+            List<String> warnings,
+            Map<String, Object> stats,
+            boolean strictSchemaValidation) {
+
+        String original = resolveSchemaVersion(data);
+        String current = original;
+        MigrationContext context = new MigrationContext(warnings, stats);
+
+        while (!CURRENT_SCHEMA_VERSION.equals(current)) {
+            SchemaMigration migration = schemaMigrations.get(current);
+            if (migration == null) {
+                if (strictSchemaValidation) {
+                    throw new IllegalArgumentException("未知 schemaVersion: " + current);
+                }
+                warnings.add("未知 schemaVersion: " + current + "，按兼容模式继续处理");
+                break;
+            }
+
+            String next = migration.migrate(data, context);
+            if (next == null || next.trim().isEmpty()) {
+                throw new IllegalStateException("schema 迁移返回了空版本, from=" + current);
+            }
+            String normalizedNext = normalizeSchemaVersion(next);
+            if (normalizedNext.equals(current)) {
+                throw new IllegalStateException("schema 迁移未推进版本, from=" + current);
+            }
+
+            context.addPathStep(current, normalizedNext);
+            current = normalizedNext;
+        }
+
+        data.put("schemaVersion", current);
+        data.put("version", current);
+        stats.put("migration.steps", context.getStepCount());
+        stats.put("migration.path", context.getPath());
+        stats.put("migration.originalSchemaVersion", original);
+        stats.put("migration.finalSchemaVersion", current);
+        return current;
+    }
+
+    private ImportExportResult previewImportData(Map<String, Object> data, ImportExportOptions options, List<String> warnings) {
+        long wouldImport = 0;
+        long wouldFail = 0;
+        List<String> errors = new ArrayList<>();
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> scriptsDataObj = (Map<String, Object>) data.get("scripts");
+            if (scriptsDataObj != null) {
+                for (Map.Entry<String, Object> entry : scriptsDataObj.entrySet()) {
+                    SimpleScriptConfig config = toScriptConfig(entry.getValue());
+                    if (config == null) {
+                        wouldFail++;
+                        errors.add("预检脚本配置失败: 配置为空, scriptId=" + entry.getKey());
+                        continue;
+                    }
+                    if (options.isOverwriteExisting() || !scriptConfigs.containsKey(entry.getKey())) {
+                        wouldImport++;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            wouldFail++;
+            errors.add("预检脚本配置失败: " + e.getMessage());
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> envData = (Map<String, Object>) data.get("environment");
+            if (envData != null && options.isIncludeEnvironment()) {
+                for (String key : envData.keySet()) {
+                    if (options.isOverwriteExisting() || !environmentVariables.containsKey(key)) {
+                        wouldImport++;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            wouldFail++;
+            errors.add("预检环境变量失败: " + e.getMessage());
+        }
+
+        if (wouldFail > 0 || !warnings.isEmpty()) {
+            return ImportExportResult.partialSuccess(
+                "数据预检完成（未写入）",
+                wouldImport + wouldFail,
+                wouldImport,
+                wouldFail,
+                warnings,
+                errors
+            );
+        }
+
+        return ImportExportResult.success("数据预检成功（未写入）", wouldImport, wouldImport);
     }
     
     /**
      * 导入数据
      */
-    private ImportExportResult importData(ImportExportData data, ImportExportOptions options) {
+    private ImportExportResult importData(Map<String, Object> data, ImportExportOptions options, List<String> warnings) {
         long totalImported = 0;
         long totalFailed = 0;
-        List<String> warnings = new ArrayList<>();
         List<String> errors = new ArrayList<>();
         
         // 导入脚本配置
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> scriptsDataObj = (Map<String, Object>) data.getScripts();
+            Map<String, Object> scriptsDataObj = (Map<String, Object>) data.get("scripts");
             if (scriptsDataObj != null) {
                 for (Map.Entry<String, Object> entry : scriptsDataObj.entrySet()) {
                     String scriptId = entry.getKey();
-                    @SuppressWarnings("unchecked")
-                    SimpleScriptConfig config = (SimpleScriptConfig) entry.getValue();
+                    SimpleScriptConfig config = toScriptConfig(entry.getValue());
+                    if (config == null) {
+                        totalFailed++;
+                        errors.add("导入脚本配置失败: 配置为空, scriptId=" + scriptId);
+                        continue;
+                    }
                     
                     if (options.isOverwriteExisting() || !scriptConfigs.containsKey(scriptId)) {
                         scriptConfigs.put(scriptId, config);
@@ -782,21 +1063,24 @@ public class SimpleScriptImportExportManager {
                 }
             }
         } catch (Exception e) {
+            totalFailed++;
             errors.add("导入脚本配置失败: " + e.getMessage());
         }
         
         // 导入环境变量
         try {
-            Map<String, String> envData = data.getEnvironment();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> envData = (Map<String, Object>) data.get("environment");
             if (envData != null && options.isIncludeEnvironment()) {
-                for (Map.Entry<String, String> entry : envData.entrySet()) {
+                for (Map.Entry<String, Object> entry : envData.entrySet()) {
                     if (options.isOverwriteExisting() || !environmentVariables.containsKey(entry.getKey())) {
-                        environmentVariables.put(entry.getKey(), entry.getValue());
+                        environmentVariables.put(entry.getKey(), entry.getValue() == null ? null : String.valueOf(entry.getValue()));
                         totalImported++;
                     }
                 }
             }
         } catch (Exception e) {
+            totalFailed++;
             errors.add("导入环境变量失败: " + e.getMessage());
         }
         
@@ -809,11 +1093,151 @@ public class SimpleScriptImportExportManager {
                 warnings, 
                 errors
             );
+        } else if (!warnings.isEmpty()) {
+            return ImportExportResult.partialSuccess(
+                "数据导入成功（包含兼容迁移提示）",
+                totalImported,
+                totalImported,
+                0,
+                warnings,
+                errors
+            );
         } else {
             return ImportExportResult.success("数据导入成功", totalImported, totalImported);
         }
     }
     
+    /**
+     * 获取总项目数
+     */
+    private SimpleScriptConfig toScriptConfig(Object rawConfig) {
+        if (rawConfig == null) {
+            return null;
+        }
+        if (rawConfig instanceof SimpleScriptConfig) {
+            return (SimpleScriptConfig) rawConfig;
+        }
+        if (rawConfig instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> normalized = normalizeScriptConfigMap((Map<String, Object>) rawConfig);
+            return gson.fromJson(gson.toJson(normalized), SimpleScriptConfig.class);
+        }
+        return gson.fromJson(gson.toJson(rawConfig), SimpleScriptConfig.class);
+    }
+
+    private Map<String, Object> normalizeImportData(Map<String, Object> rawData, List<String> warnings) {
+        if (rawData == null) {
+            return null;
+        }
+
+        Map<String, Object> normalized = new HashMap<>(rawData);
+
+        Object scripts = normalized.get("scripts");
+        if (!(scripts instanceof Map)) {
+            Object legacyScripts = normalized.get("scriptConfigs");
+            if (legacyScripts == null) {
+                legacyScripts = normalized.get("script_configs");
+            }
+            if (legacyScripts == null) {
+                legacyScripts = normalized.get("script-configs");
+            }
+            if (legacyScripts instanceof Map) {
+                normalized.put("scripts", legacyScripts);
+                warnings.add("检测到旧字段 scriptConfigs，已自动迁移为 scripts");
+            }
+        }
+
+        Object environment = normalized.get("environment");
+        if (!(environment instanceof Map)) {
+            Object legacyEnvironment = normalized.get("environmentVariables");
+            if (legacyEnvironment == null) {
+                legacyEnvironment = normalized.get("environment_variables");
+            }
+            if (legacyEnvironment == null) {
+                legacyEnvironment = normalized.get("env");
+            }
+            if (legacyEnvironment == null) {
+                legacyEnvironment = normalized.get("envVars");
+            }
+            if (legacyEnvironment instanceof Map) {
+                normalized.put("environment", legacyEnvironment);
+                warnings.add("检测到旧字段 environmentVariables/env，已自动迁移为 environment");
+            }
+        }
+
+        if (!(normalized.get("scripts") instanceof Map) && isLikelyScriptsOnlyPayload(rawData)) {
+            normalized.put("scripts", rawData);
+            warnings.add("检测到纯脚本导入结构，已自动按 scripts 节点兼容");
+        }
+
+        Object version = normalized.get("version");
+        if (version == null || String.valueOf(version).trim().isEmpty()) {
+            normalized.put("version", LEGACY_SCHEMA_VERSION);
+            warnings.add("导入数据缺少 version，已按 legacy 兼容处理");
+        }
+
+        Object schemaVersion = normalized.get("schemaVersion");
+        if (schemaVersion == null || String.valueOf(schemaVersion).trim().isEmpty()) {
+            normalized.put("schemaVersion", normalized.get("version"));
+        }
+
+        return normalized;
+    }
+
+    private boolean isLikelyScriptsOnlyPayload(Map<String, Object> data) {
+        if (data == null || data.isEmpty()) {
+            return false;
+        }
+
+        Set<String> knownMetaKeys = new HashSet<>(Arrays.asList(
+            "version", "exportTime", "exporter", "options", "scripts", "environment", "cache"
+        ));
+        if (data.keySet().stream().anyMatch(knownMetaKeys::contains)) {
+            return false;
+        }
+
+        int scriptLikeCount = 0;
+        for (Object value : data.values()) {
+            if (value instanceof Map && looksLikeScriptConfig((Map<?, ?>) value)) {
+                scriptLikeCount++;
+            }
+        }
+        return scriptLikeCount > 0;
+    }
+
+    private boolean looksLikeScriptConfig(Map<?, ?> configData) {
+        return configData.containsKey("scriptType")
+            || configData.containsKey("script_type")
+            || configData.containsKey("scriptPath")
+            || configData.containsKey("script_path");
+    }
+
+    private Map<String, Object> normalizeScriptConfigMap(Map<String, Object> rawConfig) {
+        Map<String, Object> normalized = new HashMap<>(rawConfig);
+
+        applyAlias(normalized, "scriptType", "script_type", "type");
+        applyAlias(normalized, "scriptPath", "script_path", "path");
+        applyAlias(normalized, "workingDirectory", "working_directory", "workdir");
+        applyAlias(normalized, "retryCount", "retry_count");
+        applyAlias(normalized, "timeout", "timeout_ms");
+        applyAlias(normalized, "enabled", "is_enabled");
+        applyAlias(normalized, "environment", "environmentVariables", "environment_variables", "env");
+
+        return normalized;
+    }
+
+    private void applyAlias(Map<String, Object> target, String canonicalKey, String... aliases) {
+        if (target.containsKey(canonicalKey) && target.get(canonicalKey) != null) {
+            return;
+        }
+        for (String alias : aliases) {
+            if (target.containsKey(alias)) {
+                target.put(canonicalKey, target.get(alias));
+                return;
+            }
+        }
+    }
+
     /**
      * 获取总项目数
      */
