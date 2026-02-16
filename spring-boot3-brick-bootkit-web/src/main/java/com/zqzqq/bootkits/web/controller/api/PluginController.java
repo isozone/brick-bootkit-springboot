@@ -2,6 +2,8 @@ package com.zqzqq.bootkits.web.controller.api;
 
 import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
+import com.zqzqq.bootkits.web.auth.PluginWebPermission;
 import com.zqzqq.bootkits.web.dto.*;
 import com.zqzqq.bootkits.web.service.DemoPluginService;
 import com.zqzqq.bootkits.web.service.PluginWebService;
@@ -15,7 +17,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 插件管理 API 控制器
@@ -42,7 +44,7 @@ public class PluginController {
     private final ObjectProvider<PluginWebService> pluginWebServiceProvider;
     private final ObjectProvider<SimplePluginService> simplePluginServiceProvider;
     private final ObjectProvider<DemoPluginService> demoPluginServiceProvider;
-    private final ApplicationContext applicationContext;
+    private final PluginWebAuthorizationService authorizationService;
     
     @Autowired
     private UploadHistoryService uploadHistoryService;
@@ -51,11 +53,19 @@ public class PluginController {
             ObjectProvider<PluginWebService> pluginWebServiceProvider, 
             ObjectProvider<SimplePluginService> simplePluginServiceProvider,
             ObjectProvider<DemoPluginService> demoPluginServiceProvider,
-            ApplicationContext applicationContext) {
+            PluginWebAuthorizationService authorizationService) {
         this.pluginWebServiceProvider = pluginWebServiceProvider;
         this.simplePluginServiceProvider = simplePluginServiceProvider;
         this.demoPluginServiceProvider = demoPluginServiceProvider;
-        this.applicationContext = applicationContext;
+        this.authorizationService = authorizationService;
+    }
+
+    private void authorize(PluginWebPermission permission) {
+        authorizationService.check(permission, null);
+    }
+
+    private void authorize(PluginWebPermission permission, String pluginId) {
+        authorizationService.check(permission, pluginId);
     }
 
     /**
@@ -79,6 +89,7 @@ public class PluginController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "all") String state,
             @RequestParam(required = false) String keyword) {
+        authorize(PluginWebPermission.PLUGIN_VIEW);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.listPlugins(page, size, state, keyword));
@@ -96,6 +107,7 @@ public class PluginController {
     @GetMapping("/all")
     @Operation(summary = "获取所有插件")
     public ApiResult<List<PluginDTO>> getAllPlugins() {
+        authorize(PluginWebPermission.PLUGIN_VIEW);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.getAllPlugins());
@@ -113,6 +125,7 @@ public class PluginController {
     @GetMapping("/{pluginId}")
     @Operation(summary = "获取插件详情")
     public ApiResult<PluginDetailDTO> detail(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_VIEW, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return ApiResult.success(pluginWebService.getPluginDetail(pluginId));
@@ -133,6 +146,7 @@ public class PluginController {
     @PostMapping("/upload/temp")
     @Operation(summary = "上传插件到临时目录")
     public ApiResult<String> uploadTemp(@RequestParam("file") MultipartFile file) {
+        authorize(PluginWebPermission.PLUGIN_UPLOAD);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             return pluginWebService.uploadPluginTemp(file);
@@ -150,6 +164,7 @@ public class PluginController {
     @PostMapping("/install/temp")
     @Operation(summary = "从临时目录安装插件")
     public ApiResult<PluginDTO> installFromTemp(@RequestBody PluginInstallRequest request) {
+        authorize(PluginWebPermission.PLUGIN_INSTALL);
         if (request.getTempFilePath() == null) {
             return ApiResult.error(400, "请提供临时文件路径 (tempFilePath)");
         }
@@ -174,6 +189,7 @@ public class PluginController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(name = "autoStart", required = false, defaultValue = "false") Boolean autoStart,
             @RequestParam(name = "overwrite", required = false, defaultValue = "true") Boolean overwrite) {
+        authorize(PluginWebPermission.PLUGIN_UPLOAD);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             ApiResult<PluginDTO> result = pluginWebService.uploadPlugin(file, autoStart);
@@ -196,6 +212,7 @@ public class PluginController {
     @PostMapping("/install")
     @Operation(summary = "安装插件")
     public ApiResult<PluginDTO> install(@RequestBody PluginInstallRequest request) {
+        authorize(PluginWebPermission.PLUGIN_INSTALL);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             Path pluginPath = Paths.get(request.getPluginPath());
@@ -221,6 +238,7 @@ public class PluginController {
     @PostMapping("/{pluginId}/start")
     @Operation(summary = "启动插件")
     public ApiResult<Void> start(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_START, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.startPlugin(pluginId);
@@ -240,6 +258,7 @@ public class PluginController {
     @PostMapping("/{pluginId}/stop")
     @Operation(summary = "停止插件")
     public ApiResult<Void> stop(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_STOP, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.stopPlugin(pluginId);
@@ -259,6 +278,7 @@ public class PluginController {
     @PostMapping("/{pluginId}/restart")
     @Operation(summary = "重启插件")
     public ApiResult<Void> restart(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_RESTART, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.restartPlugin(pluginId);
@@ -278,6 +298,7 @@ public class PluginController {
     @DeleteMapping("/{pluginId}")
     @Operation(summary = "卸载插件")
     public ApiResult<Void> uninstall(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_UNINSTALL, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             pluginWebService.uninstallPlugin(pluginId);
@@ -297,6 +318,7 @@ public class PluginController {
     @GetMapping("/{pluginId}/download")
     @Operation(summary = "下载插件")
     public ResponseEntity<Resource> download(@PathVariable String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_DOWNLOAD, pluginId);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService == null) {
             return ResponseEntity.notFound().build();
@@ -318,6 +340,7 @@ public class PluginController {
     @PostMapping("/verify")
     @Operation(summary = "验证插件")
     public ApiResult<PluginVerifyResult> verify(@RequestBody PluginVerifyRequest request) {
+        authorize(PluginWebPermission.PLUGIN_VERIFY);
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
             Path pluginPath = Paths.get(request.getPluginPath());
@@ -382,6 +405,7 @@ public class PluginController {
             @RequestParam(value = "status", required = false) PluginUploadHistory.UploadStatus status,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_READ, pluginId);
         PageResult<PluginUploadHistory> result = uploadHistoryService.queryHistory(
                 page, size, pluginId, status, startDate, endDate);
         return ApiResult.success(result);
@@ -393,6 +417,7 @@ public class PluginController {
     @GetMapping("/upload-history/all")
     @Operation(summary = "获取所有上传历史")
     public ApiResult<List<PluginUploadHistory>> getAllUploadHistory() {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_READ);
         List<PluginUploadHistory> history = uploadHistoryService.getAllHistory();
         return ApiResult.success(history);
     }
@@ -403,6 +428,7 @@ public class PluginController {
     @GetMapping("/upload-history/{uploadId}")
     @Operation(summary = "根据上传ID获取历史记录")
     public ApiResult<PluginUploadHistory> getUploadHistoryById(@PathVariable String uploadId) {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_READ);
         PluginUploadHistory history = uploadHistoryService.getHistoryById(uploadId);
         if (history == null) {
             return ApiResult.error(404, "上传历史记录不存在");
@@ -416,6 +442,7 @@ public class PluginController {
     @DeleteMapping("/upload-history/{uploadId}")
     @Operation(summary = "删除上传历史记录")
     public ApiResult<Void> deleteUploadHistory(@PathVariable String uploadId) {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_WRITE);
         boolean deleted = uploadHistoryService.deleteHistory(uploadId);
         if (!deleted) {
             return ApiResult.error(404, "上传历史记录不存在");
@@ -431,6 +458,7 @@ public class PluginController {
     public ApiResult<Integer> deleteUploadHistoryBefore(
             @Parameter(description = "删除指定日期之前的记录") 
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate) {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_WRITE);
         int deletedCount = uploadHistoryService.deleteHistoryBefore(beforeDate);
         return ApiResult.success(deletedCount);
     }
@@ -441,7 +469,31 @@ public class PluginController {
     @DeleteMapping("/upload-history/all")
     @Operation(summary = "清空所有上传历史")
     public ApiResult<Void> clearAllUploadHistory() {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_WRITE);
         uploadHistoryService.clearAllHistory();
         return ApiResult.success();
+    }
+
+    /**
+     * 当前用户插件管理能力集合
+     */
+    @GetMapping("/auth/capabilities")
+    @Operation(summary = "获取当前用户插件管理能力")
+    public ApiResult<AuthCapabilities> capabilities(@RequestParam(value = "pluginId", required = false) String pluginId) {
+        authorize(PluginWebPermission.PLUGIN_VIEW, pluginId);
+        AuthCapabilities response = new AuthCapabilities(
+                authorizationService.getMode().name().toLowerCase(),
+                authorizationService.currentPrincipal(),
+                authorizationService.getCapabilities(pluginId)
+        );
+        return ApiResult.success(response);
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AuthCapabilities {
+        private String mode;
+        private String principal;
+        private Map<String, Boolean> permissions;
     }
 }

@@ -1309,3 +1309,83 @@ Copyright 2024-2025 huzhenjie
 
 </div>
 </div>
+
+## 2026-02 增强能力（新增）
+
+以下能力已经落地到主链路，默认保持向后兼容。
+
+### 1) 安全准入管线（Admission Pipeline）
+- 新增配置 `plugin.admissionMode=off|warn|enforce`（默认 `warn`）。
+- 新增 SPI：`com.zqzqq.bootkits.core.admission.PluginAdmissionCheck`。
+- 安装、启动阶段会进入准入管线；`enforce` 模式下命中拒绝项会直接阻断操作。
+- 默认内置 `PluginDescriptorAdmissionCheck`（检查 `pluginId/version/mainClass`）。
+
+示例：
+```yaml
+plugin:
+  admissionMode: enforce
+```
+
+### 2) 集群锁可插拔
+- 新增配置 `plugin.clusterLockProviderBeanName`，可显式指定主应用中的锁实现 Bean。
+- 如果未指定且容器中只有一个 `ClusterLockProvider`，框架会自动使用该实现。
+- 未提供自定义实现时，仍保持原有策略：
+  - `clusterEnabled=false` -> NoOp 锁
+  - `clusterEnabled=true` -> 文件锁（`clusterSharedPath/.plugin-locks`）
+
+示例：
+```yaml
+plugin:
+  clusterEnabled: true
+  clusterSharedPath: /data/shared/plugins
+  clusterLockProviderBeanName: redisClusterLockProvider
+```
+
+### 3) 迁移引擎增强
+- 新增配置：
+  - `plugin.migrationValidateChecksum=true|false`（默认 `true`）
+  - `plugin.migrationContinueOnError=true|false`（默认 `false`）
+- 每个已执行的 up 脚本会持久化 checksum；重复安装时可校验脚本是否被篡改。
+- 迁移状态文件继续保存在：`${clusterSharedPath}/.plugin-state/migrations`。
+
+示例：
+```yaml
+plugin:
+  migrationValidateChecksum: true
+  migrationContinueOnError: false
+```
+
+### 4) 灰度与回滚
+- 新增配置：
+  - `plugin.rolloutMode=direct|gray`（默认 `direct`）
+  - `plugin.rolloutAutoStart=true|false`（默认 `true`）
+  - `plugin.rolloutRollbackOnFailure=true|false`（默认 `true`）
+- 升级失败时可自动回滚：卸载失败版本 -> 重新安装备份版本 -> 按需恢复启动。
+- `gray` 模式下支持主应用注入探针：`PluginRolloutProbe`。
+
+示例：
+```yaml
+plugin:
+  rolloutMode: gray
+  rolloutAutoStart: true
+  rolloutRollbackOnFailure: true
+```
+
+### 5) SPI 扩展管理器
+- 新增配置 `plugin.lifecycleExtensionsEnabled=true|false`（默认 `true`）。
+- 新增 SPI：`com.zqzqq.bootkits.integration.spi.PluginLifecycleExtension`。
+- 支持两种扩展来源：
+  - Spring Bean
+  - Java SPI（`META-INF/services/...PluginLifecycleExtension`）
+- 生命周期钩子已接入安装/启动/停止/卸载流程。
+
+示例：
+```yaml
+plugin:
+  lifecycleExtensionsEnabled: true
+```
+
+### 6) Web 鉴权委托模式（已落地）
+- 新增配置 `plugin.web.auth.mode=disabled|delegate|strict`（默认 `delegate`）。
+- `strict` 模式要求主应用提供 `PluginWebAuthorizer`，否则启动失败。
+- 新增能力查询接口：`GET /plugins/auth/capabilities`。

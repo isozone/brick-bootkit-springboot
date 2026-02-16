@@ -43,6 +43,14 @@ public class BrickWebProperties {
      * API 文档标题
      */
     private String apiTitle = "Brick BootKit Web API";
+
+    /**
+     * Authorization mode:
+     * disabled: disable plugin-web authorization checks
+     * delegate: delegate decisions to host authorizer, fallback allow-all when missing
+     * strict: delegate decisions to host authorizer, fail startup if host authorizer missing
+     */
+    private String authMode = "delegate";
     
     // ========== 以下属性从 IntegrationConfiguration 自动读取 ==========
     

@@ -17,7 +17,9 @@
 package com.zqzqq.bootkits.integration;
 
 import com.zqzqq.bootkits.core.RuntimeMode;
+import com.zqzqq.bootkits.core.admission.PluginAdmissionMode;
 import com.zqzqq.bootkits.integration.decrypt.DecryptConfiguration;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutMode;
 import com.zqzqq.bootkits.utils.ResourceUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,136 +32,53 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 自动集成配置
- *
- * @author starBlues
- * @since 3.0.0
- * @version 3.1.2
+ * Auto integration configuration.
  */
 @Configuration
 @ConditionalOnMissingBean(IntegrationConfiguration.class)
 @EqualsAndHashCode(callSuper = true)
 @ConfigurationProperties(prefix = "plugin")
 @Data
-public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguration{
+public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguration {
 
     public static final String ENABLE_KEY = "plugin.enable";
 
-    /**
-     * 是否启用插件功能
-     * 通过 plugin.enable 配置控制
-     */
     private Boolean enable = true;
-
-    /**
-     * 运行模式
-     * 开发环境: development, dev
-     * 生产/部署环境: deployment, prod
-     */
     private String runMode = RuntimeMode.DEV.getMode();
-
-    /**
-     * 主程序包名
-     */
     private String mainPackage = "";
-
-    /**
-     * 插件的路径
-     */
     private List<String> pluginPath;
-
-    /**
-     * 上传的插件所存储的临时目录
-     */
     private String uploadTempPath = "";
-
-    /**
-     * 在卸载插件后, 备份插件的目录
-     */
     private String backupPath = "backupPlugin";
-
-    /**
-     * 插件rest接口前缀. 默认: /plugins
-     */
     private String pluginRestPathPrefix = "/plugins";
-
-    /**
-     * 是否启用插件id作为rest接口前缀，默认启用
-     * 如果启用 地址为: /pluginRestPathPrefix/pluginId
-     * pluginRestPathPrefix: 为pluginRestPathPrefix的配置
-     * pluginId: 为插件id
-     */
     private Boolean enablePluginIdRestPathPrefix = true;
-
-    /**
-     * 启用的插件id
-     */
     private Set<String> enablePluginIds;
-
-    /**
-     * 禁用的插件id，禁用后系统不会启动该插件
-     * 如果禁用所有插件，则set集合中返回一个字符 '*'
-     */
     private Set<String> disablePluginIds;
-
-    /**
-     * 设置初始化时插件启动的顺序
-     */
     private List<String> sortInitPluginIds;
-
-    /**
-     * 当前主程序包版本，用于验证插件是否可安装
-     * 插件中可通过插件配置信息 requires 来指定可安装的主程序版本
-     * 如果为 0.0.0 的话，表示不校验
-     */
     private String version = "0.0.0";
-
-    /**
-     * 设置为true表示插件设置的requires的版本号完全匹配version版本后才能允许插件安装: requires=x.y.z
-     * 设置为false表示插件设置的requires的版本号小于等于version时插件可安装，即 requires<=x.y.z
-     * 默认false
-     */
     private Boolean exactVersion = false;
-
-    /**
-     * 是否扫描swagger接口
-     */
     private Boolean pluginSwaggerScan = true;
-
-
-    /**
-     * 插件的配置文件Profile是否跟随主程序的Profile配置动态切换
-     */
     private Boolean pluginFollowProfile = false;
-
-    /**
-     * 插件日志打印是否跟随主程序
-     */
     private Boolean pluginFollowLog = false;
-
-    /**
-     * 对插件启动时进行解密配置。默认不启用
-     */
     private DecryptConfiguration decrypt;
 
-    /**
-     * 是否启用集群协同锁
-     */
     private Boolean clusterEnabled = false;
-
-    /**
-     * 集群共享路径（锁文件和状态文件）
-     */
     private String clusterSharedPath = "";
-
-    /**
-     * 集群锁获取超时（毫秒）
-     */
     private Long clusterLockTimeoutMs = 30000L;
+    private String clusterLockProviderBeanName = "";
+
+    private String admissionMode = "warn";
+    private Boolean lifecycleExtensionsEnabled = true;
+
+    private Boolean migrationValidateChecksum = true;
+    private Boolean migrationContinueOnError = false;
+
+    private String rolloutMode = "direct";
+    private Boolean rolloutAutoStart = true;
+    private Boolean rolloutRollbackOnFailure = true;
 
     @Override
     public Boolean enable() {
-        if(enable == null){
+        if (enable == null) {
             return true;
         }
         return enable;
@@ -177,7 +96,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public List<String> pluginPath() {
-        if(ObjectUtils.isEmpty(pluginPath)){
+        if (ObjectUtils.isEmpty(pluginPath)) {
             return super.pluginPath();
         }
         return pluginPath;
@@ -185,7 +104,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public String uploadTempPath() {
-        if(ObjectUtils.isEmpty(uploadTempPath)){
+        if (ObjectUtils.isEmpty(uploadTempPath)) {
             return super.uploadTempPath();
         }
         return uploadTempPath;
@@ -193,7 +112,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public String backupPath() {
-        if(ObjectUtils.isEmpty(backupPath)){
+        if (ObjectUtils.isEmpty(backupPath)) {
             return super.backupPath();
         }
         return backupPath;
@@ -201,20 +120,18 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public String pluginRestPathPrefix() {
-        if(pluginRestPathPrefix == null){
+        if (pluginRestPathPrefix == null) {
             return super.pluginRestPathPrefix();
-        } else {
-            return pluginRestPathPrefix;
         }
+        return pluginRestPathPrefix;
     }
 
     @Override
     public Boolean enablePluginIdRestPathPrefix() {
-        if(enablePluginIdRestPathPrefix == null){
+        if (enablePluginIdRestPathPrefix == null) {
             return super.enablePluginIdRestPathPrefix();
-        } else {
-            return enablePluginIdRestPathPrefix;
         }
+        return enablePluginIdRestPathPrefix;
     }
 
     @Override
@@ -244,7 +161,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public Boolean pluginSwaggerScan() {
-        if(pluginSwaggerScan == null){
+        if (pluginSwaggerScan == null) {
             return super.pluginSwaggerScan();
         }
         return pluginSwaggerScan;
@@ -252,7 +169,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public Boolean pluginFollowProfile() {
-        if(pluginFollowProfile == null){
+        if (pluginFollowProfile == null) {
             return super.pluginFollowProfile();
         }
         return pluginFollowProfile;
@@ -260,7 +177,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public Boolean pluginFollowLog() {
-        if(pluginFollowLog == null){
+        if (pluginFollowLog == null) {
             return super.pluginFollowLog();
         }
         return pluginFollowLog;
@@ -268,7 +185,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     @Override
     public DecryptConfiguration decrypt() {
-        if(decrypt == null){
+        if (decrypt == null) {
             return super.decrypt();
         }
         return decrypt;
@@ -297,5 +214,62 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
         }
         return clusterLockTimeoutMs;
     }
-}
 
+    @Override
+    public String clusterLockProviderBeanName() {
+        if (ObjectUtils.isEmpty(clusterLockProviderBeanName)) {
+            return super.clusterLockProviderBeanName();
+        }
+        return clusterLockProviderBeanName;
+    }
+
+    @Override
+    public PluginAdmissionMode pluginAdmissionMode() {
+        return PluginAdmissionMode.fromText(admissionMode, super.pluginAdmissionMode());
+    }
+
+    @Override
+    public Boolean pluginLifecycleExtensionsEnabled() {
+        if (lifecycleExtensionsEnabled == null) {
+            return super.pluginLifecycleExtensionsEnabled();
+        }
+        return lifecycleExtensionsEnabled;
+    }
+
+    @Override
+    public boolean migrationValidateChecksum() {
+        if (migrationValidateChecksum == null) {
+            return super.migrationValidateChecksum();
+        }
+        return migrationValidateChecksum;
+    }
+
+    @Override
+    public boolean migrationContinueOnError() {
+        if (migrationContinueOnError == null) {
+            return super.migrationContinueOnError();
+        }
+        return migrationContinueOnError;
+    }
+
+    @Override
+    public PluginRolloutMode pluginRolloutMode() {
+        return PluginRolloutMode.fromText(rolloutMode, super.pluginRolloutMode());
+    }
+
+    @Override
+    public boolean pluginRolloutAutoStart() {
+        if (rolloutAutoStart == null) {
+            return super.pluginRolloutAutoStart();
+        }
+        return rolloutAutoStart;
+    }
+
+    @Override
+    public boolean pluginRolloutRollbackOnFailure() {
+        if (rolloutRollbackOnFailure == null) {
+            return super.pluginRolloutRollbackOnFailure();
+        }
+        return rolloutRollbackOnFailure;
+    }
+}

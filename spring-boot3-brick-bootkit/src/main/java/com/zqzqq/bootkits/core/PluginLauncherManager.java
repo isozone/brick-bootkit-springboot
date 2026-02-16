@@ -16,6 +16,9 @@
 
 package com.zqzqq.bootkits.core;
 
+import com.zqzqq.bootkits.core.admission.PluginAdmissionContext;
+import com.zqzqq.bootkits.core.admission.PluginAdmissionOperation;
+import com.zqzqq.bootkits.core.admission.PluginAdmissionPipeline;
 import com.zqzqq.bootkits.core.checker.PluginLauncherChecker;
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.core.descriptor.PluginDescriptor;
@@ -27,11 +30,14 @@ import com.zqzqq.bootkits.core.launcher.plugin.PluginInteractive;
 import com.zqzqq.bootkits.core.launcher.plugin.PluginIsolationLauncher;
 import com.zqzqq.bootkits.core.launcher.plugin.involved.PluginLaunchInvolved;
 import com.zqzqq.bootkits.core.launcher.plugin.involved.PluginLaunchInvolvedFactory;
+import com.zqzqq.bootkits.core.lock.ClusterLockProvider;
+import com.zqzqq.bootkits.core.migration.PluginMigrationOptions;
 import com.zqzqq.bootkits.core.migration.PluginMigrationService;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.listener.DefaultPluginListenerFactory;
 import com.zqzqq.bootkits.integration.listener.PluginListenerFactory;
+import com.zqzqq.bootkits.integration.spi.PluginLifecycleExtensionManager;
 import com.zqzqq.bootkits.loader.launcher.AbstractLauncher;
 import com.zqzqq.bootkits.loader.launcher.DevelopmentModeSetting;
 import com.zqzqq.bootkits.spring.MainApplicationContext;
@@ -43,20 +49,17 @@ import com.zqzqq.bootkits.utils.SpringBeanUtils;
 import org.springframework.context.support.GenericApplicationContext;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 插件启动管理器
- * @author starBlues
- * @since 3.0.0
- * @version 3.1.2
+ * Plugin launcher manager.
  */
-public class PluginLauncherManager extends DefaultPluginManager{
+public class PluginLauncherManager extends DefaultPluginManager {
 
     private final Map<String, RegistryPluginInfo> registryInfo = new ConcurrentHashMap<>();
-
 
     private final MainApplicationContext mainApplicationContext;
     private final GenericApplicationContext mainGenericApplicationContext;
@@ -64,22 +67,45 @@ public class PluginLauncherManager extends DefaultPluginManager{
     private final InvokeSupperCache invokeSupperCache;
     private final PluginLaunchInvolved pluginLaunchInvolved;
     private final PluginMigrationService migrationService;
+    private final PluginAdmissionPipeline admissionPipeline;
+    private final PluginLifecycleExtensionManager extensionManager;
 
     public PluginLauncherManager(RealizeProvider realizeProvider,
                                  GenericApplicationContext applicationContext,
                                  IntegrationConfiguration configuration) {
-        super(realizeProvider, configuration);
+        this(realizeProvider, applicationContext, configuration, null, null, null);
+    }
+
+    public PluginLauncherManager(RealizeProvider realizeProvider,
+                                 GenericApplicationContext applicationContext,
+                                 IntegrationConfiguration configuration,
+                                 ClusterLockProvider clusterLockProvider,
+                                 PluginAdmissionPipeline admissionPipeline,
+                                 PluginLifecycleExtensionManager extensionManager) {
+        super(realizeProvider, configuration, clusterLockProvider);
         this.mainApplicationContext = new MainApplicationContextProxy(applicationContext, applicationContext);
         this.mainGenericApplicationContext = applicationContext;
         this.configuration = configuration;
         this.invokeSupperCache = new DefaultInvokeSupperCache();
         this.pluginLaunchInvolved = new PluginLaunchInvolvedFactory();
+        this.admissionPipeline = admissionPipeline;
+        this.extensionManager = extensionManager;
+
         Path migrationStateDir = getClusterSharedRoot().resolve(".plugin-state").resolve("migrations");
-        this.migrationService = new PluginMigrationService(applicationContext, migrationStateDir);
+        PluginMigrationOptions migrationOptions = new PluginMigrationOptions(
+                configuration.migrationValidateChecksum(),
+                configuration.migrationContinueOnError()
+        );
+        this.migrationService = new PluginMigrationService(applicationContext, migrationStateDir, migrationOptions);
+
         addCustomPluginChecker();
+        if (this.extensionManager != null) {
+            this.extensionManager.getContext().bindPluginManager(this);
+            this.extensionManager.initialize();
+        }
     }
 
-    private void addCustomPluginChecker(){
+    private void addCustomPluginChecker() {
         List<PluginLauncherChecker> pluginCheckers = SpringBeanUtils.getBeans(mainGenericApplicationContext,
                 PluginLauncherChecker.class);
         for (PluginLauncherChecker pluginChecker : pluginCheckers) {
@@ -100,15 +126,19 @@ public class PluginLauncherManager extends DefaultPluginManager{
 
     @Override
     protected void start(PluginInsideInfo pluginInsideInfo) throws Exception {
+        applyAdmission(PluginAdmissionOperation.START, pluginInsideInfo.getPluginDescriptor());
+        if (extensionManager != null) {
+            extensionManager.beforeStart(pluginInsideInfo);
+        }
         launcherChecker.checkCanStart(pluginInsideInfo);
         try {
             InsidePluginDescriptor pluginDescriptor = pluginInsideInfo.getPluginDescriptor();
             PluginInteractive pluginInteractive = new DefaultPluginInteractive(pluginInsideInfo,
                     mainApplicationContext, configuration, invokeSupperCache);
             AbstractLauncher<SpringPluginHook> pluginLauncher;
-            if(DevelopmentModeSetting.isolation()){
+            if (DevelopmentModeSetting.isolation()) {
                 pluginLauncher = new PluginIsolationLauncher(pluginInteractive, pluginLaunchInvolved);
-            } else if(DevelopmentModeSetting.coexist()){
+            } else if (DevelopmentModeSetting.coexist()) {
                 pluginLauncher = new PluginCoexistLauncher(pluginInteractive, pluginLaunchInvolved);
             } else {
                 throw DevelopmentModeSetting.getUnknownModeException();
@@ -117,9 +147,11 @@ public class PluginLauncherManager extends DefaultPluginManager{
             RegistryPluginInfo registryPluginInfo = new RegistryPluginInfo(pluginDescriptor, springPluginHook);
             registryInfo.put(pluginDescriptor.getPluginId(), registryPluginInfo);
             pluginInsideInfo.setPluginState(EnhancedPluginState.STARTED);
+            if (extensionManager != null) {
+                extensionManager.afterStart(pluginInsideInfo);
+            }
             super.startFinish(pluginInsideInfo);
-        } catch (Exception e){
-            // 启动失败, 进行停止
+        } catch (Exception e) {
             pluginInsideInfo.setPluginState(EnhancedPluginState.STARTED_FAILURE);
             throw e;
         }
@@ -127,26 +159,28 @@ public class PluginLauncherManager extends DefaultPluginManager{
 
     @Override
     protected void stop(PluginInsideInfo pluginInsideInfo, PluginCloseType closeType) throws Exception {
+        if (extensionManager != null) {
+            extensionManager.beforeStop(pluginInsideInfo);
+        }
+
         launcherChecker.checkCanStop(pluginInsideInfo);
         String pluginId = pluginInsideInfo.getPluginId();
         RegistryPluginInfo registryPluginInfo = registryInfo.get(pluginId);
-        if(registryPluginInfo == null){
-            throw new PluginException("没有发现插件 '" + pluginId +  "' 信息");
+        if (registryPluginInfo == null) {
+            throw new PluginException("No plugin registry found: " + pluginId);
         }
         try {
             SpringPluginHook springPluginHook = registryPluginInfo.getSpringPluginHook();
-            // 校验是否可停止
             springPluginHook.stopVerify();
-            // 关闭插件
             springPluginHook.close(closeType);
-            // 移除插件相互调用缓存的信息
             invokeSupperCache.remove(pluginId);
-            // 移除插件注册信息
             registryInfo.remove(pluginId);
             super.stop(pluginInsideInfo, closeType);
-        } catch (Exception e){
-            if(e instanceof PluginProhibitStopException){
-                // 禁止停止, 不设置插件状态
+            if (extensionManager != null) {
+                extensionManager.afterStop(pluginInsideInfo);
+            }
+        } catch (Exception e) {
+            if (e instanceof PluginProhibitStopException) {
                 throw e;
             }
             pluginInsideInfo.setPluginState(EnhancedPluginState.STOPPED_FAILURE);
@@ -156,16 +190,53 @@ public class PluginLauncherManager extends DefaultPluginManager{
 
     @Override
     protected void beforeInstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+        applyAdmission(PluginAdmissionOperation.INSTALL, pluginInsideInfo.getPluginDescriptor());
+        if (extensionManager != null) {
+            extensionManager.beforeInstall(pluginInsideInfo);
+        }
         migrationService.applyInstallMigrations(pluginInsideInfo.getPluginDescriptor());
+        if (extensionManager != null) {
+            extensionManager.afterInstall(pluginInsideInfo);
+        }
     }
 
     @Override
     protected void beforeUninstall(PluginInsideInfo pluginInsideInfo) throws Exception {
+        if (extensionManager != null) {
+            extensionManager.beforeUninstall(pluginInsideInfo);
+        }
         migrationService.applyUninstallMigrations(pluginInsideInfo.getPluginDescriptor());
+        if (extensionManager != null) {
+            extensionManager.afterUninstall(pluginInsideInfo);
+        }
     }
 
+    @Override
+    public void close() {
+        try {
+            super.close();
+        } finally {
+            if (extensionManager != null) {
+                extensionManager.destroy();
+            }
+        }
+    }
 
-    static class RegistryPluginInfo{
+    private void applyAdmission(PluginAdmissionOperation operation, InsidePluginDescriptor descriptor) {
+        if (admissionPipeline == null) {
+            return;
+        }
+        admissionPipeline.evaluate(new PluginAdmissionContext(operation, descriptor, resolvePluginPath(descriptor)));
+    }
+
+    private Path resolvePluginPath(InsidePluginDescriptor descriptor) {
+        if (descriptor == null || descriptor.getPluginPath() == null) {
+            return null;
+        }
+        return Paths.get(descriptor.getPluginPath());
+    }
+
+    static class RegistryPluginInfo {
         private final PluginDescriptor descriptor;
         private final SpringPluginHook springPluginHook;
 

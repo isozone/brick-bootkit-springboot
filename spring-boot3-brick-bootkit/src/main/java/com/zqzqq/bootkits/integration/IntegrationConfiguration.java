@@ -18,7 +18,9 @@ package com.zqzqq.bootkits.integration;
 
 
 import com.zqzqq.bootkits.common.Constants;
+import com.zqzqq.bootkits.core.admission.PluginAdmissionMode;
 import com.zqzqq.bootkits.core.RuntimeMode;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutMode;
 import com.zqzqq.bootkits.integration.decrypt.DecryptConfiguration;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 
@@ -221,6 +223,62 @@ public interface IntegrationConfiguration {
      */
     default Long clusterLockTimeoutMs() {
         return 30000L;
+    }
+
+    /**
+     * Optional custom cluster lock provider bean name.
+     */
+    default String clusterLockProviderBeanName() {
+        return "";
+    }
+
+    /**
+     * Admission mode for plugin install/start.
+     */
+    default PluginAdmissionMode pluginAdmissionMode() {
+        return PluginAdmissionMode.WARN;
+    }
+
+    /**
+     * Whether lifecycle SPI extension manager is enabled.
+     */
+    default Boolean pluginLifecycleExtensionsEnabled() {
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Migration checksum validation switch.
+     */
+    default boolean migrationValidateChecksum() {
+        return true;
+    }
+
+    /**
+     * Continue migration when script execution fails.
+     */
+    default boolean migrationContinueOnError() {
+        return false;
+    }
+
+    /**
+     * Rollout mode for plugin upgrades.
+     */
+    default PluginRolloutMode pluginRolloutMode() {
+        return PluginRolloutMode.DIRECT;
+    }
+
+    /**
+     * Start new plugin automatically after install/upgrade.
+     */
+    default boolean pluginRolloutAutoStart() {
+        return true;
+    }
+
+    /**
+     * Rollback to previous plugin package when upgrade fails.
+     */
+    default boolean pluginRolloutRollbackOnFailure() {
+        return true;
     }
 
 }

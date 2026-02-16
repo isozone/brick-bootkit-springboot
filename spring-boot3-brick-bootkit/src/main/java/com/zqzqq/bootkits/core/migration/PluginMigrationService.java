@@ -4,6 +4,8 @@ import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 import com.zqzqq.bootkits.utils.SpringBeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.DataSource;
@@ -17,7 +19,10 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -28,12 +33,22 @@ import java.util.jar.JarFile;
  */
 public class PluginMigrationService {
 
+    private static final Logger log = LoggerFactory.getLogger(PluginMigrationService.class);
+
     private final ApplicationContext applicationContext;
     private final FilePluginMigrationHistoryStore historyStore;
+    private final PluginMigrationOptions options;
 
     public PluginMigrationService(ApplicationContext applicationContext, Path stateRootDir) {
+        this(applicationContext, stateRootDir, PluginMigrationOptions.defaults());
+    }
+
+    public PluginMigrationService(ApplicationContext applicationContext,
+                                  Path stateRootDir,
+                                  PluginMigrationOptions options) {
         this.applicationContext = applicationContext;
         this.historyStore = new FilePluginMigrationHistoryStore(stateRootDir);
+        this.options = options == null ? PluginMigrationOptions.defaults() : options;
     }
 
     public void applyInstallMigrations(InsidePluginDescriptor descriptor) {
@@ -46,12 +61,21 @@ public class PluginMigrationService {
         LinkedHashSet<String> applied = historyStore.loadAppliedScripts(plan.getPluginId());
 
         for (String upScript : plan.getUpScripts()) {
+            String sql = loadScript(descriptor, upScript);
+            String checksum = checksum(sql);
             if (applied.contains(upScript)) {
+                if (options.isValidateChecksum()) {
+                    String storedChecksum = historyStore.getScriptChecksum(plan.getPluginId(), upScript);
+                    if (storedChecksum != null && !storedChecksum.equals(checksum)) {
+                        throw new PluginException("Applied migration script changed: " + upScript
+                                + ", plugin=" + plan.getPluginId());
+                    }
+                }
                 continue;
             }
-            String sql = loadScript(descriptor, upScript);
-            executeSql(dataSource, plan.getPluginId(), "UP", upScript, sql);
+            executeSqlWithPolicy(dataSource, plan.getPluginId(), "UP", upScript, sql);
             historyStore.addAppliedScript(plan.getPluginId(), plan.getPluginVersion(), upScript);
+            historyStore.upsertScriptChecksum(plan.getPluginId(), upScript, checksum);
             applied.add(upScript);
         }
     }
@@ -83,7 +107,7 @@ public class PluginMigrationService {
                 throw new PluginException("Empty down migration for up script: " + upScript);
             }
             String sql = loadScript(descriptor, downScript);
-            executeSql(dataSource, plan.getPluginId(), "DOWN", downScript, sql);
+            executeSqlWithPolicy(dataSource, plan.getPluginId(), "DOWN", downScript, sql);
             historyStore.removeAppliedScript(plan.getPluginId(), upScript);
             applied.remove(upScript);
         }
@@ -203,6 +227,33 @@ public class PluginMigrationService {
         } catch (SQLException e) {
             throw new PluginException("SQL execution error for plugin " + pluginId
                     + ", script=" + scriptPath, e);
+        }
+    }
+
+    private void executeSqlWithPolicy(DataSource dataSource,
+                                      String pluginId,
+                                      String direction,
+                                      String scriptPath,
+                                      String scriptContent) {
+        if (!options.isContinueOnError()) {
+            executeSql(dataSource, pluginId, direction, scriptPath, scriptContent);
+            return;
+        }
+        try {
+            executeSql(dataSource, pluginId, direction, scriptPath, scriptContent);
+        } catch (Exception ex) {
+            log.warn("Migration continue-on-error enabled, ignore failure. plugin={}, direction={}, script={}",
+                    pluginId, direction, scriptPath, ex);
+        }
+    }
+
+    private String checksum(String scriptContent) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] digest = messageDigest.digest(scriptContent.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new PluginException("SHA-256 algorithm not available", e);
         }
     }
 

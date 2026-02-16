@@ -1,6 +1,9 @@
 package com.zqzqq.bootkits.web.config;
 
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
+import com.zqzqq.bootkits.web.auth.AllowAllPluginWebAuthorizer;
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,6 +30,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ConditionalOnProperty(prefix = "plugin.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(BrickWebProperties.class)
 public class BrickWebAutoConfiguration implements WebMvcConfigurer {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginWebAuthorizer pluginWebAuthorizer() {
+        return new AllowAllPluginWebAuthorizer();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginWebAuthorizationService pluginWebAuthorizationService(BrickWebProperties properties,
+                                                                       PluginWebAuthorizer pluginWebAuthorizer) {
+        return new PluginWebAuthorizationService(properties, pluginWebAuthorizer);
+    }
 
     /**
      * 当存在 IntegrationConfiguration 时使用的配置

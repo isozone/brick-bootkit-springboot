@@ -115,13 +115,24 @@ public class DefaultPluginManager implements PluginManager{
     private List<String> sortedPluginIds;
 
     public DefaultPluginManager(RealizeProvider realizeProvider, IntegrationConfiguration configuration) {
+        this(realizeProvider, configuration, null);
+    }
+
+    public DefaultPluginManager(RealizeProvider realizeProvider,
+                                IntegrationConfiguration configuration,
+                                ClusterLockProvider externalClusterLockProvider) {
         this.provider = Assert.isNotNull(realizeProvider, "参数 realizeProvider 不能为空");
         this.configuration = Assert.isNotNull(configuration, "参数 configuration 不能为空");
         this.pluginRootDirs = resolvePath(String.join(",", configuration.pluginPath()));
         this.clusterSharedRoot = resolveClusterSharedRoot();
         long timeoutMillis = Optional.ofNullable(configuration.clusterLockTimeoutMs()).orElse(30000L);
         this.clusterLockTimeout = Duration.ofMillis(Math.max(1000L, timeoutMillis));
-        this.clusterLockProvider = createClusterLockProvider();
+        if (externalClusterLockProvider != null) {
+            this.clusterLockProvider = externalClusterLockProvider;
+            log.info("Use custom cluster lock provider: {}", externalClusterLockProvider.getClass().getName());
+        } else {
+            this.clusterLockProvider = createClusterLockProvider();
+        }
         this.pathResolve = getComposePathResolve();
         this.basicChecker = realizeProvider.getPluginBasicChecker();
         this.launcherChecker = getComposeLauncherChecker(realizeProvider);

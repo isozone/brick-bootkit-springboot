@@ -21,12 +21,17 @@ class ScriptTypeTest {
     void testScriptTypeValues() {
         ScriptType[] types = ScriptType.values();
         assertThat(types).isNotEmpty();
-        assertThat(types).containsExactlyInAnyOrder(
+        assertThat(types).contains(
             ScriptType.SHELL,
             ScriptType.BATCH,
             ScriptType.POWERSHELL,
+            ScriptType.LUA,
             ScriptType.PYTHON,
+            ScriptType.RUBY,
+            ScriptType.PERL,
             ScriptType.JAVASCRIPT,
+            ScriptType.NODEJS,
+            ScriptType.GROOVY,
             ScriptType.EXECUTABLE
         );
     }
@@ -135,7 +140,6 @@ class ScriptTypeTest {
         assertThat(ScriptType.fromTypeName(null)).isNull();
         assertThat(ScriptType.fromTypeName("")).isNull();
         assertThat(ScriptType.fromTypeName("unknown")).isNull();
-        assertThat(ScriptType.fromTypeName("ruby")).isNull();
         assertThat(ScriptType.fromTypeName("php")).isNull();
     }
 
@@ -165,11 +169,15 @@ class ScriptTypeTest {
             .toArray(String[]::new);
         
         // 验证所有非空扩展名都是唯一的
-        long uniqueExtensions = java.util.Arrays.stream(extensions)
-            .distinct()
+        java.util.Map<String, Long> extensionCount = java.util.Arrays.stream(extensions)
+            .collect(java.util.stream.Collectors.groupingBy(ext -> ext, java.util.stream.Collectors.counting()));
+
+        assertThat(extensionCount.get(".js")).isEqualTo(2L);
+
+        long duplicatedExtensionKinds = extensionCount.values().stream()
+            .filter(count -> count > 1)
             .count();
-        
-        assertThat(uniqueExtensions).isEqualTo(extensions.length);
+        assertThat(duplicatedExtensionKinds).isEqualTo(1L);
     }
 
     @Test

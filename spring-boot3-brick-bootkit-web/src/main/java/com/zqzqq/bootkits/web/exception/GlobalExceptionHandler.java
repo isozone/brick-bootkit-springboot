@@ -1,6 +1,7 @@
 package com.zqzqq.bootkits.web.exception;
 
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationException;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,16 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 处理授权异常
+     */
+    @ExceptionHandler(PluginWebAuthorizationException.class)
+    public ResponseEntity<ApiResult<Void>> handleAuthorizationException(PluginWebAuthorizationException e) {
+        log.warn("Permission denied: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResult.error(ErrorCode.PERMISSION_DENIED.getCode(), e.getMessage()));
+    }
 
     /**
      * 处理 PluginException

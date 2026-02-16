@@ -23,6 +23,7 @@ public class FilePluginMigrationHistoryStore {
 
     private static final String KEY_PLUGIN_VERSION = "plugin.version";
     private static final String KEY_APPLIED = "applied";
+    private static final String KEY_CHECKSUM_PREFIX = "checksum.";
 
     private final Path stateDirectory;
 
@@ -59,12 +60,34 @@ public class FilePluginMigrationHistoryStore {
         }
     }
 
+    public void upsertScriptChecksum(String pluginId, String upScriptPath, String checksum) {
+        if (upScriptPath == null || checksum == null) {
+            return;
+        }
+        Properties properties = load(pluginId);
+        properties.setProperty(checksumKey(upScriptPath), checksum);
+        save(pluginId, properties);
+    }
+
+    public String getScriptChecksum(String pluginId, String upScriptPath) {
+        if (upScriptPath == null) {
+            return null;
+        }
+        Properties properties = load(pluginId);
+        String key = checksumKey(upScriptPath);
+        if (properties.containsKey(key)) {
+            return properties.getProperty(key);
+        }
+        return null;
+    }
+
     public void removeAppliedScript(String pluginId, String upScriptPath) {
         Properties properties = load(pluginId);
         LinkedHashSet<String> applied = parseApplied(properties);
         if (!applied.remove(upScriptPath)) {
             return;
         }
+        properties.remove(checksumKey(upScriptPath));
         if (applied.isEmpty()) {
             delete(pluginId);
             return;
@@ -144,5 +167,9 @@ public class FilePluginMigrationHistoryStore {
             return "unknown";
         }
         return value.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    private String checksumKey(String scriptPath) {
+        return KEY_CHECKSUM_PREFIX + sanitize(scriptPath);
     }
 }
