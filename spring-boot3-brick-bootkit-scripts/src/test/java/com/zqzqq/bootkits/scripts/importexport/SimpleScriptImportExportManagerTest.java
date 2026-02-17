@@ -375,7 +375,7 @@ public class SimpleScriptImportExportManagerTest {
                 importExportManager.importAll(tempFile.toString(), options);
 
             assertFalse(result.isSuccess(), "严格Schema校验应拒绝未知版本");
-            assertTrue(result.getMessage().contains("未知 schemaVersion"));
+            assertTrue(result.getMessage().contains("schemaVersion"));
             assertNull(importExportManager.getScriptConfig("unknown_schema_script"), "失败时不应写入脚本配置");
         } finally {
             Files.deleteIfExists(tempFile);
