@@ -143,6 +143,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(200, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.FALSE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(0L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(3L, result.getStatistics().get("environment.wouldTotal"));
             assertEquals(2L, result.getStatistics().get("environment.wouldImport"));
@@ -180,6 +183,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(1, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(2L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(1L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(3L, result.getStatistics().get("environment.wouldTotal"));
             assertEquals(2L, result.getStatistics().get("environment.wouldImport"));
@@ -239,6 +245,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(200, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.FALSE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(0L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(3L, result.getStatistics().get("scripts.wouldTotal"));
             assertEquals(2L, result.getStatistics().get("scripts.wouldImport"));
@@ -298,6 +307,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(1, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(3L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(2L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(1L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(3L, result.getStatistics().get("scripts.wouldTotal"));
             assertEquals(2L, result.getStatistics().get("scripts.wouldImport"));
@@ -367,6 +379,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(200, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.FALSE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(4L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(4L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(0L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(2L, result.getStatistics().get("scripts.wouldTotal"));
             assertEquals(1L, result.getStatistics().get("scripts.wouldImport"));
@@ -452,6 +467,9 @@ class SimpleScriptImportExportManagerEnhancementTest {
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun"));
             assertEquals(1, result.getStatistics().get("dryRun.maxPreviewItems"));
             assertEquals(Boolean.TRUE, result.getStatistics().get("dryRun.previewItemsLimited"));
+            assertEquals(6L, result.getStatistics().get("dryRun.previewItemsAvailable"));
+            assertEquals(4L, result.getStatistics().get("dryRun.previewItemsReturned"));
+            assertEquals(2L, result.getStatistics().get("dryRun.previewItemsTruncated"));
 
             assertEquals(3L, result.getStatistics().get("scripts.wouldTotal"));
             assertEquals(2L, result.getStatistics().get("scripts.wouldImport"));

@@ -1688,6 +1688,19 @@ public class SimpleScriptImportExportManager {
         long envImportTruncated = breakdown.environmentWouldImportKeys.size() - envWouldImportKeys.size();
         long envSkipTruncated = breakdown.environmentWouldSkipKeys.size() - envWouldSkipKeys.size();
         long envFailTruncated = breakdown.environmentWouldFailKeys.size() - envWouldFailKeys.size();
+        long totalAvailable = breakdown.scriptsWouldImportIds.size()
+            + breakdown.scriptsWouldSkipIds.size()
+            + breakdown.scriptsWouldFailIds.size()
+            + breakdown.environmentWouldImportKeys.size()
+            + breakdown.environmentWouldSkipKeys.size()
+            + breakdown.environmentWouldFailKeys.size();
+        long totalReturned = scriptsWouldImportIds.size()
+            + scriptsWouldSkipIds.size()
+            + scriptsWouldFailIds.size()
+            + envWouldImportKeys.size()
+            + envWouldSkipKeys.size()
+            + envWouldFailKeys.size();
+        long totalTruncated = totalAvailable - totalReturned;
 
         result.addStatistic("scripts.wouldTotal", breakdown.scriptsTotal);
         result.addStatistic("scripts.wouldImport", breakdown.scriptsImported);
@@ -1717,8 +1730,7 @@ public class SimpleScriptImportExportManager {
             || envImportTruncated > 0
             || envSkipTruncated > 0
             || envFailTruncated > 0;
-        result.addStatistic("dryRun.maxPreviewItems", maxPreviewItems);
-        result.addStatistic("dryRun.previewItemsLimited", previewItemsLimited);
+        addDryRunPreviewSummaryStatistics(result, maxPreviewItems, previewItemsLimited, totalAvailable, totalReturned, totalTruncated);
     }
 
     private void addScriptsDryRunProjectionStatistics(
@@ -1741,6 +1753,11 @@ public class SimpleScriptImportExportManager {
         long importTruncated = (wouldImportIds == null ? 0 : wouldImportIds.size()) - importIds.size();
         long skipTruncated = (wouldSkipIds == null ? 0 : wouldSkipIds.size()) - skipIds.size();
         long failTruncated = (wouldFailIds == null ? 0 : wouldFailIds.size()) - failIds.size();
+        long totalAvailable = (wouldImportIds == null ? 0 : wouldImportIds.size())
+            + (wouldSkipIds == null ? 0 : wouldSkipIds.size())
+            + (wouldFailIds == null ? 0 : wouldFailIds.size());
+        long totalReturned = importIds.size() + skipIds.size() + failIds.size();
+        long totalTruncated = totalAvailable - totalReturned;
 
         result.addStatistic("scripts.wouldTotal", total);
         result.addStatistic("scripts.wouldImport", imported);
@@ -1752,8 +1769,14 @@ public class SimpleScriptImportExportManager {
         result.addStatistic("scripts.wouldImport.ids.truncatedCount", importTruncated);
         result.addStatistic("scripts.wouldSkip.ids.truncatedCount", skipTruncated);
         result.addStatistic("scripts.wouldFail.ids.truncatedCount", failTruncated);
-        result.addStatistic("dryRun.maxPreviewItems", maxPreviewItems);
-        result.addStatistic("dryRun.previewItemsLimited", importTruncated > 0 || skipTruncated > 0 || failTruncated > 0);
+        addDryRunPreviewSummaryStatistics(
+            result,
+            maxPreviewItems,
+            importTruncated > 0 || skipTruncated > 0 || failTruncated > 0,
+            totalAvailable,
+            totalReturned,
+            totalTruncated
+        );
     }
 
     private void addEnvironmentDryRunProjectionStatistics(
@@ -1776,6 +1799,11 @@ public class SimpleScriptImportExportManager {
         long importTruncated = (wouldImportKeys == null ? 0 : wouldImportKeys.size()) - importKeys.size();
         long skipTruncated = (wouldSkipKeys == null ? 0 : wouldSkipKeys.size()) - skipKeys.size();
         long failTruncated = (wouldFailKeys == null ? 0 : wouldFailKeys.size()) - failKeys.size();
+        long totalAvailable = (wouldImportKeys == null ? 0 : wouldImportKeys.size())
+            + (wouldSkipKeys == null ? 0 : wouldSkipKeys.size())
+            + (wouldFailKeys == null ? 0 : wouldFailKeys.size());
+        long totalReturned = importKeys.size() + skipKeys.size() + failKeys.size();
+        long totalTruncated = totalAvailable - totalReturned;
 
         result.addStatistic("environment.wouldTotal", total);
         result.addStatistic("environment.wouldImport", imported);
@@ -1787,8 +1815,31 @@ public class SimpleScriptImportExportManager {
         result.addStatistic("environment.wouldImport.keys.truncatedCount", importTruncated);
         result.addStatistic("environment.wouldSkip.keys.truncatedCount", skipTruncated);
         result.addStatistic("environment.wouldFail.keys.truncatedCount", failTruncated);
+        addDryRunPreviewSummaryStatistics(
+            result,
+            maxPreviewItems,
+            importTruncated > 0 || skipTruncated > 0 || failTruncated > 0,
+            totalAvailable,
+            totalReturned,
+            totalTruncated
+        );
+    }
+
+    private void addDryRunPreviewSummaryStatistics(
+            ImportExportResult result,
+            int maxPreviewItems,
+            boolean previewItemsLimited,
+            long previewItemsAvailable,
+            long previewItemsReturned,
+            long previewItemsTruncated) {
+        if (result == null) {
+            return;
+        }
         result.addStatistic("dryRun.maxPreviewItems", maxPreviewItems);
-        result.addStatistic("dryRun.previewItemsLimited", importTruncated > 0 || skipTruncated > 0 || failTruncated > 0);
+        result.addStatistic("dryRun.previewItemsLimited", previewItemsLimited);
+        result.addStatistic("dryRun.previewItemsAvailable", previewItemsAvailable);
+        result.addStatistic("dryRun.previewItemsReturned", previewItemsReturned);
+        result.addStatistic("dryRun.previewItemsTruncated", previewItemsTruncated);
     }
 
     private List<String> limitPreviewItems(List<String> items, int maxPreviewItems) {
