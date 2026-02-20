@@ -36,5 +36,10 @@ public @interface OneselfConfig {
      */
     String[] mainConfigFileName() default {};
 
+    /**
+     * Standalone plugin development mode. Optional.
+     * Supported values: isolation / coexist
+     */
+    String developmentMode() default "";
 
 }

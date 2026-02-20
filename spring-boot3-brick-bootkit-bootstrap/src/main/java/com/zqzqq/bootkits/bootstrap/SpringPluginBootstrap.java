@@ -16,6 +16,7 @@
 
 package com.zqzqq.bootkits.bootstrap;
 
+import com.zqzqq.bootkits.bootstrap.annotation.OneselfConfig;
 import com.zqzqq.bootkits.bootstrap.coexist.CoexistAllowAutoConfiguration;
 import com.zqzqq.bootkits.bootstrap.launcher.BootstrapLauncher;
 import com.zqzqq.bootkits.bootstrap.launcher.BootstrapLauncherFactory;
@@ -24,6 +25,7 @@ import com.zqzqq.bootkits.bootstrap.processor.ProcessorContext;
 import com.zqzqq.bootkits.bootstrap.processor.SpringPluginProcessor;
 import com.zqzqq.bootkits.bootstrap.realize.AutowiredTypeDefiner;
 import com.zqzqq.bootkits.core.launcher.plugin.PluginInteractive;
+import com.zqzqq.bootkits.loader.launcher.DevelopmentModeSetting;
 import com.zqzqq.bootkits.spring.SpringPluginHook;
 import lombok.Getter;
 
@@ -68,6 +70,7 @@ public abstract class SpringPluginBootstrap {
 
     private SpringPluginHook start(Class<?>[] primarySources, String[] args){
         configCoexistAllowAutoConfiguration(this.coexistAllowAutoConfiguration);
+        applyStandaloneDevelopmentModeConfig();
         createPluginInteractive();
         addCustomSpringPluginProcessor();
         BootstrapLauncher bootstrapLauncher = launcherFactory.create(this);
@@ -95,7 +98,18 @@ public abstract class SpringPluginBootstrap {
     }
 
     protected final void createPluginInteractiveOfOneself(){
-        this.pluginInteractive = new PluginOneselfInteractive();
+        this.pluginInteractive = new PluginOneselfInteractive(this.getClass());
+    }
+
+    private void applyStandaloneDevelopmentModeConfig() {
+        if (runMode != ProcessorContext.RunMode.ONESELF) {
+            return;
+        }
+        OneselfConfig oneselfConfig = this.getClass().getAnnotation(OneselfConfig.class);
+        if (oneselfConfig == null) {
+            return;
+        }
+        DevelopmentModeSetting.setStandaloneDevelopmentMode(oneselfConfig.developmentMode());
     }
 
 

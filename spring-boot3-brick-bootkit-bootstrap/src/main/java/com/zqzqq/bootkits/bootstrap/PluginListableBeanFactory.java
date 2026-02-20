@@ -87,6 +87,9 @@ public class PluginListableBeanFactory extends DefaultListableBeanFactory {
             if(dependencyObj != null){
                 return dependencyObj;
             }
+            if(isStandaloneMainContext()){
+                return super.resolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
+            }
             throw new NoSuchBeanDefinitionException(descriptor.getDependencyType());
         } else if(autowiredType == AutowiredType.Type.PLUGIN){
             return super.resolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
@@ -146,6 +149,10 @@ public class PluginListableBeanFactory extends DefaultListableBeanFactory {
             return null;
         }
         return dependencyObj;
+    }
+
+    private boolean isStandaloneMainContext(){
+        return applicationContext instanceof EmptyMainApplicationContext;
     }
 
     private void destroyAll(){
