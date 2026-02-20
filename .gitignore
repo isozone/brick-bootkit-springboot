@@ -1,0 +1,9 @@
+# Build outputs
+**/target/
+
+# IDE / local workspace
+.idea/
+*.iml
+
+# Local temp directories
+_tmp_version_test/

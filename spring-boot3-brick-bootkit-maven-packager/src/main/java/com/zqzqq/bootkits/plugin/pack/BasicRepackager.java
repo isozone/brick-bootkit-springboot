@@ -157,7 +157,8 @@ public class BasicRepackager implements Repackager{
         Manifest manifest = null;
         if(sourceJarFile != null){
             manifest = sourceJarFile.getManifest();
-        } else {
+        }
+        if(manifest == null){
             manifest = new Manifest();
         }
         Attributes attributes = manifest.getMainAttributes();

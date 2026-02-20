@@ -1047,6 +1047,74 @@ plugin.migration.datasource=main
 - 迁移执行记录保存在 `${clusterSharedPath}/.plugin-state/migrations`；未配置 `clusterSharedPath` 时，默认使用首个 `pluginPath`（若为空则退回主进程工作目录）。
 - 多实例场景下，建议开启 `clusterEnabled=true`，插件安装/卸载及迁移会通过 `${clusterSharedPath}/.plugin-locks` 进行跨实例互斥。
 
+### 单插件启动测试（独立/共享）
+
+框架已支持单插件直接启动测试，不依赖主程序先启动。
+
+#### 1. 插件入口示例
+
+```java
+import com.zqzqq.bootkits.bootstrap.SpringPluginBootstrap;
+import com.zqzqq.bootkits.bootstrap.annotation.OneselfConfig;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@OneselfConfig(
+        developmentMode = "coexist", // isolation / coexist
+        mainConfigFileName = {"application.yml"}
+)
+public class DemoPluginBootstrap extends SpringPluginBootstrap {
+    public static void main(String[] args) {
+        new DemoPluginBootstrap().run(args);
+    }
+}
+```
+
+#### 2. 模式选择方式
+
+- 代码方式：`@OneselfConfig(developmentMode = "isolation|coexist")`
+- JVM 参数方式：`-Dplugin.developmentMode=isolation|coexist`
+- 兼容参数：`-Dspring-boot3-brick-bootkit.developmentMode=...`、`-DdevelopmentMode=...`
+- 环境变量：`PLUGIN_DEVELOPMENT_MODE=isolation|coexist`
+
+#### 3. 无 `PLUGIN.META` 的本地开发支持
+
+当 IDE 直接运行、尚未生成 `META-INF/PLUGIN.META` 时，框架会自动使用当前启动类构建临时插件描述信息，不再阻塞启动。
+
+可选覆盖参数：
+
+- `-Dplugin.standalone.id=xxx`
+- `-Dplugin.standalone.version=1.0.0-SNAPSHOT`
+- `-Dplugin.standalone.bootstrapClass=com.example.DemoPluginBootstrap`
+
+#### 4. 推荐：编译期预生成 `PLUGIN.META`
+
+为避免本地直接启动时读取到临时描述信息，建议在插件工程中增加 `prepare-meta` 目标，让 `process-classes` 阶段就生成 `target/META-INF/PLUGIN.META`：
+
+```xml
+<plugin>
+    <groupId>com.zqzqq</groupId>
+    <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
+    <version>4.0.5</version>
+    <configuration>
+        <mode>prod</mode>
+        <pluginInfo>
+            <id>demoTestUploadPlus</id>
+            <bootstrapClass>com.example.DemoPluginBootstrap</bootstrapClass>
+            <version>0.0.3</version>
+        </pluginInfo>
+    </configuration>
+    <executions>
+        <execution>
+            <goals>
+                <goal>prepare-meta</goal>
+                <goal>repackage</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
 ## 🔧 如何引入
 
 ### 主应用
