@@ -64,12 +64,9 @@ public class ProdLauncher implements Launcher<ClassLoader>{
                 throw exception;
             }
             mainPackageType = mainAttributes.getValue(MAIN_PACKAGE_TYPE);
-            developmentMode = mainAttributes.getValue(MAIN_DEVELOPMENT_MODE);
+            developmentMode = resolveDevelopmentMode(mainAttributes.getValue(MAIN_DEVELOPMENT_MODE));
         }
 
-        if(ObjectUtils.isEmpty(developmentMode)){
-            throw new RuntimeException("未发现 developmentMode 配置");
-        }
         DevelopmentModeSetting.setDevelopmentMode(developmentMode);
 
         MethodRunner methodRunner = new MethodRunner(startClass, SPRING_BOOTSTRAP_RUN_METHOD, args);
@@ -82,6 +79,20 @@ public class ProdLauncher implements Launcher<ClassLoader>{
         }
 
         return launcher.run(args);
+    }
+
+    static String resolveDevelopmentMode(String manifestDevelopmentMode) {
+        if (!ObjectUtils.isEmpty(manifestDevelopmentMode)) {
+            return manifestDevelopmentMode;
+        }
+        String modeFromProperties = DevelopmentModeSetting.resolveDevelopmentModeFromProperties();
+        if (!ObjectUtils.isEmpty(modeFromProperties)) {
+            return modeFromProperties;
+        }
+        throw new RuntimeException("Missing developmentMode configuration. Configure manifest " +
+                "Main-Development-Mode, -Dplugin.developmentMode, " +
+                "-Dspring-boot3-brick-bootkit.developmentMode, -DdevelopmentMode, " +
+                "or PLUGIN_DEVELOPMENT_MODE.");
     }
 
 

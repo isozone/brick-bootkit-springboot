@@ -281,11 +281,13 @@ public class Application implements SpringBootstrap {
         title: '开发模式配置（启动器）',
         paragraphs: [
           '宿主通过 `SpringMainBootstrap.launch(...)` 启动时，开发模式现在支持配置化，不再必须在宿主类里覆写 `developmentMode()`。',
-          '若宿主类覆写了 `developmentMode()`，启动器会优先使用代码返回值；未覆写时才按顺序读取系统属性和环境变量。'
+          '若宿主类覆写了 `developmentMode()`，启动器会优先使用代码返回值；未覆写时才按顺序读取系统属性和环境变量。',
+          '`ProdLauncher` 启动主程序包时会先读取 Manifest 的 `Main-Development-Mode`，若未提供再回退到相同的系统属性/环境变量链路。'
         ],
         table: {
           columns: ['键/变量', '默认值', '生效规则（按优先级）'],
           rows: [
+            ['Main-Development-Mode（Manifest）', '未配置', '优先级 0；仅 `ProdLauncher` 路径优先读取'],
             ['plugin.developmentMode', '未配置', '优先级 1；仅在未覆写 `developmentMode()` 时读取'],
             ['spring-boot3-brick-bootkit.developmentMode', '未配置', '优先级 2；前项为空时读取'],
             ['developmentMode', '未配置', '优先级 3；前两项为空时读取'],
@@ -312,6 +314,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
         },
         sources: [
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/ProdLauncher.java',
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java',
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringBootstrap.java'
         ]
@@ -944,6 +947,7 @@ public class UserServiceImpl implements UserService {
         table: {
           columns: ['参数', '默认值', '建议'],
           rows: [
+            ['Main-Development-Mode（Manifest）', '未配置', 'prod 包启动可直接在 Manifest 固定模式'],
             ['plugin.developmentMode', '未配置', '优先使用此键，取值 isolation/coexist'],
             ['spring-boot3-brick-bootkit.developmentMode', '未配置', '兼容历史项目时使用'],
             ['developmentMode', '未配置', '仅用于兼容旧键；避免与其他框架同名冲突'],
@@ -953,6 +957,7 @@ public class UserServiceImpl implements UserService {
         },
         sources: [
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/ProdLauncher.java',
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java',
           'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringBootstrap.java'
         ]
