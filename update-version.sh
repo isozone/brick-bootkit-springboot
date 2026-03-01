@@ -169,7 +169,7 @@ echo -e "${YELLOW}正在更新Maven插件描述文件...${NC}"
 
 # 定义需要更新的Maven插件描述文件
 MAVEN_PLUGIN_FILES=(
-    "spring-boot3-brick-bootkit-maven-packager/src/main/resources/META-INF/maven/com.gitee.starblues.springboot-plugin-maven-packager/plugin-help.xml"
+    "spring-boot3-brick-bootkit-maven-packager/src/main/resources/META-INF/maven/com.zqzqq.brick-bootkits-springboot-plugin-maven-packager/plugin-help.xml"
     "spring-boot3-brick-bootkit-maven-packager/src/main/resources/META-INF/maven/plugin.xml"
 )
 

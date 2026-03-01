@@ -139,7 +139,7 @@ if exist "doc" (
 )
 
 echo Updating Maven plugin descriptor files...
-set "PLUGIN_FILE1=spring-boot3-brick-bootkit-maven-packager\src\main\resources\META-INF\maven\com.gitee.starblues.springboot-plugin-maven-packager\plugin-help.xml"
+set "PLUGIN_FILE1=spring-boot3-brick-bootkit-maven-packager\src\main\resources\META-INF\maven\com.zqzqq.brick-bootkits-springboot-plugin-maven-packager\plugin-help.xml"
 set "PLUGIN_FILE2=spring-boot3-brick-bootkit-maven-packager\src\main\resources\META-INF\maven\plugin.xml"
 
 call :UpdatePluginFile "%PLUGIN_FILE1%"
