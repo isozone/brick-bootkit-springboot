@@ -1,0 +1,369 @@
+{
+  "keyCount": 88,
+  "keys": [
+    {
+      "key": "plugin.admissionMode",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.backupPath",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.clusterEnabled",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.clusterLockProviderBeanName",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.clusterLockTimeoutMs",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.clusterSharedPath",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.configuration.backupDirectory",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.backupEnabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.backupRetentionDays",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.cacheSize",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.configDirectory",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.enabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.encryptionEnabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.encryptionKey",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.hotReloadDelay",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.hotReloadEnabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.maxVersionsPerPlugin",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.persistenceEnabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.configuration.validationEnabled",
+      "group": "plugin.configuration"
+    },
+    {
+      "key": "plugin.decrypt.className",
+      "group": "plugin.decrypt"
+    },
+    {
+      "key": "plugin.decrypt.enable",
+      "group": "plugin.decrypt"
+    },
+    {
+      "key": "plugin.decrypt.plugins",
+      "group": "plugin.decrypt.plugins"
+    },
+    {
+      "key": "plugin.decrypt.plugins.pluginId",
+      "group": "plugin.decrypt.plugins"
+    },
+    {
+      "key": "plugin.decrypt.plugins.props",
+      "group": "plugin.decrypt.plugins"
+    },
+    {
+      "key": "plugin.decrypt.props",
+      "group": "plugin.decrypt"
+    },
+    {
+      "key": "plugin.disablePluginIds",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.enable",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.enablePluginIdRestPathPrefix",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.enablePluginIds",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.exactVersion",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.lifecycleExtensionsEnabled",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.mainPackage",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.migrationContinueOnError",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.migrationValidateChecksum",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.monitoring.classLoadingMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.collectionInterval",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.cpuCriticalThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.cpuMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.cpuWarningThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.enabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.gcMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.historyRetentionDays",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.memoryCriticalThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.memoryMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.memoryWarningThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.performanceReportEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.performanceReportInterval",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.realTimeMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.realTimeUpdateInterval",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.slowOperationDetectionEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.slowOperationThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.threadCriticalThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.threadMonitoringEnabled",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.monitoring.threadWarningThreshold",
+      "group": "plugin.monitoring"
+    },
+    {
+      "key": "plugin.pluginFollowLog",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.pluginFollowProfile",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.pluginPath",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.pluginRestPathPrefix",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.pluginSwaggerScan",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.rolloutAutoStart",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.rolloutMode",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.rolloutRollbackOnFailure",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.runMode",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.scripts.enabled",
+      "group": "plugin.scripts"
+    },
+    {
+      "key": "plugin.scripts.storage.customBeanName",
+      "group": "plugin.scripts.storage"
+    },
+    {
+      "key": "plugin.scripts.storage.file.autoCleanup",
+      "group": "plugin.scripts.storage.file"
+    },
+    {
+      "key": "plugin.scripts.storage.file.dataPath",
+      "group": "plugin.scripts.storage.file"
+    },
+    {
+      "key": "plugin.scripts.storage.file.logRetentionDays",
+      "group": "plugin.scripts.storage.file"
+    },
+    {
+      "key": "plugin.scripts.storage.file.maxLogSizeMb",
+      "group": "plugin.scripts.storage.file"
+    },
+    {
+      "key": "plugin.scripts.storage.jdbc.autoCreateTables",
+      "group": "plugin.scripts.storage.jdbc"
+    },
+    {
+      "key": "plugin.scripts.storage.jdbc.dataPath",
+      "group": "plugin.scripts.storage.jdbc"
+    },
+    {
+      "key": "plugin.scripts.storage.jdbc.tablePrefix",
+      "group": "plugin.scripts.storage.jdbc"
+    },
+    {
+      "key": "plugin.scripts.storage.type",
+      "group": "plugin.scripts.storage"
+    },
+    {
+      "key": "plugin.sortInitPluginIds",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.uploadTempPath",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.version",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.web.apiPrefix",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.apiTitle",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.authMode",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.backupPath",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.cors.enabled",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.enableUI",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.enabled",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.monitorRefreshInterval",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.pagePrefix",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.pluginPaths",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.pluginRestPathPrefix",
+      "group": "plugin.web"
+    },
+    {
+      "key": "plugin.web.uploadTempPath",
+      "group": "plugin.web"
+    }
+  ],
+  "groups": {
+    "plugin": 27,
+    "plugin.configuration": 13,
+    "plugin.decrypt": 3,
+    "plugin.decrypt.plugins": 3,
+    "plugin.monitoring": 20,
+    "plugin.scripts": 1,
+    "plugin.scripts.storage": 2,
+    "plugin.scripts.storage.file": 4,
+    "plugin.scripts.storage.jdbc": 3,
+    "plugin.web": 12
+  }
+}
