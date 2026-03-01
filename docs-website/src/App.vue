@@ -1,135 +1,235 @@
-<template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div class="container">
-        <div class="flex items-center justify-between h-16">
-          <div class="flex items-center space-x-4">
-            <router-link to="/" class="flex items-center space-x-2">
-              <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span class="text-white font-bold text-sm">BB</span>
-              </div>
-              <span class="text-xl font-bold text-gray-900">Brick BootKit</span>
-            </router-link>
-            <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">4.0.1</span>
+﻿<template>
+  <div class="site-root">
+    <div class="bg-grid"></div>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+
+    <header class="topbar">
+      <div class="brand-wrap">
+        <button class="menu-btn" type="button" @click="toggleSidebar" aria-label="打开导航">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <RouterLink to="/" class="brand-link">
+          <img src="/logo.svg" alt="Brick BootKit" class="brand-logo" />
+          <div>
+            <p class="brand-title">{{ siteMeta.product }}</p>
+            <p class="brand-sub">Version {{ siteMeta.version }}</p>
           </div>
-          <nav class="hidden md:flex items-center space-x-6">
-            <router-link 
-              v-for="item in navItems" 
-              :key="item.name"
-              :to="item.path"
-              class="text-gray-600 hover:text-primary-600 transition-colors duration-200"
-            >
-              {{ item.name }}
-            </router-link>
-          </nav>
-        </div>
+        </RouterLink>
+      </div>
+
+      <nav class="top-nav">
+        <RouterLink
+          v-for="item in topNav"
+          :key="item.path"
+          :to="item.path"
+          :class="['top-nav-link', route.path === item.path ? 'is-active' : '']"
+        >
+          {{ item.label }}
+        </RouterLink>
+      </nav>
+
+      <div class="top-actions">
+        <button class="search-shortcut" type="button" @click="openSearch">
+          <span class="search-shortcut-label">搜索文档</span>
+          <span class="search-shortcut-kbd">Ctrl/Cmd + K</span>
+        </button>
+        <a class="repo-link" :href="siteMeta.repo" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </header>
 
-    <div class="flex">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-white border-r border-gray-200 min-h-screen sticky top-16">
-        <nav class="p-4">
-          <div v-for="section in sidebarItems" :key="section.title" class="mb-6">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              {{ section.title }}
-            </h3>
-            <ul class="space-y-1">
-              <li v-for="item in section.items" :key="item.name">
-                <router-link 
-                  :to="item.path"
-                  :class="[
-                    'sidebar-item',
-                    $route.path === item.path ? 'sidebar-item-active' : 'sidebar-item-inactive'
-                  ]"
-                >
-                  {{ item.name }}
-                </router-link>
-              </li>
-            </ul>
+    <div class="progress-line">
+      <span :style="{ width: `${readingProgress}%` }"></span>
+    </div>
+
+    <div class="layout-shell">
+      <aside :class="['sidebar', sidebarOpen ? 'open' : '']">
+        <div class="sidebar-scroll">
+          <div v-for="group in sidebarGroups" :key="group.title" class="sidebar-group">
+            <p class="sidebar-group-title">{{ group.title }}</p>
+            <RouterLink
+              v-for="item in group.items"
+              :key="item.path"
+              :to="item.path"
+              :class="['sidebar-link', route.path === item.path ? 'is-active' : '']"
+              @click="closeSidebar"
+            >
+              {{ item.label }}
+            </RouterLink>
           </div>
-        </nav>
+        </div>
       </aside>
 
-      <!-- Main Content -->
-      <main class="flex-1">
-        <div class="container py-8">
-          <router-view />
-        </div>
+      <main class="content-area">
+        <Transition name="page" mode="out-in">
+          <RouterView />
+        </Transition>
       </main>
 
-      <!-- TOC -->
-      <aside class="w-64 hidden xl:block">
-        <div class="sticky top-16 p-4">
-          <h3 class="text-sm font-semibold text-gray-900 mb-3">目录</h3>
-          <nav id="toc" class="toc-nav">
-            <!-- TOC content will be generated dynamically -->
-          </nav>
+      <aside class="toc-panel">
+        <div class="panel toc-card">
+          <p class="toc-title">本页目录</p>
+          <a
+            v-for="item in tocItems"
+            :key="item.id"
+            :href="`#${item.id}`"
+            :class="['toc-link', activeSection === item.id ? 'is-active' : '']"
+          >
+            {{ item.title }}
+          </a>
+          <p class="toc-tip">源码优先，文档随代码更新。</p>
         </div>
       </aside>
     </div>
+
+    <div :class="['mobile-mask', sidebarOpen ? 'show' : '']" @click="closeSidebar"></div>
+
+    <Teleport to="body">
+      <div v-if="searchOpen" class="search-dialog-wrap" @click.self="closeSearch">
+        <div class="search-dialog panel">
+          <div class="search-head">
+            <input
+              ref="searchInputEl"
+              v-model.trim="searchKeyword"
+              type="text"
+              class="search-input"
+              placeholder="搜索页面、章节、配置参数..."
+            />
+            <button type="button" class="search-close" @click="closeSearch" aria-label="关闭搜索">Esc</button>
+          </div>
+
+          <div class="search-results">
+            <RouterLink
+              v-for="item in searchResults"
+              :key="item.key"
+              :to="{ path: item.path, hash: item.hash ? `#${item.hash}` : '' }"
+              class="search-item"
+              @click="closeSearch"
+            >
+              <p class="search-item-title">{{ item.title }}</p>
+              <p v-if="item.snippet" class="search-item-snippet">{{ item.snippet }}</p>
+            </RouterLink>
+            <p v-if="!searchResults.length" class="search-empty">没有匹配结果，试试关键词如 `rollout` / `auth-mode` / `PluginManager`。</p>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
+import { getPageByPath, searchDocs, sidebarGroups, siteMeta, topNav } from './content/docs';
 
-const navItems = ref([
-  { name: '介绍', path: '/introduction' },
-  { name: '快速开始', path: '/quickstart' },
-  { name: '配置', path: '/configuration' },
-  { name: '插件开发', path: '/plugins' },
-  { name: 'API', path: '/api' },
-  { name: '示例', path: '/examples' },
-  { name: '使用企业', path: '/enterprise-users' },
-  { name: '联系我们', path: '/contact' },
-])
+const route = useRoute();
+const sidebarOpen = ref(false);
+const readingProgress = ref(0);
+const activeSection = ref('');
+const searchOpen = ref(false);
+const searchKeyword = ref('');
+const searchInputEl = ref(null);
 
-const sidebarItems = ref([
-  {
-    title: '入门指南',
-    items: [
-      { name: '功能介绍', path: '/introduction' },
-      { name: '快速开始', path: '/quickstart' },
-      { name: '项目目录结构', path: '/project-structure' },
-    ]
-  },
-  {
-    title: '开发指南',
-    items: [
-      { name: '主程序配置', path: '/configuration' },
-      { name: '插件开发', path: '/plugins' },
-      { name: '插件打包', path: '/plugins-packaging' },
-      { name: '动态部署', path: '/dynamic-deployment' },
-    ]
-  },
-  {
-    title: '核心功能',
-    items: [
-      { name: '插件生命周期管理', path: '/plugin-lifecycle' },
-      { name: '配置管理', path: '/configuration-management' },
-      { name: '性能监控', path: '/performance-monitoring' },
-      { name: '安全机制', path: '/security' },
-    ]
-  },
-  {
-    title: 'API参考',
-    items: [
-      { name: 'API文档', path: '/api' },
-      { name: '注解说明', path: '/annotations' },
-      { name: '配置参数', path: '/config-parameters' },
-    ]
-  },
-  {
-    title: '其他',
-    items: [
-      { name: '示例项目', path: '/examples' },
-      { name: '使用企业', path: '/enterprise-users' },
-      { name: '版本升级说明', path: '/changelog' },
-      { name: '常见问题', path: '/faq' },
-      { name: '联系我们', path: '/contact' },
-    ]
+const currentPage = computed(() => getPageByPath(route.path) || getPageByPath('/'));
+const tocItems = computed(() => {
+  return (currentPage.value?.sections || []).map((section) => ({
+    id: section.id,
+    title: section.title
+  }));
+});
+const searchResults = computed(() => searchDocs(searchKeyword.value));
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value;
+}
+
+function closeSidebar() {
+  sidebarOpen.value = false;
+}
+
+function openSearch() {
+  searchOpen.value = true;
+  nextTick(() => {
+    searchInputEl.value?.focus();
+  });
+}
+
+function closeSearch() {
+  searchOpen.value = false;
+  searchKeyword.value = '';
+}
+
+function updateActiveSection() {
+  const sections = Array.from(document.querySelectorAll('[data-doc-section]'));
+  if (!sections.length) {
+    activeSection.value = '';
+    return;
   }
-])
+
+  const offset = 160;
+  let current = sections[0].id;
+
+  sections.forEach((section) => {
+    const top = section.getBoundingClientRect().top;
+    if (top - offset <= 0) {
+      current = section.id;
+    }
+  });
+
+  activeSection.value = current;
+}
+
+function updateProgress() {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  if (height <= 0) {
+    readingProgress.value = 0;
+    return;
+  }
+  readingProgress.value = Math.min(100, Math.max(0, (scrollTop / height) * 100));
+}
+
+function handleScroll() {
+  updateProgress();
+  updateActiveSection();
+}
+
+function handleKeydown(event) {
+  const isK = event.key.toLowerCase() === 'k';
+  if ((event.ctrlKey || event.metaKey) && isK) {
+    event.preventDefault();
+    openSearch();
+    return;
+  }
+
+  if (event.key === 'Escape' && searchOpen.value) {
+    closeSearch();
+  }
+}
+
+watch(
+  () => route.fullPath,
+  async () => {
+    closeSidebar();
+    closeSearch();
+    await nextTick();
+    requestAnimationFrame(() => {
+      handleScroll();
+    });
+  }
+);
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('keydown', handleKeydown);
+  handleScroll();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>

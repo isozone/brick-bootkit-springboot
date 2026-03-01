@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "generate-config-index": "node ./scripts/generate-config-index.mjs",
+    "generate-config-summary": "node ./scripts/generate-config-summary.mjs",
+    "verify-docs:sources": "node ./scripts/verify-doc-sources.mjs",
+    "verify-docs:coverage": "node ./scripts/verify-config-coverage.mjs",
+    "verify-docs": "npm run verify-docs:sources && npm run verify-docs:coverage",
+    "build": "npm run verify-docs && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
