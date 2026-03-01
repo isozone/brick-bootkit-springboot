@@ -16,7 +16,7 @@
     <artifactId>spring-boot3-brick-bootkit-web-demo</artifactId>
     <packaging>jar</packaging>
     <name>Brick Web Demo</name>
-    <version>4.0.5</version>
+    <version>4.0.6</version>
     <description>Brick BootKit Web Management Console Demo</description>
     
     <dependencies>
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-            <version>4.0.5</version>
+            <version>4.0.6</version>
         </dependency>
 
 
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit</artifactId>
-            <version>4.0.5</version>
+            <version>4.0.6</version>
         </dependency>
     </dependencies>
     
@@ -97,7 +97,7 @@
             <plugin>
                 <groupId>com.zqzqq</groupId>
                 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-                <version>4.0.5</version>
+                <version>4.0.6</version>
                 <configuration>
                     <mode>main</mode>
                     <mainConfig>
