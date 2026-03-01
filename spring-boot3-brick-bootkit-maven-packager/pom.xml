@@ -11,9 +11,8 @@
     </parent>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>
-        在项目开发中，使用到了原作者的框架，但升级到springboot3.5之后，无法使用，原作者也已经多年未更新，因此针对此项目进行二次修改后进行开源，
-        也希望有技术能力的一起把该插件继续维护下去。
-        具体使用方式原作者使用方式仍然可用。【参考原作者文档 https://www.yuque.com/starblues/spring-brick-3.0.0】
+        Maven packager plugin for Brick BootKit SpringBoot. It supports dev/prod/main packaging modes
+        and the prepare-meta goal for standalone local development.
     </description>
     <url>https://github.com/v18268185209/brick-bootkit-springboot.git</url>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>

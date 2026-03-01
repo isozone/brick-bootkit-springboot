@@ -19,7 +19,8 @@ package com.zqzqq.bootkits.loader.classloader.filter;
 import java.util.jar.JarEntry;
 
 /**
- * 鍖呭惈资源
+ * Include resource predicate.
+ *
  * @author starBlues
  * @version 3.0.0
  */
@@ -27,11 +28,10 @@ import java.util.jar.JarEntry;
 public interface IncludeResource {
 
     /**
-     * 过滤排除
-     * @param jarEntry jarEntry
-     * @return boolean
+     * Whether the entry should be included.
+     *
+     * @param jarEntry jar entry
+     * @return true if included
      */
     boolean include(JarEntry jarEntry);
-
 }
-

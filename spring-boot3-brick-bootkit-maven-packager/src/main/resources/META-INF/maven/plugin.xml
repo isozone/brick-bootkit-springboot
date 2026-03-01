@@ -11,7 +11,7 @@
     <mojos>
         <mojo>
             <goal>repackage</goal>
-            <description>重新打包</description>
+            <description>Repackage plugin artifact.</description>
             <requiresDependencyResolution>compile+runtime</requiresDependencyResolution>
             <requiresDirectInvocation>false</requiresDirectInvocation>
             <requiresProject>true</requiresProject>
@@ -34,7 +34,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>false</editable>
-                    <description>当前项目</description>
+                    <description>Current Maven project.</description>
                 </parameter>
                 <parameter>
                     <name>outputDirectory</name>
@@ -42,7 +42,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>true</editable>
-                    <description>打包输出目录地址</description>
+                    <description>Package output directory.</description>
                 </parameter>
                 <parameter>
                     <name>includes</name>
@@ -50,7 +50,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>包含依赖定义</description>
+                    <description>Included dependency definitions.</description>
                 </parameter>
                 <parameter>
                     <name>excludes</name>
@@ -58,7 +58,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>排除依赖定义</description>
+                    <description>Excluded dependency definitions.</description>
                 </parameter>
                 <parameter>
                     <name>skip</name>
@@ -66,7 +66,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>跳过执行</description>
+                    <description>Skip execution.</description>
                 </parameter>
                 <parameter>
                     <name>mode</name>
@@ -74,7 +74,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>true</editable>
-                    <description>打包模式: dev/prod ,默认为dev</description>
+                    <description>Package mode: dev/prod/main. Default is dev.</description>
                 </parameter>
                 <parameter>
                     <name>pluginInfo</name>
@@ -82,7 +82,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>插件信息</description>
+                    <description>Plugin metadata.</description>
                 </parameter>
                 <parameter>
                     <name>loadMainResourcePattern</name>
@@ -90,7 +90,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>从主程序加载资源的</description>
+                    <description>Patterns for loading resources from main application.</description>
                 </parameter>
                 <parameter>
                     <name>devConfig</name>
@@ -98,7 +98,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>dev打包模式配置</description>
+                    <description>Configuration for dev package mode.</description>
                 </parameter>
                 <parameter>
                     <name>prodConfig</name>
@@ -106,7 +106,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>prod打包模式配置</description>
+                    <description>Configuration for prod package mode.</description>
                 </parameter>
                 <parameter>
                     <name>mainConfig</name>
@@ -114,7 +114,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>main打包模式配置</description>
+                    <description>Configuration for main package mode.</description>
                 </parameter>
                 <parameter>
                     <name>loadToMain</name>
@@ -122,7 +122,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>加载到主程序的依赖</description>
+                    <description>Dependencies loaded into main application package.</description>
                 </parameter>
                 <parameter>
                     <name>encryptConfig</name>
@@ -130,7 +130,7 @@
                     <since>3.0.1</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>加密配置</description>
+                    <description>Encryption configuration.</description>
                 </parameter>
                 <parameter>
                     <name>includeSystemScope</name>
@@ -138,7 +138,7 @@
                     <since>3.0.2</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>是否包含scope类型为system的依赖</description>
+                    <description>Whether to include dependencies with system scope.</description>
                 </parameter>
             </parameters>
             <configuration>
@@ -154,6 +154,7 @@
                 <prodConfig implementation="com.zqzqq.bootkits.plugin.pack.prod.ProdConfig" />
                 <mainConfig implementation="com.zqzqq.bootkits.plugin.pack.main.MainConfig" />
                 <loadToMain implementation="com.zqzqq.bootkits.plugin.pack.LoadToMain" />
+                <encryptConfig implementation="com.zqzqq.bootkits.plugin.pack.encrypt.EncryptConfig" />
                 <includeSystemScope implementation="boolean" default-value="true" />
             </configuration>
             <requirements>
@@ -165,7 +166,7 @@
         </mojo>
         <mojo>
             <goal>prepare-meta</goal>
-            <description>prepare plugin meta for standalone run</description>
+            <description>Prepare plugin metadata for standalone development and testing.</description>
             <requiresDependencyResolution>compile+runtime</requiresDependencyResolution>
             <requiresDirectInvocation>false</requiresDirectInvocation>
             <requiresProject>true</requiresProject>
@@ -188,7 +189,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>false</editable>
-                    <description>褰撳墠椤圭洰</description>
+                    <description>Current Maven project.</description>
                 </parameter>
                 <parameter>
                     <name>outputDirectory</name>
@@ -196,7 +197,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>true</editable>
-                    <description>鎵撳寘杈撳嚭鐩綍鍦板潃</description>
+                    <description>Package output directory.</description>
                 </parameter>
                 <parameter>
                     <name>includes</name>
@@ -204,7 +205,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鍖呭惈渚濊禆瀹氫箟</description>
+                    <description>Included dependency definitions.</description>
                 </parameter>
                 <parameter>
                     <name>excludes</name>
@@ -212,7 +213,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鎺掗櫎渚濊禆瀹氫箟</description>
+                    <description>Excluded dependency definitions.</description>
                 </parameter>
                 <parameter>
                     <name>skip</name>
@@ -220,7 +221,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>璺宠繃鎵ц</description>
+                    <description>Skip execution.</description>
                 </parameter>
                 <parameter>
                     <name>mode</name>
@@ -228,7 +229,7 @@
                     <since>3.0.0</since>
                     <required>true</required>
                     <editable>true</editable>
-                    <description>鎵撳寘妯″紡: dev/prod ,榛樿涓篸ev</description>
+                    <description>Package mode: dev/prod/main. Default is dev.</description>
                 </parameter>
                 <parameter>
                     <name>pluginInfo</name>
@@ -236,7 +237,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鎻掍欢淇℃伅</description>
+                    <description>Plugin metadata.</description>
                 </parameter>
                 <parameter>
                     <name>loadMainResourcePattern</name>
@@ -244,7 +245,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>浠庝富绋嬪簭鍔犺浇璧勬簮鐨?/description>
+                    <description>Patterns for loading resources from main application.</description>
                 </parameter>
                 <parameter>
                     <name>devConfig</name>
@@ -252,7 +253,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>dev鎵撳寘妯″紡閰嶇疆</description>
+                    <description>Configuration for dev package mode.</description>
                 </parameter>
                 <parameter>
                     <name>prodConfig</name>
@@ -260,7 +261,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>prod鎵撳寘妯″紡閰嶇疆</description>
+                    <description>Configuration for prod package mode.</description>
                 </parameter>
                 <parameter>
                     <name>mainConfig</name>
@@ -268,7 +269,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>main鎵撳寘妯″紡閰嶇疆</description>
+                    <description>Configuration for main package mode.</description>
                 </parameter>
                 <parameter>
                     <name>loadToMain</name>
@@ -276,7 +277,7 @@
                     <since>3.0.0</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鍔犺浇鍒颁富绋嬪簭鐨勪緷璧?/description>
+                    <description>Dependencies loaded into main application package.</description>
                 </parameter>
                 <parameter>
                     <name>encryptConfig</name>
@@ -284,7 +285,7 @@
                     <since>3.0.1</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鍔犲瘑閰嶇疆</description>
+                    <description>Encryption configuration.</description>
                 </parameter>
                 <parameter>
                     <name>includeSystemScope</name>
@@ -292,7 +293,7 @@
                     <since>3.0.2</since>
                     <required>false</required>
                     <editable>true</editable>
-                    <description>鏄惁鍖呭惈scope绫诲瀷涓簊ystem鐨勪緷璧?/description>
+                    <description>Whether to include dependencies with system scope.</description>
                 </parameter>
             </parameters>
             <configuration>
@@ -308,6 +309,7 @@
                 <prodConfig implementation="com.zqzqq.bootkits.plugin.pack.prod.ProdConfig" />
                 <mainConfig implementation="com.zqzqq.bootkits.plugin.pack.main.MainConfig" />
                 <loadToMain implementation="com.zqzqq.bootkits.plugin.pack.LoadToMain" />
+                <encryptConfig implementation="com.zqzqq.bootkits.plugin.pack.encrypt.EncryptConfig" />
                 <includeSystemScope implementation="boolean" default-value="true" />
             </configuration>
             <requirements>

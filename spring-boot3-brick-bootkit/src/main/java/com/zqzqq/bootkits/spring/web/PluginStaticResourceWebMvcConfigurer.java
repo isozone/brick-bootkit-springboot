@@ -22,7 +22,8 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 插件闈欐佽祫婧恮ebMvc配置
+ * Plugin static resource WebMvc configuration.
+ *
  * @author starBlues
  * @version 3.0.0
  */
@@ -39,7 +40,7 @@ public class PluginStaticResourceWebMvcConfigurer implements WebMvcConfigurer {
         String pathPattern = "/" + resourceConfig.getPathPrefix() + "/**";
         ResourceHandlerRegistration resourceHandlerRegistration = registry.addResourceHandler(pathPattern);
         CacheControl cacheControl = resourceConfig.getCacheControl();
-        if(cacheControl != null){
+        if (cacheControl != null) {
             resourceHandlerRegistration.setCacheControl(cacheControl);
         } else {
             resourceHandlerRegistration.setCacheControl(CacheControl.noStore());
@@ -48,7 +49,4 @@ public class PluginStaticResourceWebMvcConfigurer implements WebMvcConfigurer {
                 .resourceChain(false)
                 .addResolver(new PluginStaticResourceResolver(resourceConfig));
     }
-
-
 }
-

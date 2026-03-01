@@ -1076,6 +1076,8 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 - JVM 参数方式：`-Dplugin.developmentMode=isolation|coexist`
 - 兼容参数：`-Dspring-boot3-brick-bootkit.developmentMode=...`、`-DdevelopmentMode=...`
 - 环境变量：`PLUGIN_DEVELOPMENT_MODE=isolation|coexist`
+- `prod` 包启动（`ProdLauncher`）优先读取 `MANIFEST.MF` 中的 `Main-Development-Mode`。
+- 当 `Main-Development-Mode` 未配置时，会回退到上述 JVM 参数和环境变量链路。
 
 #### 3. 无 `PLUGIN.META` 的本地开发支持
 

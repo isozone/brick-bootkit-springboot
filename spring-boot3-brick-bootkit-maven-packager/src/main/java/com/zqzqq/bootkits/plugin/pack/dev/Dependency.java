@@ -20,11 +20,11 @@ import lombok.Data;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /**
- * 开发环境下配置本地依赖的Bean
+ * 开发环境下配置本地依赖的 Bean.
  *
- * @author starBlues
+ * @author jove
  * @since 3.0.0
- * @version 3.0.0
+ * @version 4.0.5
  */
 @Data
 public class Dependency {
@@ -37,6 +37,4 @@ public class Dependency {
 
     @Parameter(required = true)
     private String classesPath;
-
 }
-

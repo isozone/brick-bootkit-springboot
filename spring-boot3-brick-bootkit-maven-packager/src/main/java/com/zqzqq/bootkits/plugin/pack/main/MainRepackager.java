@@ -35,7 +35,7 @@ import java.net.URLClassLoader;
 import java.util.Set;
 
 /**
- * 主程序搴忔墦鍖呭櫒
+ * Main application repackager.
  *
  * @author starBlues
  * @since 3.0.0
@@ -58,9 +58,9 @@ public class MainRepackager implements Repackager {
         setDevelopmentMode();
         String packageType = mainConfig.getPackageType();
         Repackager repackager = null;
-        if(PackageType.MAIN_PACKAGE_TYPE_JAR.equalsIgnoreCase(packageType)){
+        if (PackageType.MAIN_PACKAGE_TYPE_JAR.equalsIgnoreCase(packageType)) {
             repackager = new JarNestPackager(this);
-        } else if(PackageType.MAIN_PACKAGE_TYPE_JAR_OUTER.equalsIgnoreCase(packageType)){
+        } else if (PackageType.MAIN_PACKAGE_TYPE_JAR_OUTER.equalsIgnoreCase(packageType)) {
             repackager = new JarOuterPackager(this);
         } else {
             throw new MojoFailureException("Not found packageType : " + packageType);
@@ -69,34 +69,34 @@ public class MainRepackager implements Repackager {
     }
 
     private void checkConfig() throws MojoFailureException {
-        if(mainConfig == null){
+        if (mainConfig == null) {
             throw new MojoFailureException("configuration.mainConfig config cannot be empty");
         }
-        if(ObjectUtils.isEmpty(mainConfig.getMainClass())) {
+        if (ObjectUtils.isEmpty(mainConfig.getMainClass())) {
             throw new MojoFailureException("configuration.mainConfig.mainClass config cannot be empty");
         }
         String fileName = mainConfig.getFileName();
-        if(ObjectUtils.isEmpty(fileName)) {
+        if (ObjectUtils.isEmpty(fileName)) {
             MavenProject project = repackageMojo.getProject();
             mainConfig.setFileName(project.getArtifactId() + "-" + project.getVersion() + "-repackage");
         }
         String packageType = mainConfig.getPackageType();
-        if(ObjectUtils.isEmpty(packageType)) {
+        if (ObjectUtils.isEmpty(packageType)) {
             mainConfig.setPackageType(PackageType.MAIN_PACKAGE_TYPE_JAR);
         }
         String outputDirectory = mainConfig.getOutputDirectory();
-        if(ObjectUtils.isEmpty(outputDirectory)){
+        if (ObjectUtils.isEmpty(outputDirectory)) {
             mainConfig.setOutputDirectory(repackageMojo.getOutputDirectory().getPath());
         }
     }
 
-    private void setDevelopmentMode() throws MojoFailureException{
+    private void setDevelopmentMode() throws MojoFailureException {
         String developmentMode = mainConfig.getDevelopmentMode();
-        if(!ObjectUtils.isEmpty(developmentMode)){
+        if (!ObjectUtils.isEmpty(developmentMode)) {
             return;
         }
         try {
-            File file =  new File(repackageMojo.getProject().getBuild().getOutputDirectory());
+            File file = new File(repackageMojo.getProject().getBuild().getOutputDirectory());
             Set<Artifact> artifacts = repackageMojo.getProject().getArtifacts();
 
             URL[] urls = new URL[artifacts.size() + 1];
@@ -109,19 +109,19 @@ public class MainRepackager implements Repackager {
             URLClassLoader urlClassLoader = new URLClassLoader(urls, null);
 
             String mainClass = repackageMojo.getMainConfig().getMainClass();
-            if(ObjectUtils.isEmpty(mainClass)){
+            if (ObjectUtils.isEmpty(mainClass)) {
                 throw new Exception("mainConfig.mainClass config can't be empty");
             }
             Class<?> aClass = urlClassLoader.loadClass(mainClass);
             Method method = ReflectionUtils.findMethod(aClass, Constant.DEVELOPMENT_MODE_METHOD_NAME);
-            String methodKey =  aClass.getName() + "#" + Constant.DEVELOPMENT_MODE_METHOD_NAME + "()";
-            if(method == null){
+            String methodKey = aClass.getName() + "#" + Constant.DEVELOPMENT_MODE_METHOD_NAME + "()";
+            if (method == null) {
                 throw new Exception("Not found method : " + methodKey);
             }
             method.setAccessible(true);
             Object o = aClass.getConstructor().newInstance();
             Object result = method.invoke(o);
-            if(ObjectUtils.isEmpty(result)){
+            if (ObjectUtils.isEmpty(result)) {
                 throw new Exception(methodKey + " return value can't be empty");
             }
             getMainConfig().setDevelopmentMode(String.valueOf(result));
@@ -129,6 +129,4 @@ public class MainRepackager implements Repackager {
             throw new MojoFailureException("Set developmentMode failure:" + e.getMessage());
         }
     }
-
-
 }

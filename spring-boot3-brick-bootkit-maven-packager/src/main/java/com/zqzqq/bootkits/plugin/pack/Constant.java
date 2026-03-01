@@ -19,7 +19,7 @@ package com.zqzqq.bootkits.plugin.pack;
 import org.apache.maven.artifact.Artifact;
 
 /**
- * 闈欐€佺被
+ * Constants for maven packager.
  *
  * @author starBlues
  * @since 3.0.0
@@ -44,43 +44,41 @@ public class Constant {
     public static final String PLUGIN_METE_COMMENTS = "plugin meta configuration";
 
     /**
-     * 开发模式方法名
+     * Development mode method name.
      */
     public static final String DEVELOPMENT_MODE_METHOD_NAME = "developmentMode";
 
 
-    public static boolean isPom(String packageType){
+    public static boolean isPom(String packageType) {
         return PACKAGING_POM.equalsIgnoreCase(packageType);
     }
 
-    public static boolean filterArtifact(Artifact artifact, Boolean includeSystemScope){
+    public static boolean filterArtifact(Artifact artifact, Boolean includeSystemScope) {
         boolean scopeFilter = Constant.scopeFilter(artifact.getScope());
-        if(scopeFilter){
+        if (scopeFilter) {
             return true;
         }
-        if(Constant.isSystemScope(artifact.getScope())){
+        if (Constant.isSystemScope(artifact.getScope())) {
             return includeSystemScope == null || !includeSystemScope;
         }
         return Constant.filterPomTypeArtifact(artifact);
     }
 
-    public static boolean filterMainTypeArtifact(Artifact artifact){
-        // 配置了为main的依赖， 则对其过滤
+    public static boolean filterMainTypeArtifact(Artifact artifact) {
+        // Dependencies with type=main are excluded from plugin package.
         return MAVEN_MAIN_TYPE.equalsIgnoreCase(artifact.getType());
     }
 
-    public static boolean filterPomTypeArtifact(Artifact artifact){
+    public static boolean filterPomTypeArtifact(Artifact artifact) {
         return MAVEN_POM_TYPE.equalsIgnoreCase(artifact.getType());
     }
 
-    public static boolean scopeFilter(String scope){
+    public static boolean scopeFilter(String scope) {
         return SCOPE_PROVIDED.equalsIgnoreCase(scope)
                 || SCOPE_TEST.equalsIgnoreCase(scope);
     }
 
-    public static boolean isSystemScope(String scope){
+    public static boolean isSystemScope(String scope) {
         return SCOPE_SYSTEM.equalsIgnoreCase(scope);
     }
-
 }
-

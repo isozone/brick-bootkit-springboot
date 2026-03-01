@@ -25,7 +25,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 鐟欙絽鍠呮彃浠剁嚎绋嬫稉顓犳畱ClassLoader
+ * Resolve plugin thread context ClassLoader for web requests.
  *
  * @author starBlues
  * @version 3.0.3
@@ -42,11 +42,11 @@ public class ResolvePluginThreadClassLoader implements WebMvcConfigurer {
         private final ThreadLocal<ClassLoader> oldClassLoader = new ThreadLocal<>();
 
         @Override
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-            if(handler instanceof HandlerMethod){
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+            if (handler instanceof HandlerMethod) {
                 HandlerMethod handlerMethod = (HandlerMethod) handler;
                 ClassLoader classLoader = handlerMethod.getBeanType().getClassLoader();
-                if(classLoader instanceof GenericClassLoader){
+                if (classLoader instanceof GenericClassLoader) {
                     oldClassLoader.set(Thread.currentThread().getContextClassLoader());
                     Thread.currentThread().setContextClassLoader(classLoader);
                 }
@@ -55,10 +55,10 @@ public class ResolvePluginThreadClassLoader implements WebMvcConfigurer {
         }
 
         @Override
-        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
             try {
                 ClassLoader classLoader = oldClassLoader.get();
-                if(classLoader != null){
+                if (classLoader != null) {
                     Thread.currentThread().setContextClassLoader(classLoader);
                 }
             } finally {
@@ -66,6 +66,4 @@ public class ResolvePluginThreadClassLoader implements WebMvcConfigurer {
             }
         }
     }
-
 }
-

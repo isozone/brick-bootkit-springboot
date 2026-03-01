@@ -15,8 +15,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * 缂傚倸鍊搁崐鐑芥嚄閼稿灚鍙忔い鎾卞灩绾惧鏌熼崜褏甯涢柣鎾存礋閺屸€愁吋閸愩劌顬嬫繝鈷€鍐ㄨ埞妞ゎ叀鍎婚ˇ铏亜閵娿儻韬鐐诧工铻ｅ〒姘煎灡閸嶉潧顪冮妶鍡樺暗闁哥姵鍔楅埀顒佺婵炲﹪寮婚敐鍡樺劅闁挎繂妫欏В鍕⒑閸涘鐒奸柛銉戝懐鍘梻浣虹《閸撴繈鎮烽姀銈呯；闁瑰墽绮崑銊╂⒒閸喓鈽夊ù鐘筹耿濮婃椽骞栭悙娴嬪亾閵堝鍌ㄩ柛鎾楀啫鐏婃繝鐢靛У绾板秹寮查鍕厱闁哄洢鍔屾晶顕€鏌嶈閸撴盯宕戦妶澶婅摕?
- * 闂傚倸鍊风粈浣革耿鏉堚晛鍨濇い鏍仜缁€澶愭煙閻戞ɑ鈷愭い鎰矙閺岋綁濮€閵忊晝鍔搁梺鍝勫閸庣敻寮昏缁犳稑顫濋悡搴㈢暟闂備浇銆€閸嬫捇鏌曟繛鐐珕闁绘挾鍠栭弻鏇熺箾閸喖濮庡銈呮禋閸撶喖寮诲☉銏犵闁绘劘妫勬禒顕€鎮楀▓鍨灓闁轰礁顭烽妴浣肝旈崨顓狀槹濡炪倖鍔戦崹鑲╃矈鐎靛摜纾介柛灞捐壘閳ь剚鎮傚畷鏉款潩鐠鸿櫣鐛ラ梺鍝勭▉閸樿偐绮婚姣綊宕楅崗鑲╃▏闂佸搫顑勭欢姘跺蓟閿濆憘鏃堝焵椤掑嫭鍋嬮柛鈩冪懅閻牓鏌ㄩ弴鐐测偓褰掑磹閻㈠憡鐓熼柕蹇嬪€栧☉褔鎮介姘卞煟闁哄本绋戦埢搴ょ疀閺冩垶锟ラ梻渚€鈧偛鑻晶浼存煛娴ｈ鍊愮€规洏鍨奸ˇ鍦偓瑙勬礈閺佸銆佸鈧慨鈧柣妯活問濡茬兘姊绘担铏瑰笡婵☆偂绶氶、姘愁樄鐎?
+ * Import/export documentation.
+ * Import/export documentation.
  *
  * @author starBlues
  * @since 4.0.1
@@ -29,7 +29,7 @@ public class SimpleScriptImportExportManager {
     private static final int DEFAULT_MAX_PREVIEW_ITEMS = 200;
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃瀚板ù婊堢畺閺岋綁濮€閵堝棙閿柣銏╁灠閻栧ジ寮诲☉銏犖ч幖绮光偓宕囩潉闁诲孩顔栭崰鏇犲垝濞嗘挸绠栭柍鈺佸暞閸庣喖鏌ㄥ┑鍡樼ォ闁衡偓閵娾晜鈷掑ù锝呮啞閹牊銇勯幋婵囶棦闁诡垰鐭傞、娆撳箣閹烘梻鐣?
+     * Import/export documentation.
      */
     public enum ExportFormat {
         JSON(".json"),
@@ -55,12 +55,12 @@ public class SimpleScriptImportExportManager {
                     return format;
                 }
             }
-            return JSON; // 濠电姵顔栭崰妤冩暜濡ゅ啰鐭欓柟鐑樸仜閳ь剨绠撳畷濂稿Ψ椤旇姤娅嶅┑鐘垫暩婵敻鎳濇ィ鍐ㄧ闁逞屽墴濮婅櫣绱掑Ο璇茬濠电偞鎸抽ˉ鎾斥槈閻㈢鐒?
+            return JSON; // Legacy garbled comment removed.
         }
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃瀚板ù婊堢畺閺岋綁濮€閵堝棙閿柣銏╁灠閻栧ジ寮诲☉銏犖ч幖绮光偓宕囩潉闂備礁鎼懟顖炲箠韫囨搩鍤楅柛鏇ㄥ灠缁犳盯鏌嶇憴鍕姢濞?
+     * Import/export documentation.
      */
     public static class ImportExportOptions {
         private final boolean includeScripts;
@@ -195,7 +195,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃瀚板ù婊堢畺閺岋綁濮€閵堝棙閿柣銏╁灠閻栧ジ寮诲☉銏犖ч幖绮光偓宕囶啋缂傚倷娴囨ご鍝ユ暜閿熺姷宓佹俊顖氱毞閸嬫捇鎮介崨濠冪彸闂?
+     * Import/export documentation.
      */
     public static class ImportExportResult {
         private final boolean success;
@@ -272,7 +272,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃瀚板ù婊堢畺閺岋綁濮€閵堝棙閿柣銏╁灠閻栧ジ寮诲☉銏犖ч幖绮光偓宕囩潉闁诲孩顔栭崳顕€宕戞繝鍥х畺鐟滄柨鐣烽悡搴樻斀闁割偅绋戞禍浼存⒒娴ｇ瓔鍤欏Δ鐘殿焾閿曘垽鏌嗗鍛枃闂佸湱鍋撻弸濂稿几?
+     * Import/export documentation.
      */
     public static class ImportExportData {
         private final String version;
@@ -309,7 +309,7 @@ public class SimpleScriptImportExportManager {
     private final Map<String, SchemaMigration> schemaMigrations;
     
     /**
-     * 闂傚倸鍊风粈渚€骞栭銈囩煋闁割偅娲栭崒銊ф喐韫囨拹锝夊箛閺夎法鍔撮梺鍛婂姂閸斿海绮ｉ悙鐑樷拺闁告稑锕ユ径鍕煕濡湱鐭欑€规洘鍔欓幃娆撴倻濡厧骞堥梻浣瑰缁诲倿宕锝勭箚濞寸姴顑嗛崑銊︺亜閺嶃劎鈯曢悘蹇ュ閳?
+     * Import/export documentation.
      */
     public interface FormatHandler {
         String getName();
@@ -398,7 +398,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * JSON闂傚倸鍊风粈渚€骞栭銈囩煋闁割偅娲栭崒銊ф喐韫囨拹锝夊箛閺夎法鍔撮梺鍛婂姂閸斿海绮ｉ悙鐑樷拺闁告稑锕ユ径鍕煕濡湱鐭欑€规洘鍔欓幃娆撴倻濡厧骞?
+     * Import/export documentation.
      */
     public static class JsonFormatHandler implements FormatHandler {
         private final Gson gson;
@@ -434,7 +434,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * Properties闂傚倸鍊风粈渚€骞栭銈囩煋闁割偅娲栭崒銊ф喐韫囨拹锝夊箛閺夎法鍔撮梺鍛婂姂閸斿海绮ｉ悙鐑樷拺闁告稑锕ユ径鍕煕濡湱鐭欑€规洘鍔欓幃娆撴倻濡厧骞?
+     * Import/export documentation.
      */
     public static class PropertiesFormatHandler implements FormatHandler {
         @Override
@@ -484,7 +484,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 缂傚倸鍊搁崐鐑芥嚄閼稿灚鍙忔い鎾卞灩绾惧鏌熼崜褏甯涢柣鎾存礃娣囧﹪濡堕崟顓炲缂備讲鍋撻柛顐ゅ枔缁犻箖鏌涢銈呮瀻闁诲繑鎸抽弻鐔兼惞椤愨偓椤忓牞缍栨繝闈涱儛閺佸洭鏌ｉ弮鍌ょ劸妞ゅ繋鍗冲濠氬磼濞嗘垵濡藉┑鐘灪椤洨鍒掗弮鍫濋唶闁哄洨鍠庢禒?
+     * Import/export documentation.
      */
     public static class SimpleScriptConfig {
         private String id;
@@ -540,13 +540,13 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 缂傚倸鍊搁崐鐑芥嚄閼稿灚鍙忔い鎾卞灩绾惧鏌熼崜褏甯涢柣鎾存礃娣囧﹪濡堕崟顓炲缂備讲鍋撻柛顐ゅ枔缁犻箖鏌涢銈呮瀻闁诲繑鎸抽弻鐔兼惞椤愨偓椤忓牞缍栨繝闈涱儛閺佸洭鏌ｉ弮鍌ょ劸妞ゅ繋鍗冲铏规嫚閹绘帩鍔夌紓浣割儐鐢繝寮€ｎ喗鈷?
+     * Import/export documentation.
      */
     private final Map<String, SimpleScriptConfig> scriptConfigs;
     private final Map<String, String> environmentVariables;
     
     /**
-     * 闂傚倸鍊风粈渚€骞栭锔绘晞闁告侗鍨崑鎾愁潩椤愩垹绁梺绯曟杹閸嬫挸顪冮妶鍡楃瑨闁稿﹦顭堥悺顓㈡⒒娴ｈ鍋犻柛濠冪箖缁傚秶鎹勬笟顖氭?
+     * Import/export documentation.
      */
     public SimpleScriptImportExportManager() {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
@@ -560,7 +560,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倸鍊风粈渚€骞夐敍鍕殰婵°倕鍟畷鏌ユ煕瀹€鈧崕鎴犵礊閺嶎厽鐓欓柣妤€鐗婄欢鑼磼閳ь剙鐣濋崟顒傚幐閻庡箍鍎遍崯顐ｄ繆閸噮鐔嗛悷娆忓婵鏌嶈閸撴岸顢欓弽顓炵獥闁哄稁鍋呭畷鏌ユ煙閺夊灝褰勯柛銉墮閻撴盯鏌涘☉鍗炴灈濞寸姭鏅犲铏瑰寲閺囩偛鈷夊銈冨妼濡繈骞?
+     * Import/export documentation.
      */
     private void initializeFormatHandlers() {
         formatHandlers.put(ExportFormat.JSON, new JsonFormatHandler());
@@ -572,12 +572,12 @@ public class SimpleScriptImportExportManager {
             if (!data.containsKey("exporter")) {
                 data.put("exporter", "legacy-import");
             }
-            context.addWarning("migration.legacy", "legacy 闂傚倸鍊峰ù鍥ь浖閵娾晜鍤勯柤绋跨仛濞呯姵淇婇妶鍌氫壕闂佷紮绲介悘姘跺箯閸涙潙绀堥柟缁樺笚濞呭﹪姊绘担钘変汗闁告鍕珷閹艰揪绲炬刊濂告煥濠靛棙宸濈痪鍓у帶椤法鎹勯崫鍕О闂佹悶鍊栭悷鈺呭蓟?schemaVersion 4.0.0");
+            context.addWarning("migration.legacy", "Legacy schema warning");
             return "4.0.0";
         });
 
         registerSchemaMigration("4.0.0", (data, context) -> {
-            context.addWarning("migration.default", "schemaVersion 4.0.0 闂備浇顕у锕傦綖婢舵劖鍋ら柡鍥╁С閻掑﹥銇勮箛鎾搭棤缂佹唻绠撻弻銈吤圭€ｎ偅鐝栭梺娲诲幗閹瑰洭骞冭ぐ鎺戠倞闁靛鍎崇粊鐑芥⒑?4.0.1");
+            context.addWarning("migration.default", "Legacy schema warning");
             return CURRENT_SCHEMA_VERSION;
         });
     }
@@ -593,50 +593,50 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煟濮楀棗浜滃ù婊堢畺閺岋綁鎮㈤崫鍕垫毉濠电姭鍋撳ù鐓庣摠閻撴盯鏌涢埥鍡楀箻缂佸鍣ｉ弻锛勪沪閺傘倕浼愬銈嗘尭閵堢鐣烽崼鏇炵厸闁稿本澹曢崑?
+     * Import/export documentation.
      *
-     * @param outputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柛姘愁潐閵囧嫰骞樼捄鐩掞絿鈧娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param format 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煏韫囨洖孝闁哥偑鍔戝铏圭磼濡纰嶅┑鐐存尦椤ユ挸鈽夐悽绋跨劦?
-     * @param options 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煏韫囥儳纾块柛鏂跨仛缁绘繈濮€閿濆懐鍘梺鍛婃⒐閸ㄥ潡宕洪埀?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煟濡吋鏆╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult exportAll(String outputPath, ExportFormat format, ImportExportOptions options) {
         try {
             ImportExportOptions safeOptions = options != null
                 ? options
                 : ImportExportOptions.newBuilder().build();
-            // 闂傚倸鍊峰ù鍥Υ閳ь剟鏌涚€ｎ偅宕岄柡灞剧洴椤㈡洟鏁愰崱娆樻О闂備浇澹堢亸娆愮箾閳ь剟鏌＄仦绋垮⒉闁瑰嘲鎳樺畷顐﹀礋閸偅鐦旈梺?
+            // Legacy garbled comment removed.
             Map<String, Object> exportData = collectExportData(safeOptions);
             
-            // 闂傚倷鑳堕幊鎾诲触鐎ｎ亶鐒芥繛鍡樺灦瀹曟煡鏌熼悧鍫熺凡闁搞劌鍊归妵鍕疀閹捐泛顣虹紓浣插亾鐎光偓閸曨剛鍘搁悗骞垮劚閸燁偅淇婇懞銉х闁割偅绻勯崺锝夋煛?
+            // Legacy garbled comment removed.
             FormatHandler handler = formatHandlers.get(format);
             if (handler == null) {
-                return ImportExportResult.failure("濠电姷鏁搁崑鐐哄垂閸洖绠伴柛婵勫劤閻捇鏌ｉ姀銏╃劸闁哄鐒﹂妵鍕即濡も偓娴滄儳螖閻橀潧浠﹂柛鏃€鐗犻獮蹇涘川鐎涙ê鈧粯淇婇姘倯婵炲牊鎮傚缁樻媴閸涘﹥鍎撶紓浣割槸閻栫厧鐣烽姀锝庢Ь濠? " + format, Arrays.asList("闂傚倸鍊风粈渚€骞栭銈囩煋闁割偅娲栭崒銊ф喐韫囨拹锝夊箛閺夎法鍔撮梺鍛婂姂閸斿海绮ｉ悙鐑樷拺闁告稑锕ユ径鍕煕濡湱鐭欑€规洘鍔欓幃娆撴倻濡厧骞堥梻浣瑰缁诲倿宕锝勭箚闁兼亽鍎崇弧鈧梺閫炲苯澧存い銏★耿婵偓闁绘ɑ顔栭崥瀣⒒娴ｇ瓔鍤冮柛銊ラ叄瀹曟﹢顢旈崟顐ょ懇"));
+                return ImportExportResult.failure("Unsupported export format: " + format, Arrays.asList("Unsupported export format"));
             }
             
             String serializedData = handler.serialize(exportData);
             
-            // 闂傚倸鍊风粈渚€骞夐敓鐘茬闁哄稁鍘介崑锟犳煏婢跺棙娅呴柣顓燁殜閺屾盯鍩勯崘顏佹濠碘槅鍋呴敃銏ゅ蓟濞戙垹唯妞ゆ牜鍋為宥咁渻?
+            // Legacy garbled comment removed.
             Path outputFile = Paths.get(outputPath);
             Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
-                "闂傚倸鍊搁崐鐑芥倿閿曗偓椤灝螣閼测晝鐓嬮梺鍓插亝濞叉﹢宕戦鍫熺厱闁斥晛鍟伴幉鍧楁煕鐎ｎ偅宕岄柟顔荤矙濡啫鈽夊Ο鍦笡闂傚倷鐒﹂幃鍫曞磹閵堝鐭楅柛鎰靛枤瀹撲線鎮楅敐搴℃灈缂佺姵绋掗妵鍕箳閸℃ぞ澹曟俊? " + outputPath, 
+                "Export completed: " + outputPath,
                 getTotalItems(exportData), 
                 getTotalItems(exportData)
             );
             
         } catch (Exception e) {
-            return ImportExportResult.failure("闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煟閺冨牜妫戠紒鎰仱閺屸剝寰勬繝鍕拡闂佺顑呴ˇ鎶铰? " + e.getMessage(), Arrays.asList(e.getMessage()));
+            return ImportExportResult.failure("Import/export failed: " + e.getMessage(), Arrays.asList(e.getMessage()));
         }
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃瀚板ù婊堢畺閺岋綁鎮㈤崫鍕垫毉濠电姭鍋撳ù鐓庣摠閻撴盯鏌涢埥鍡楀箻缂佸鍣ｉ弻锛勪沪閺傘倕浼愬銈嗘尭閵堢鐣烽崼鏇炵厸闁稿本澹曢崑?
+     * Import/export documentation.
      *
-     * @param inputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柣顓燁殜閺屾盯鍩勯崘顏呭櫗閻庤娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param options 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳呴柛鏂跨仛缁绘繈濮€閿濆懐鍘梺鍛婃⒐閸ㄥ潡宕洪埀?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃ê鐏╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult importAll(String inputPath, ImportExportOptions options) {
         try {
@@ -656,7 +656,7 @@ public class SimpleScriptImportExportManager {
                 return ImportExportResult.failure("Unsupported format: " + format, Arrays.asList("Format handler cannot import"));
             }
             
-            // 闂傚倸鍊风粈渚€骞夐敓鐘冲仭闁靛／鍛厠闁诲骸鐏氶悺鏇熸叏閾忣偁浜滈柟鎯у船閻忊晝绱掗埀顒勫幢濡湱绠氶梺闈涚墕閸婂憡绂嶆ィ鍐╃厽閹艰揪绱曟禒娑㈡煟閹绢垪鍋撻幇浣告濡炪倖鍔ч梽鍕磻鐎ｎ喗鐓曟い鎰剁悼缁犳﹢鏌?
+            // Legacy garbled comment removed.
             @SuppressWarnings("unchecked")
             Map<String, Object> rawData = (Map<String, Object>) handler.deserialize(content, Map.class);
 
@@ -689,7 +689,7 @@ public class SimpleScriptImportExportManager {
                 return failureResult;
             }
             
-            // 濠电姴鐥夐弶搴撳亾濡や焦鍙忛柟缁㈠枟閸庢銆掑锝呬壕闂佽鍨悞锕€顕ラ崟顖氱疀妞ゆ帊鑳堕埀顒夊墴濮婅櫣绱掑鍡樼暥闂佺粯顨呭Λ娑氬垝?
+            // Legacy garbled comment removed.
             if (safeOptions.isValidateData() && !validateData(data, safeOptions)) {
                 ImportExportResult validateFailure = ImportExportResult.failure(
                     "Data validation failed",
@@ -718,7 +718,7 @@ public class SimpleScriptImportExportManager {
                 return previewResult;
             }
             
-            // 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸倖鎴︽倵椤掑嫭鈷戠紓浣癸供濞堟棃鏌ｅΔ鈧Λ娑氬垝?
+            // Legacy garbled comment removed.
             ImportExportResult result = importData(data, safeOptions, migrationWarnings, aliasStatistics);
             result.addStatistic("dryRun", false);
             result.addStatistic("schemaVersion.original", originalSchemaVersion);
@@ -730,22 +730,22 @@ public class SimpleScriptImportExportManager {
             return result;
             
         } catch (Exception e) {
-            return ImportExportResult.failure("闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏′繆椤栨繃顏犵紒鎰仱閺屸剝寰勬繝鍕拡闂佺顑呴ˇ鎶铰? " + e.getMessage(), Arrays.asList(e.getMessage()));
+            return ImportExportResult.failure("Import/export failed: " + e.getMessage(), Arrays.asList(e.getMessage()));
         }
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煏韫囧ň鍋撻崗鍛版濠碉紕鍋戦崐鏍偋濡ゅ懎绀勭憸鐗堝笒濮规煡鏌￠崘銊у闁绘挻娲樼换娑㈠幢濡搫衼闂佸吋婢樺锟犲蓟?
+     * Import/export documentation.
      *
-     * @param outputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柛姘愁潐閵囧嫰骞樼捄鐩掞絿鈧娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param format 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煏韫囨洖孝闁哥偑鍔戝铏圭磼濡纰嶅┑鐐存尦椤ユ挸鈽夐悽绋跨劦?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁汇垹澹婇弫鍥煟濡吋鏆╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult exportEnvironment(String outputPath, ExportFormat format) {
         try {
             FormatHandler handler = formatHandlers.get(format);
             if (handler == null) {
-                return ImportExportResult.failure("濠电姷鏁搁崑鐐哄垂閸洖绠伴柛婵勫劤閻捇鏌ｉ姀銏╃劸闁哄鐒﹂妵鍕即濡も偓娴滄儳螖閻橀潧浠﹂柛鏃€鐗犻獮蹇涘川鐎涙ê鈧粯淇婇姘倯婵炲牊鎮傚缁樻媴閸涘﹥鍎撶紓浣割槸閻栫厧鐣烽姀锝庢Ь濠? " + format, Arrays.asList("闂傚倸鍊风粈渚€骞栭銈囩煋闁割偅娲栭崒銊ф喐韫囨拹锝夊箛閺夎法鍔撮梺鍛婂姂閸斿海绮ｉ悙鐑樷拺闁告稑锕ユ径鍕煕濡湱鐭欑€规洘鍔欓幃娆撴倻濡厧骞堥梻浣瑰缁诲倿宕锝勭箚闁兼亽鍎崇弧鈧梺閫炲苯澧存い銏★耿婵偓闁绘ɑ顔栭崥瀣⒒娴ｇ瓔鍤冮柛銊ラ叄瀹曟﹢顢旈崟顐ょ懇"));
+                return ImportExportResult.failure("Unsupported export format: " + format, Arrays.asList("Unsupported export format"));
             }
             
             String serializedData = handler.serialize(environmentVariables);
@@ -754,22 +754,22 @@ public class SimpleScriptImportExportManager {
             Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
-                "闂傚倸鍊烽懗鍓佸垝椤栨粌鍨濋柣妯款嚙閸ㄥ倸霉閸忚偐鏆橀柍褜鍓欓崐鎸庝繆閹间礁鐓涘ù锝堟閸橆剚绻濆▓鍨灍闁靛洦鐩畷鎴﹀箻缂佹鍘遍梺鎸庣箓閻楀﹪顢旈悩缁樼厓鐟滄粓宕滃☉銏犳瀬闁归棿绀侀崒銊ф喐閺傝法鏆﹂柣銏犲閺佸洭鏌曡箛鏇炐ユい鎾存そ濮婇缚銇愰幒鎴滃枈闂佸憡鎸婚悷鈺呮晲? " + outputPath, 
+                "Environment export completed: " + outputPath,
                 environmentVariables.size(), 
                 environmentVariables.size()
             );
             
         } catch (Exception e) {
-            return ImportExportResult.failure("闂傚倸鍊烽懗鍓佸垝椤栨粌鍨濋柣妯款嚙閸ㄥ倸霉閸忚偐鏆橀柍褜鍓欓崐鎸庝繆閹间礁鐓涘ù锝堟閸橆剚绻濆▓鍨灍闁靛洦鐩畷鎴﹀箻缂佹鍘遍梺鎸庣箓閻楀﹪顢旈悩缁樼厓鐟滄粓宕滃☉銏犳瀬闁归棿绀侀崒銊ф喐閺傝法鏆﹂柣銏犲閺佸洭鏌ｉ弮鍫缂佹劗鍋ら弻鈩冨緞婵犲嫬鈷堥梺绋款儏椤︽娊路? " + e.getMessage(), Arrays.asList(e.getMessage()));
+            return ImportExportResult.failure("Import/export failed: " + e.getMessage(), Arrays.asList(e.getMessage()));
         }
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冨ù鐘灩椤啴濡堕崱娆忣潷闂佸憡鍨电紞濠傤嚕閹惰棄绫嶉柛顐ゅ枔閸樺崬鈹戦悙鍙夘棡闁告枮鍥ㄥ殌闁秆勵殕閻?
+     * Import/export documentation.
      *
-     * @param inputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柣顓燁殜閺屾盯鍩勯崘顏呭櫗閻庤娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param overwrite 闂傚倸鍊风粈渚€骞栭銈傚亾濮樺崬鍘寸€规洝顫夌€靛ジ寮堕幋鐘垫毎濠电偠鎻徊鍧楀磿閵堝鐤繛宸簼閻撴洟鏌嶉埡浣告殶闁瑰啿瀚惀?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃ê鐏╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult importEnvironment(String inputPath, boolean overwrite) {
         return importEnvironment(inputPath, overwrite, false);
@@ -892,11 +892,11 @@ public class SimpleScriptImportExportManager {
     }
 
     /**
-     * 闂傚倸鍊峰ù鍥敋瑜嶉湁闁绘垼妫勯弸渚€鏌熼梻瀵割槮闁稿被鍔庨幉鎼佸棘鐠恒劍娈鹃梺姹囧灩婢瑰﹪寮崶顒佺厪闊洤艌閸嬫捇鎼归銈嗘瘓婵犵數濮甸鏍窗濡ゅ懏鏅濋柍鍝勬噹閸屻劌霉閻樺樊鍎忕紒鐙€鍨跺娲敆閳ь剛绮旈悽绋跨厱闁硅揪闄勯悡娑橆熆鐠哄搫顒㈢痪顓炵埣閹虫牠寮介鐔叉嫼?     *
-     * @param outputPath 闂傚倸鍊风粈渚€骞栭位鍥敍閻愭潙浜辨繝鐢靛Т濞层倗绮绘导瀛樼厵闂傚倸顕ˇ锕傛煕濮樻剚娼愰柕鍥у楠炴鎹勯惄鎺炵悼閳ь剝顫夊ú鏍囨导鏉懳﹂柛鏇ㄥ灠閸愨偓闂侀潧顭俊鍥р枔閵堝洨纾?
-     * @param scriptIds 闂傚倸鍊搁崐鐑芥嚄閸洖鍌ㄧ憸鏃堝箖濞差亜惟鐟滃秹寮搁崼鈶╁亾楠炲灝鍔氶柟閿嬪灴閹虫捇宕稿Δ浣哄幗閻熸粌閰ｉ崺鈧い鎺嶇婵秵鎱ㄦ繝鍐┿仢鐎规洏鍔嶇换婵嬪磼濠婂懏鍤冨┑锛勫亼閸婃垿宕濆畝鍕婂洭宕归锛勭畾闂佸湱铏庨崰鏍矆閸愨斂浜滈柡鍐ㄦ搐琚氬┑鐐叉噺閻楃姴顫忛搹鍦煋闁糕剝顨嗗﹢浼存煟閹捐泛濡眑闂傚倸鍊峰ù鍥х暦閻㈢纾婚柣鎰暩閻瑩鐓崶銊р槈缂佲偓婢舵劕绠规繛锝庡墮婵＄厧顩奸崨顓涙斀妞ゆ梻鍗抽幋鐐存珷閹兼番鍔岀壕濠氭煙閸撗呭笡闁稿鍔戝濠氬醇閻旇　妲堟繛瀵稿У閿曘垹顫忓ú顏勭闁绘劖绁撮崑鎾诲Χ婢跺﹦鐓戦梺鍛婂姦閸犳艾鐣垫担琛″亾楠炲灝鍔氭い锔诲灦閹偤宕归鐘辩盎闂佸湱鍎ら崹鐢割敂閳哄懏鍊垫慨姗嗗墻濡插憡銇勯鐐村仴闁硅櫕绮撻幃浠嬫倷閸忓浜鹃柟鐑樻⒒绾惧ジ鏌?
-     * @param format 闂傚倸鍊峰ù鍥敋瑜嶉湁闁绘垼妫勯弸渚€鏌熼梻瀵割槮闁稿被鍔庨幉鎼佸棘鐠恒劍娈鹃梺姹囧灩婢瑰﹪寮崶顒佺厪闊洦娲栧瓭闂佸摜鍋戦崝鎴濐潖閾忓湱纾兼俊顖濐嚙绾板秴鈹戦悙瀛樺唉妞ゃ儲鎸搁埥澶愭偨缁嬭法鍔?
-     * @return 闂傚倸鍊峰ù鍥敋瑜嶉湁闁绘垼妫勯弸渚€鏌熼梻瀵割槮闁稿被鍔庨幉鎼佸棘鐠恒劍娈鹃梺姹囧灩婢瑰﹪寮崶顒佺厽婵☆垰鍚嬮弳鈺呮煥濞戞瑧鐭掓慨濠呮閹叉挳宕熼銏犘戞俊鐐€栧ú锕傚储閻ｅ瞼鐭?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult exportScripts(String outputPath, List<String> scriptIds, ExportFormat format) {
         try {
@@ -920,34 +920,34 @@ public class SimpleScriptImportExportManager {
             Files.write(outputFile, serializedData.getBytes(StandardCharsets.UTF_8));
             
             return ImportExportResult.success(
-                "闂傚倸鍊烽懗鍫曞储瑜旈幃娲Ω瑜嶉弸鍫⑩偓骞垮劚閹锋垿鎳撻崹顔氬綊鎮℃惔锝嗘喖闂佺粯鎸撮崑鎾绘煟鎼达紕鐣柛搴″船鐓ら柕濞炬櫅閸戠娀鏌涘畝鈧崑鐐哄磹閻㈠憡鐓熼柕蹇嬪€栧☉褔鎮介姘卞煟闁哄本鐩俊鑸垫償閳ュ磭鐫勬俊銈囧Х閸嬫盯顢栨径鎰祦闁搞儺鍓﹂弫鍡涙煃瑜滈崜鐔兼晲? " + outputPath, 
+                "Script export completed: " + outputPath,
                 processed, 
                 processed
             );
             
         } catch (Exception e) {
-            return ImportExportResult.failure("闂傚倸鍊烽懗鍫曞储瑜旈幃娲Ω瑜嶉弸鍫⑩偓骞垮劚閹锋垿鎳撻崸妤佺厵婵炲牆鐏濋弸鎾绘煕鐎ｎ偅宕岄柟顔荤矙濡啫鈽夊Ο鍦笡闂傚倷鐒﹂幃鍫曞磹閵堝鍌ㄩ柦妯侯樈閸ゆ鏌涢弴銊ュ缂傚秴娲﹂妵鍕箛閳轰礁澹? " + e.getMessage(), Arrays.asList(e.getMessage()));
+            return ImportExportResult.failure("Import/export failed: " + e.getMessage(), Arrays.asList(e.getMessage()));
         }
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冩繛鍫燁殔閳规垿顢欓弬銈勭返闂佸憡眉缁瑩鐛箛娑欑劶鐎广儱妫岄幏娲⒑閸濆嫷妲兼繛澶嬫礉閸婃挳姊?
+     * Import/export documentation.
      *
-     * @param inputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柣顓燁殜閺屾盯鍩勯崘顏呭櫗閻庤娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param overwrite 闂傚倸鍊风粈渚€骞栭銈傚亾濮樺崬鍘寸€规洝顫夌€靛ジ寮堕幋鐘垫毎濠电偠鎻徊鍧楀磿閵堝鐤繛宸簼閻撴洟鏌嶉埡浣告殶闁瑰啿瀚惀顏堟倷椤掆偓椤ュ鏌嶈閸撴盯骞婇幘璇茬疅闂勫洭濡甸幇鏉跨妞ゆ棁妫勬禒閬嶆⒑闂堟单鍫ュ疾濞戙垹绠查柛顐ｆ礃閻撳繐鈹戦悙鎴濆暙椤忣偊鏌￠崱娆忊枅婵﹦绮幏鍛喆閸曨厼鍤掔紓鍌欑椤︻垶鎮ユ總绋跨畺?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃ê鐏╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult importScripts(String inputPath, boolean overwrite) {
         return importScripts(inputPath, overwrite, false);
     }
 
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冩繛鍫燁殔閳规垿顢欓弬銈勭返闂佸憡眉缁瑩鐛箛娑欑劶鐎广儱妫岄幏娲⒑閸濆嫷妲兼繛澶嬫礉閸婃挳姊绘担鍦菇闁稿﹥娲栬灋婵犻潧顑呴弸浣衡偓骞垮劚椤︻垶鏌嬮崶顒佺厽闁哄倹瀵ч崯鐐寸箾閸粌宓嗘慨濠囩細閵囨劙骞掗幘瀵稿礁缂傚倷娴囬崺鏍х暆閹间礁违闁稿瞼鍋涢悡娑樏归敐鍛仾闁烩晩鍨跺畷娲焵椤掍降浜滈柟鍝勬娴滈箖鏌ф导娆戠М闁哄苯绉规俊鐑藉Ψ瑜濈槐鐐电磼缂併垹骞愰柛瀣崌濮?
+     * Import/export documentation.
      *
-     * @param inputPath 闂傚倷绀侀幖顐λ囬鐐村亱濠电姴娲ょ粻浼存煙闂傚顦﹂柣顓燁殜閺屾盯鍩勯崘顏呭櫗閻庤娲栭ˇ浼村Φ閸曨垰鍐€闁靛濡囧▓銈囩磽?
-     * @param overwrite 闂傚倸鍊风粈渚€骞栭銈傚亾濮樺崬鍘寸€规洝顫夌€靛ジ寮堕幋鐘垫毎濠电偠鎻徊鍧楀磿閵堝鐤繛宸簼閻撴洟鏌嶉埡浣告殶闁瑰啿瀚惀顏堟倷椤掆偓椤ュ鏌嶈閸撴盯骞婇幘璇茬疅闂勫洭濡甸幇鏉跨妞ゆ棁妫勬禒閬嶆⒑闂堟单鍫ュ疾濞戙垹绠查柛顐ｆ礃閻撳繐鈹戦悙鎴濆暙椤忣偊鏌￠崱娆忊枅婵﹦绮幏鍛喆閸曨厼鍤掔紓鍌欑椤︻垶鎮ユ總绋跨畺?
-     * @param dryRun 闂傚倸鍊风粈渚€骞栭銈傚亾濮樺崬鍘寸€规洝顫夌€靛ジ寮堕幋鐘垫毎濠电偠鎻徊钘夛耿闁秲鈧懘鎮滈懞銉у幈濠电偞鍨堕悷锕傚磿濡ゅ懏鐓涢柛鈩兩戠粈鍐ㄇ庨崶褝韬い銏℃礋閹垽鎽庨崒姘兼濠电姷鏁搁崑鐐哄垂閸洖绠伴柛婵勫劤閻捇鏌熺紒銏犳灈闁汇値鍣ｉ弻鐔煎箲閹伴潧娈紓浣插亾?
-     * @return 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閸℃ê鐏╅柨娑欑矒濮婅櫣鎲撮崟顐㈠Б濡炪倖娲﹂崢鐣岀矉?
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
+     * Import/export documentation.
      */
     public ImportExportResult importScripts(String inputPath, boolean overwrite, boolean dryRun) {
         return importScripts(inputPath, overwrite, dryRun, DEFAULT_MAX_PREVIEW_ITEMS);
@@ -1058,80 +1058,80 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倸鍊风粈渚€宕ョ€ｎ喖纾块柟鎯版鎼村﹪鏌ら懝鎵牚濞存粌缍婇弻娑㈠Ψ椤旂厧顫梺鎼炲€曞ú锕傚箞閵娿儺娼ㄩ柛鈩冾殔缁犳椽姊洪崷顓炲幋濞存粏娉涢～蹇撁洪鍕獓闁荤姵浜介崜閬嶅Χ婢跺鍘?
+     * Import/export documentation.
      */
     public SimpleScriptConfig getScriptConfig(String scriptId) {
         return scriptConfigs.get(scriptId);
     }
     
     /**
-     * 缂傚倸鍊搁崐椋庣矆娓氣偓钘濇い鏍亹閳ь剨绠戦悾锟犲箥閾忣偆鈧椽鏌熼崗鑲╂殬闁告柨绉瑰畷鐢稿炊閵婏箑寮垮┑顔筋殔濡鐛Δ鍛厵闁绘垶鍨濋幉鐐叏婵犲啯銇濈€殿喖澧庨幑鍕Ω閹扳晛鈧繈寮?
+     * Import/export documentation.
      */
     public SimpleScriptConfig removeScriptConfig(String scriptId) {
         return scriptConfigs.remove(scriptId);
     }
     
     /**
-     * 闂傚倸鍊风粈渚€宕ョ€ｎ喖纾块柟鎯版鎼村﹪鏌ら懝鎵牚濞存粌缍婇弻娑㈠Ψ椤旂厧顫╃紓浣哄О閸庣敻寮诲鍫闂佸憡鎸鹃崰搴敋閿濆鍨傛い鎰╁灮缁愮偤鏌熼懖鈺勊夐柍褜鍓氶崜姘涘┑瀣拻濞达絽鎲￠幆鍫ユ煟濡も偓缁绘﹢鐛崘鈺冪懝?
+     * Import/export documentation.
      */
     public List<String> getAllScriptIds() {
         return new ArrayList<>(scriptConfigs.keySet());
     }
     
     /**
-     * 闂傚倷娴囧畷鍨叏瀹曞洨鐭嗗ù锝堫潐濞呯姴霉閻樺樊鍎愰柛瀣典邯閺屾盯鍩勯崘顏佸闂佺顑嗙换鍐Φ閸曨垰鍐€闁靛鍎卞В鍫ユ⒑閸濆嫭顥炴俊顐㈠暣瀵鈽夊Ο閿嬬€婚梺鍦閸庡ジ鍩€椤掆偓濞硷繝寮?
+     * Import/export documentation.
      */
     public void setEnvironmentVariable(String key, String value) {
         environmentVariables.put(key, value);
     }
     
     /**
-     * 闂傚倸鍊风粈渚€宕ョ€ｎ喖纾块柟鎯版鎼村﹪鏌ら懝鎵牚濞存粌缍婇弻娑㈠Ψ椤旂厧顫梺绋款儐缁诲啴濡甸崟顖氬唨闁靛鍎卞В鍫ユ⒑閸濆嫭顥炴俊顐㈠暣瀵鈽夊Ο閿嬬€婚梺鍦閸庡ジ鍩€椤掆偓濞硷繝寮?
+     * Import/export documentation.
      */
     public String getEnvironmentVariable(String key) {
         return environmentVariables.get(key);
     }
     
     /**
-     * 缂傚倸鍊搁崐椋庣矆娓氣偓钘濇い鏍亹閳ь剨绠戦悾锟犲箥閾忣偆鈧椽鏌熼崗鑲╂殬闁告柨绉瑰畷鎴濃攽閸ャ儰绨婚梺鍝勭Р閸斿矂宕甸鍕厸闁糕剝蓱椤ュ牓鏌＄仦鍓р槈闁宠閰ｉ獮鍥箚閹靛啿浜鹃柛褎顨嗛悡?
+     * Import/export documentation.
      */
     public String removeEnvironmentVariable(String key) {
         return environmentVariables.remove(key);
     }
     
     /**
-     * 闂傚倸鍊风粈渚€宕ョ€ｎ喖纾块柟鎯版鎼村﹪鏌ら懝鎵牚濞存粌缍婇弻娑㈠Ψ椤旂厧顫╃紓浣哄О閸庣敻寮诲鍫闂佸憡鎸鹃崰搴敋閿濆鍨傛い鎰╁灮缁愮偤鏌ｈ箛鏇炰户闁哄拋鍋婇幃楣冩倷椤掑倻鐦堥梺鍐茬殱閸嬫捇鏌涢幇鈺佸婵炲牜鍙冮幃宄邦煥閸曨剛鍑″銈忓閺佽顕?
+     * Import/export documentation.
      */
     public Map<String, String> getAllEnvironmentVariables() {
         return new HashMap<>(environmentVariables);
     }
     
-    // ==================== 缂傚倸鍊搁崐椋庣矆娓氣偓钘濇い鏇楀亾闁诡喚鍋ら弫鍐焵椤掑嫭鏅濋柕蹇婂墲婵挳鎮峰▎蹇擃伀缂佸鐖煎娲川婵犱胶绻侀梺鍛婎焾婢瑰牓路閸涘瓨鈷掑ù锝呮啞閹牓鏌涙繝浣虹煓闁挎繄鍋炲鍕沪閹冨箲?====================
+    // Legacy garbled comment removed.
     
     /**
-     * 闂傚倸鍊峰ù鍥Υ閳ь剟鏌涚€ｎ偅宕岄柡灞剧洴椤㈡洟鏁愰崱娆樻О闂備浇澹堢亸娆愮箾閳ь剟鏌熼绛嬫疁闁诡喕绮欏Λ鍐ㄢ槈濡湱甯涢梻鍌欑劍閹爼宕愰妶澶婄煑闁告劦鐓堥崵鏇熴亜閹板爼妾柛瀣儔閺屾盯顢曢敐鍥╃暭闂?
+     * Import/export documentation.
      */
     private Map<String, Object> collectExportData(ImportExportOptions options) {
         Map<String, Object> data = new HashMap<>();
         
-        // 闂傚倸鍊烽懗鍓佹兜閸洖鐤炬繝闈涱儏绾惧潡鏌曢崼婵囧珔闁兼澘娼￠弻锝呂旈埀顒勬偋韫囨稑鐓樼€广儱顦伴悡鍐煃鏉炴壆顦﹂柡鍡樻礈缁?
+        // Legacy garbled comment removed.
         data.put("version", CURRENT_SCHEMA_VERSION);
         data.put("schemaVersion", CURRENT_SCHEMA_VERSION);
         data.put("exportTime", LocalDateTime.now().toString());
         data.put("exporter", "SimpleScriptImportExportManager");
         data.put("options", options);
         
-        // 闂傚倸鍊烽懗鍫曞储瑜旈幃娲Ω瑜嶉弸鍫⑩偓骞垮劚閹锋垿鎳撻崹顔氬綊鎮℃惔锝嗘喖闂佺粯鎸撮崑鎾绘煟鎼达紕鐣柛搴″船鐓ら柕濞炬櫅閸?
+        // Legacy garbled comment removed.
         if (options.isIncludeScripts()) {
             data.put("scripts", new HashMap<>(scriptConfigs));
         }
         
-        // 闂傚倸鍊烽懗鍓佸垝椤栨粌鍨濋柣妯款嚙閸ㄥ倸霉閸忚偐鏆橀柍褜鍓欓崐鎸庝繆閹间礁鐓涘ù锝堟閸橆剚绻濆▓鍨灍闁靛洦鐩畷鎴﹀箻缂佹鍘?
+        // Legacy garbled comment removed.
         if (options.isIncludeEnvironment()) {
             data.put("environment", new HashMap<>(environmentVariables));
         }
         
-        // 缂傚倸鍊搁崐鎼佸磹閹间礁纾圭憸鐗堝笒缁犱即鏌熼梻瀵稿妽闁?
+        // Legacy garbled comment removed.
         if (options.isIncludeCache()) {
             Map<String, Object> cacheData = new HashMap<>();
             cacheData.put("cacheEnabled", true);
@@ -1143,7 +1143,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 濠电姴鐥夐弶搴撳亾濡や焦鍙忛柟缁㈠枟閸庢銆掑锝呬壕闂佽鍨悞锕€顕ラ崟顓濇勃缂佸銇樻竟鏇㈡⒑濮瑰洤鐏叉繛浣冲懏鏆滈柛顐ｆ礃閻撴洘绻涢崱妤冪妞ゃ儯鍨婚埀顒侇問閸ｎ噣宕戞繝鍥х畺鐟滄柨鐣烽悡搴樻斀闁割偅绋戞禍?
+     * Import/export documentation.
      */
     private boolean validateData(Map<String, Object> data, ImportExportOptions options) {
         if (data == null) {
@@ -1228,12 +1228,12 @@ public class SimpleScriptImportExportManager {
             SchemaMigration migration = schemaMigrations.get(current);
             if (migration == null) {
                 if (strictSchemaValidation) {
-                    String message = "閺堫亞鐓?schemaVersion: " + current;
+                    String message = "Unsupported schemaVersion: " + current;
                     recordMigrationFailureStats(stats, context, original, current, "unknown_schema", message, maxMigrationSteps);
                     throw new IllegalArgumentException(message);
                 }
                 addTypedWarning(warnings, "migration.unknown-version",
-                    "閺堫亞鐓?schemaVersion: " + current + "锛屾寜鍏煎妯″紡缁х画澶勭悊");
+                    "Unsupported schemaVersion: " + current + ", continue in compatibility mode");
                 break;
             }
 
@@ -1283,7 +1283,7 @@ public class SimpleScriptImportExportManager {
                     SimpleScriptConfig config = toScriptConfig(entry.getValue(), aliasStatistics);
                     if (config == null) {
                         wouldFail++;
-                        errors.add("濠电姷顣藉Σ鍛村磻閸涱収鐔嗘俊顖氱毞閸嬫挸顫濋悡搴＄睄闁芥鍠栭弻娑樷槈濡吋鎲奸梺鎼炲€曞ú锕傚箞閵娿儺娼ㄩ柛鈩冾殔缁犳椽姊洪崷顓炲幋濞存粏娉涢～蹇撁洪鍕獓闁荤姵浜介崜閬嶅Χ婢跺鍘介梺闈涚墕閹冲繘藟閻愮鍋撻崹顐ｇ凡閻庢凹鍘奸…鍥疀濞戣鲸鏅濋梺? 闂傚倸鍊搁崐鐑芥倿閿曗偓椤灝螣閼测晝鐓嬮梺鍓插亝濞叉﹢宕戦鍫熺厱闁斥晛鍠氶悞浠嬫煃缂佹ɑ顥堥柡灞熷棛鐤€闁规儳鍟挎潏鍛存⒑? scriptId=" + entry.getKey());
+                        errors.add("Invalid script config, scriptId=" + entry.getKey());
                         continue;
                     }
                     if (options.isOverwriteExisting() || !scriptConfigs.containsKey(entry.getKey())) {
@@ -1293,7 +1293,7 @@ public class SimpleScriptImportExportManager {
             }
         } catch (Exception e) {
             wouldFail++;
-            errors.add("濠电姷顣藉Σ鍛村磻閸涱収鐔嗘俊顖氱毞閸嬫挸顫濋悡搴＄睄闁芥鍠栭弻娑樷槈濡吋鎲奸梺鎼炲€曞ú锕傚箞閵娿儺娼ㄩ柛鈩冾殔缁犳椽姊洪崷顓炲幋濞存粏娉涢～蹇撁洪鍕獓闁荤姵浜介崜閬嶅Χ婢跺鍘介梺闈涚墕閹冲繘藟閻愮鍋撻崹顐ｇ凡閻庢凹鍘奸…鍥疀濞戣鲸鏅濋梺? " + e.getMessage());
+            errors.add("Preview failed while parsing scripts: " + e.getMessage());
         }
 
         try {
@@ -1308,7 +1308,7 @@ public class SimpleScriptImportExportManager {
             }
         } catch (Exception e) {
             wouldFail++;
-            errors.add("濠电姷顣藉Σ鍛村磻閸涱収鐔嗘俊顖氱毞閸嬫挸顫濋悡搴＄睄闁芥鍠栭弻娑樷槈濡吋鎲奸梺绋款儐缁诲啴濡甸崟顖氬唨闁靛鍎卞В鍫ユ⒑閸濆嫭顥炴俊顐㈠暣瀵鈽夊Ο閿嬬€婚梺鍦閸庡ジ鍩€椤掆偓濞硷繝寮诲☉銏℃櫜闁搞儜鍐瀱闁诲骸鐏氬妯尖偓姘煎幖椤洩绠涘☉杈ㄦ櫇闂? " + e.getMessage());
+            errors.add("Preview failed while parsing environment: " + e.getMessage());
         }
 
         if (wouldFail > 0 || !warnings.isEmpty()) {
@@ -1326,7 +1326,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸倖鎴︽倵椤掑嫭鈷戠紓浣癸供濞堟棃鏌ｅΔ鈧Λ娑氬垝?
+     * Import/export documentation.
      */
     private ImportExportResult importData(
             Map<String, Object> data,
@@ -1337,7 +1337,7 @@ public class SimpleScriptImportExportManager {
         long totalFailed = 0;
         List<String> errors = new ArrayList<>();
         
-        // 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冩繛鍫燁殔閳规垿顢欓弬銈勭返闂佸憡眉缁瑩鐛箛娑欑劶鐎广儱妫岄幏娲⒑閸濆嫷妲兼繛澶嬫礉閸婃挳姊?
+        // Legacy garbled comment removed.
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> scriptsDataObj = (Map<String, Object>) data.get("scripts");
@@ -1347,7 +1347,7 @@ public class SimpleScriptImportExportManager {
                     SimpleScriptConfig config = toScriptConfig(entry.getValue(), aliasStatistics);
                     if (config == null) {
                         totalFailed++;
-                        errors.add("闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冩繛鍫燁殔閳规垿顢欓弬銈勭返闂佸憡眉缁瑩鐛箛娑欑劶鐎广儱妫岄幏娲⒑閸濆嫷妲兼繛澶嬫礉閸婃挳姊绘担鍦菇闁稿﹥娲栬灋婵炲棗娴氶崵妤呮煕閺囥劌澧紓宥呮处閵囧嫰骞囬埡浣稿? 闂傚倸鍊搁崐鐑芥倿閿曗偓椤灝螣閼测晝鐓嬮梺鍓插亝濞叉﹢宕戦鍫熺厱闁斥晛鍠氶悞浠嬫煃缂佹ɑ顥堥柡灞熷棛鐤€闁规儳鍟挎潏鍛存⒑? scriptId=" + scriptId);
+                        errors.add("Invalid script config, scriptId=" + scriptId);
                         continue;
                     }
                     
@@ -1359,10 +1359,10 @@ public class SimpleScriptImportExportManager {
             }
         } catch (Exception e) {
             totalFailed++;
-            errors.add("闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冩繛鍫燁殔閳规垿顢欓弬銈勭返闂佸憡眉缁瑩鐛箛娑欑劶鐎广儱妫岄幏娲⒑閸濆嫷妲兼繛澶嬫礉閸婃挳姊绘担鍦菇闁稿﹥娲栬灋婵炲棗娴氶崵妤呮煕閺囥劌澧紓宥呮处閵囧嫰骞囬埡浣稿? " + e.getMessage());
+            errors.add("Import failed while parsing scripts: " + e.getMessage());
         }
         
-        // 闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冨ù鐘灩椤啴濡堕崱娆忣潷闂佸憡鍨电紞濠傤嚕閹惰棄绫嶉柛顐ゅ枔閸樺崬鈹戦悙鍙夘棡闁告枮鍥ㄥ殌闁秆勵殕閻?
+        // Legacy garbled comment removed.
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> envData = (Map<String, Object>) data.get("environment");
@@ -1376,7 +1376,7 @@ public class SimpleScriptImportExportManager {
             }
         } catch (Exception e) {
             totalFailed++;
-            errors.add("闂傚倷娴囬褍霉閻戣棄鏋侀柟闂寸閸屻劎鎲搁弬璺ㄦ殾闁挎繂顦獮銏＄箾閹寸偟鎳冨ù鐘灩椤啴濡堕崱娆忣潷闂佸憡鍨电紞濠傤嚕閹惰棄绫嶉柛顐ゅ枔閸樺崬鈹戦悙鍙夘棡闁告枮鍥ㄥ殌闁秆勵殕閻撴洟鏌ㄥ┑鍡樻悙闁告柨顑囬埀顒€鐏氬妯尖偓姘煎幖椤洩绠涘☉杈ㄦ櫇闂? " + e.getMessage());
+            errors.add("Import failed while parsing environment: " + e.getMessage());
         }
         
         if (totalFailed > 0) {
@@ -1403,7 +1403,7 @@ public class SimpleScriptImportExportManager {
     }
     
     /**
-     * 闂傚倸鍊风粈渚€宕ョ€ｎ喖纾块柟鎯版鎼村﹪鏌ら懝鎵牚濞存粌缍婇弻娑㈠Ψ椤旂厧顫╃紓浣哄У閸ㄧ敻鍩為幋锔藉亹闁告劕寮堕幆娑㈡⒑闁偛鑻晶顔剧磼婢跺﹦绉烘鐐叉瀹曠喖顢涢敐鍡樻珦闂備礁鍚嬫禍浠嬪磿閺屻儺鏁?
+     * Import/export documentation.
      */
     private SimpleScriptConfig toScriptConfig(Object rawConfig) {
         return toScriptConfig(rawConfig, null);

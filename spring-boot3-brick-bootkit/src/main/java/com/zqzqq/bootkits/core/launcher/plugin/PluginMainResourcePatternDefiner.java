@@ -24,7 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 定义插件从主程序加载资源的匹配
+ * Define main-resource include/exclude patterns used by plugins.
+ *
  * @author starBlues
  * @since 3.0.0
  * @version 3.0.3
@@ -40,9 +41,9 @@ public class PluginMainResourcePatternDefiner implements MainResourcePatternDefi
     @Override
     public Set<String> getIncludePatterns() {
         Set<String> includeResourcePatterns = new HashSet<>();
-        // 配置插件鑷畾涔変粠主程序搴忓姞杞界殑资源鍖归厤
+        // Plugin-defined patterns loaded from descriptor.includeMainResourcePatterns.
         Set<String> includeMainResourcePatterns = descriptor.getIncludeMainResourcePatterns();
-        if(!ObjectUtils.isEmpty(includeMainResourcePatterns)){
+        if (!ObjectUtils.isEmpty(includeMainResourcePatterns)) {
             includeResourcePatterns.addAll(includeMainResourcePatterns);
         }
         return includeResourcePatterns;
@@ -52,13 +53,9 @@ public class PluginMainResourcePatternDefiner implements MainResourcePatternDefi
     public Set<String> getExcludePatterns() {
         Set<String> excludeResourcePatterns = new HashSet<>();
         Set<String> excludeMainResourcePatterns = descriptor.getExcludeMainResourcePatterns();
-        if(!ObjectUtils.isEmpty(excludeMainResourcePatterns)){
+        if (!ObjectUtils.isEmpty(excludeMainResourcePatterns)) {
             excludeResourcePatterns.addAll(excludeMainResourcePatterns);
         }
         return excludeResourcePatterns;
     }
-
-
-
 }
-

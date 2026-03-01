@@ -547,6 +547,62 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
         ]
       },
       {
+        id: 'packager-keys',
+        title: '配置项总览（repackage / prepare-meta）',
+        table: {
+          columns: ['配置项', '默认值', '说明'],
+          rows: [
+            ['mode', 'dev', '打包模式：dev / prod / main'],
+            ['skip', 'false', '是否跳过执行'],
+            ['outputDirectory', '${project.build.directory}', '构建输出目录'],
+            ['includes', '空', '包含依赖列表（groupId/artifactId）'],
+            ['excludes', '空', '排除依赖列表（groupId/artifactId）'],
+            ['includeSystemScope', 'true', '是否包含 scope=system 的依赖'],
+            ['pluginInfo.id', '必填', '插件唯一 ID'],
+            ['pluginInfo.bootstrapClass', '必填', '插件启动类'],
+            ['pluginInfo.version', '必填', '插件版本'],
+            ['pluginInfo.configFileName', '空', '插件配置文件名'],
+            ['pluginInfo.configFileLocation', 'target/classes（默认读取路径）', '插件配置文件目录'],
+            ['pluginInfo.args', '空', '插件启动参数'],
+            ['pluginInfo.description/provider/requires/license', '空', '插件元信息字段'],
+            ['pluginInfo.dependencyPlugins', '空', '插件依赖插件声明'],
+            ['loadMainResourcePattern.includes', '空', '从主程序加载资源白名单'],
+            ['loadMainResourcePattern.excludes', '空', '从主程序加载资源黑名单'],
+            ['devConfig.moduleDependencies', '空', '开发态模块依赖（target/classes）'],
+            ['devConfig.localJars', '空', '开发态本地 jar 依赖'],
+            ['prodConfig.packageType', 'jar', '生产包类型：jar / jar-outer / zip / zip-outer / dir'],
+            ['prodConfig.fileName', 'pluginId-version-repackage', '生产包输出文件名'],
+            ['prodConfig.outputDirectory', 'target', '生产包输出目录'],
+            ['prodConfig.libDir', '空', '外置依赖目录（outer/dir 类型常用）'],
+            ['mainConfig.mainClass', '必填', 'main 模式主启动类'],
+            ['mainConfig.packageType', 'jar', '主程序包类型：jar / jar-outer'],
+            ['mainConfig.fileName', 'artifactId-version-repackage', '主程序包输出文件名'],
+            ['mainConfig.outputDirectory', 'target', '主程序包输出目录'],
+            ['mainConfig.libDir', '空', '主程序依赖目录'],
+            ['mainConfig.developmentMode', '未配置', '可直接配置为 isolation/coexist/simple；未配置时尝试反射调用主类 `developmentMode()`'],
+            ['loadToMain.dependencies', '空', '需要标记为加载到主程序的依赖'],
+            ['encryptConfig.rsa / encryptConfig.aes', '空', '打包加密配置']
+          ]
+        },
+        bullets: [
+          '`prepare-meta` 复用同一套配置模型，但执行逻辑只生成本地运行元文件（不产出完整发布包）。',
+          '如果你只需要避免覆写 `developmentMode()`，优先配置 `mainConfig.developmentMode`。'
+        ],
+        sources: [
+          'spring-boot3-brick-bootkit-maven-packager/src/main/resources/META-INF/maven/plugin.xml',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/AbstractPackagerMojo.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/RepackageMojo.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/PrepareMetaMojo.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/PluginInfo.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/LoadMainResourcePattern.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/dev/DevConfig.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/prod/ProdConfig.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/main/MainConfig.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/LoadToMain.java',
+          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/encrypt/EncryptConfig.java'
+        ]
+      },
+      {
         id: 'packager-config',
         title: '推荐配置',
         code: {
@@ -1069,13 +1125,16 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
           'Maven Packager 增加 `prepare-meta` goal（`process-classes` 阶段）。',
           '集成配置新增准入模式、灰度发布和迁移校验相关字段。',
           'Web 鉴权支持 `disabled/delegate/strict` 三种模式。',
-          '插件管理 API 暴露能力查询接口 `/plugins/auth/capabilities`。'
+          '插件管理 API 暴露能力查询接口 `/plugins/auth/capabilities`。',
+          '启动器开发模式解析增强：`ProdLauncher` 支持 Manifest 缺省时回退到系统属性/环境变量。'
         ],
         sources: [
           'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/PrepareMetaMojo.java',
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/AutoIntegrationConfiguration.java',
           'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/auth/PluginWebAuthMode.java',
-          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PluginController.java'
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PluginController.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/ProdLauncher.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java'
         ]
       }
     ]

@@ -21,7 +21,7 @@ import org.apache.maven.artifact.Artifact;
 import java.util.List;
 
 /**
- * 鍖呭惈过滤鍣?
+ * Include dependency filter.
  *
  * @author starBlues
  * @since 3.0.0
@@ -42,6 +42,4 @@ public class IncludeFilter extends DependencyFilter {
         }
         return true;
     }
-
 }
-
