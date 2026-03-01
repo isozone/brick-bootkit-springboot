@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 主程序引导器
+ * Main application bootstrap launcher.
  *
  * @author starBlues
  * @since 3.0.0
@@ -51,8 +51,8 @@ public class SpringMainBootstrap {
     }
 
     public static void launch(SpringBootstrap springBootstrap, String[] args) {
-        SpringMainBootstrap.springBootstrap = Objects.requireNonNull(springBootstrap, "springBootBootstrap 不能为空");
-        DevelopmentModeSetting.setDevelopmentMode(springBootstrap.developmentMode());
+        SpringMainBootstrap.springBootstrap = Objects.requireNonNull(springBootstrap, "springBootBootstrap cannot be null");
+        DevelopmentModeSetting.setDevelopmentMode(resolveDevelopmentMode(springBootstrap));
         MainMethodRunner mainMethodRunner = new MainMethodRunner(SpringMainBootstrap.class.getName(),
                 MAIN_RUN_METHOD, args);
         JarFile.registerUrlProtocolHandler();
@@ -85,9 +85,26 @@ public class SpringMainBootstrap {
             }
         }
     }
+    static String resolveDevelopmentMode(SpringBootstrap springBootstrap) {
+        if (isDevelopmentModeOverridden(springBootstrap)) {
+            return springBootstrap.developmentMode();
+        }
+        String modeFromProperties = DevelopmentModeSetting.resolveDevelopmentModeFromProperties();
+        if (modeFromProperties != null && !"".equals(modeFromProperties.trim())) {
+            return modeFromProperties;
+        }
+        return springBootstrap.developmentMode();
+    }
 
+    static boolean isDevelopmentModeOverridden(SpringBootstrap springBootstrap) {
+        try {
+            return springBootstrap.getClass().getMethod("developmentMode").getDeclaringClass() != SpringBootstrap.class;
+        } catch (NoSuchMethodException e) {
+            return true;
+        }
+    }
     private static void main(String[] args) throws Exception {
-        Objects.requireNonNull(springBootstrap, "springBootBootstrap 不能为空");
+        Objects.requireNonNull(springBootstrap, "springBootBootstrap cannot be null");
         Launcher<ClassLoader> launcher = new DevLauncher(springBootstrap);
         launcher.run(args);
     }

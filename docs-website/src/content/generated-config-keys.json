@@ -1,6 +1,14 @@
 {
-  "keyCount": 88,
+  "keyCount": 92,
   "keys": [
+    {
+      "key": "PLUGIN_DEVELOPMENT_MODE",
+      "group": "other"
+    },
+    {
+      "key": "developmentMode",
+      "group": "other"
+    },
     {
       "key": "plugin.admissionMode",
       "group": "plugin"
@@ -100,6 +108,10 @@
     {
       "key": "plugin.decrypt.props",
       "group": "plugin.decrypt"
+    },
+    {
+      "key": "plugin.developmentMode",
+      "group": "plugin"
     },
     {
       "key": "plugin.disablePluginIds",
@@ -352,10 +364,15 @@
     {
       "key": "plugin.web.uploadTempPath",
       "group": "plugin.web"
+    },
+    {
+      "key": "spring-boot3-brick-bootkit.developmentMode",
+      "group": "other"
     }
   ],
   "groups": {
-    "plugin": 27,
+    "other": 3,
+    "plugin": 28,
     "plugin.configuration": 13,
     "plugin.decrypt": 3,
     "plugin.decrypt.plugins": 3,

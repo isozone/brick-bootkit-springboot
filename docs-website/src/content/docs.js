@@ -243,7 +243,7 @@ public class Application implements SpringBootstrap {
     id: 'configuration',
     path: '/configuration',
     title: '配置说明',
-    lead: '核心配置入口是 `plugin.*`。以下字段来自 `AutoIntegrationConfiguration` 和 `IntegrationConfiguration`。',
+    lead: '核心配置入口是 `plugin.*`，此外启动器还支持 developmentMode 的配置化解析。以下内容均对应源码可验证路径。',
     sections: [
       {
         id: 'core-keys',
@@ -274,6 +274,46 @@ public class Application implements SpringBootstrap {
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/AutoIntegrationConfiguration.java',
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/DefaultIntegrationConfiguration.java',
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/IntegrationConfiguration.java'
+        ]
+      },
+      {
+        id: 'launcher-development-mode',
+        title: '开发模式配置（启动器）',
+        paragraphs: [
+          '宿主通过 `SpringMainBootstrap.launch(...)` 启动时，开发模式现在支持配置化，不再必须在宿主类里覆写 `developmentMode()`。',
+          '若宿主类覆写了 `developmentMode()`，启动器会优先使用代码返回值；未覆写时才按顺序读取系统属性和环境变量。'
+        ],
+        table: {
+          columns: ['键/变量', '默认值', '生效规则（按优先级）'],
+          rows: [
+            ['plugin.developmentMode', '未配置', '优先级 1；仅在未覆写 `developmentMode()` 时读取'],
+            ['spring-boot3-brick-bootkit.developmentMode', '未配置', '优先级 2；前项为空时读取'],
+            ['developmentMode', '未配置', '优先级 3；前两项为空时读取'],
+            ['PLUGIN_DEVELOPMENT_MODE', '未配置', '优先级 4（环境变量）；系统属性都为空时读取'],
+            ['SpringBootstrap#developmentMode()', 'isolation', '覆写时直接生效；未覆写且无配置时回落到接口默认值']
+          ]
+        },
+        bullets: [
+          '取值仅支持 `isolation` / `coexist`（大小写不敏感）。',
+          '该解析链路由 `SpringMainBootstrap` 和 `DevelopmentModeSetting` 协同实现。'
+        ],
+        code: {
+          language: 'bash',
+          filename: '启动参数示例',
+          content: String.raw`# JVM system property（推荐优先用这一项）
+java -Dplugin.developmentMode=coexist -jar app.jar
+
+# 兼容历史键
+java -Dspring-boot3-brick-bootkit.developmentMode=coexist -jar app.jar
+java -DdevelopmentMode=coexist -jar app.jar
+
+# 或使用环境变量
+export PLUGIN_DEVELOPMENT_MODE=coexist`
+        },
+        sources: [
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringBootstrap.java'
         ]
       },
       {
@@ -897,6 +937,25 @@ public class UserServiceImpl implements UserService {
           ]
         },
         sources: ['spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/AutoIntegrationConfiguration.java']
+      },
+      {
+        id: 'development-mode-parameters',
+        title: '开发模式参数（启动器）',
+        table: {
+          columns: ['参数', '默认值', '建议'],
+          rows: [
+            ['plugin.developmentMode', '未配置', '优先使用此键，取值 isolation/coexist'],
+            ['spring-boot3-brick-bootkit.developmentMode', '未配置', '兼容历史项目时使用'],
+            ['developmentMode', '未配置', '仅用于兼容旧键；避免与其他框架同名冲突'],
+            ['PLUGIN_DEVELOPMENT_MODE', '未配置', '容器环境可用；优先级低于系统属性'],
+            ['SpringBootstrap#developmentMode()', 'isolation', '需要强制代码优先时再覆写']
+          ]
+        },
+        sources: [
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringBootstrap.java'
+        ]
       },
       {
         id: 'web-parameters',

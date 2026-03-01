@@ -160,6 +160,13 @@ const conditionalSourceFiles = [
   'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/scripts/config/ScriptStorageAutoConfiguration.java'
 ];
 
+const launcherDevelopmentModeKeys = [
+  'plugin.developmentMode',
+  'spring-boot3-brick-bootkit.developmentMode',
+  'developmentMode',
+  'PLUGIN_DEVELOPMENT_MODE'
+];
+
 export function extractConfigKeys(repoRoot) {
   const expectedSet = new Set();
 
@@ -180,6 +187,8 @@ export function extractConfigKeys(repoRoot) {
       .filter((key) => key.startsWith('plugin.'))
       .forEach((key) => expectedSet.add(key));
   }
+
+  launcherDevelopmentModeKeys.forEach((key) => expectedSet.add(key));
 
   return Array.from(expectedSet).sort();
 }

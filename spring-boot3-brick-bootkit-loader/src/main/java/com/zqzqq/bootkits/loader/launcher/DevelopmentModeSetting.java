@@ -97,6 +97,18 @@ public class DevelopmentModeSetting {
         if (!(developmentMode == null || "".equals(developmentMode))) {
             return;
         }
+        String mode = resolveDevelopmentModeFromProperties();
+        if (mode == null || "".equals(mode.trim())) {
+            return;
+        }
+        DevelopmentModeSetting.developmentMode = mode;
+    }
+
+    /**
+     * Resolve development mode from JVM properties/environment.
+     * Returns null if not configured.
+     */
+    public static String resolveDevelopmentModeFromProperties() {
         String mode = null;
         for (String key : DEVELOPMENT_MODE_KEYS) {
             mode = System.getProperty(key);
@@ -108,9 +120,9 @@ public class DevelopmentModeSetting {
             mode = System.getenv(DEVELOPMENT_MODE_ENV_KEY);
         }
         if (mode == null || "".equals(mode.trim())) {
-            return;
+            return null;
         }
-        DevelopmentModeSetting.developmentMode = checkModeKey(mode.trim());
+        return checkModeKey(mode.trim());
     }
 
     private static String checkModeKey(String developmentMode) {
