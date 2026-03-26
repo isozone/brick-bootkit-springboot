@@ -35,6 +35,10 @@
 - [快速开始](#-快速开始)
 - [Spring Boot 快速接入](#-spring-boot-快速接入)
 - [最小模板](#-最小模板)
+- [支持矩阵](#-支持矩阵)
+- [参与贡献](#-参与贡献)
+- [路线图](#-路线图)
+- [发布与验收](#-发布与验收)
 - [配置说明](#-配置说明)
 - [如何引入](#-如何引入)
 - [常见问题](#-常见问题-faq)
@@ -247,6 +251,43 @@ GET /plugins-web/api/doctor
 - `host-broken-main-package`：演示主包配置缺失
 - `host-broken-plugin-path`：演示插件目录错误
 - `plugin-broken-packaging`：演示插件包未按框架要求打包
+
+## 🧩 支持矩阵
+
+支持矩阵见：
+
+- [doc/3.兼容与支持矩阵.md](doc/3.兼容与支持矩阵.md)
+
+当前开源版明确的官方基线是：
+
+- JDK 17
+- Spring Boot 3.5.x
+- Maven 3.6+
+
+## 🤝 参与贡献
+
+协作规范与提交流程见：
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+
+## 🗺️ 路线图
+
+项目路线图见：
+
+- [ROADMAP.md](ROADMAP.md)
+
+## ✅ 发布与验收
+
+发布前建议检查清单见：
+
+- [doc/4.发布与验收清单.md](doc/4.发布与验收清单.md)
+
+仓库根目录还提供了自动化预检脚本：
+
+- `release-precheck.sh`
+- `release-precheck.ps1`
 
 ### 模块依赖关系图
 
