@@ -56,6 +56,11 @@ public class MonitorOverviewDTO implements Serializable {
      * GC 收集器信息列表
      */
     private List<GCInfo> gcCollectors;
+
+    /**
+     * 环境自检摘要
+     */
+    private DoctorSummary doctorSummary;
     
     /**
      * 插件统计
@@ -70,6 +75,19 @@ public class MonitorOverviewDTO implements Serializable {
         private int started;
         private int stopped;
         private int failed;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DoctorSummary implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private String overallStatus;
+        private String summary;
+        private int errorCount;
+        private int warningCount;
+        private List<String> topMessages;
     }
     
     /**

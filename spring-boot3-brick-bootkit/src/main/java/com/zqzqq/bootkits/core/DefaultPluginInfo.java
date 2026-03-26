@@ -2,6 +2,8 @@ package com.zqzqq.bootkits.core;
 
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -10,9 +12,41 @@ import java.util.Objects;
  */
 public class DefaultPluginInfo implements PluginInfo {
     private final InsidePluginDescriptor descriptor;
+    private final PluginState pluginState;
+    private final long startTime;
+    private final long stopTime;
+    private final boolean followSystem;
+    private final Map<String, Object> extensionInfo;
+    private final ClassLoader classLoader;
 
     public DefaultPluginInfo(InsidePluginDescriptor descriptor) {
+        this(descriptor, null, 0L, 0L, false, Collections.emptyMap(), null);
+    }
+
+    public DefaultPluginInfo(PluginInfo pluginInfo) {
+        this(Objects.requireNonNull(pluginInfo, "pluginInfo").getPluginDescriptor(),
+                pluginInfo.getPluginState(),
+                pluginInfo.getStartTime(),
+                pluginInfo.getStopTime(),
+                pluginInfo.isFollowSystem(),
+                pluginInfo.getExtensionInfo(),
+                pluginInfo.getClassLoader());
+    }
+
+    private DefaultPluginInfo(InsidePluginDescriptor descriptor,
+                              PluginState pluginState,
+                              long startTime,
+                              long stopTime,
+                              boolean followSystem,
+                              Map<String, Object> extensionInfo,
+                              ClassLoader classLoader) {
         this.descriptor = Objects.requireNonNull(descriptor);
+        this.pluginState = pluginState;
+        this.startTime = startTime;
+        this.stopTime = stopTime;
+        this.followSystem = followSystem;
+        this.extensionInfo = snapshotExtensionInfo(extensionInfo);
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -27,36 +61,43 @@ public class DefaultPluginInfo implements PluginInfo {
 
     @Override
     public PluginState getPluginState() {
-        return null;
+        return pluginState;
     }
 
     @Override
     public long getStartTime() {
-        return 0;
+        return startTime;
     }
 
     @Override
     public long getStopTime() {
-        return 0;
+        return stopTime;
     }
 
     @Override
     public boolean isFollowSystem() {
-        return false;
+        return followSystem;
     }
 
     @Override
     public Map<String, Object> getExtensionInfo() {
-        return Map.of();
+        return extensionInfo;
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        return classLoader;
     }
 
     @Override
     public InsidePluginDescriptor getPluginDescriptor() {
         return descriptor;
+    }
+
+    private static Map<String, Object> snapshotExtensionInfo(Map<String, Object> extensionInfo) {
+        if (extensionInfo == null || extensionInfo.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(new LinkedHashMap<>(extensionInfo));
     }
 }

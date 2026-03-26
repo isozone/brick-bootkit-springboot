@@ -25,6 +25,17 @@ public enum ErrorCode {
     PLUGIN_FILE_INVALID(1008, "插件文件无效"),
     PLUGIN_VERSION_MISMATCH(1009, "插件版本不兼容"),
     PLUGIN_UPLOAD_FAILED(1010, "插件上传失败"),
+    PLUGIN_CONFIG_INVALID(1011, "插件配置无效"),
+    PLUGIN_MAIN_PACKAGE_MISSING(1012, "主应用包名未配置"),
+    PLUGIN_PATH_INVALID(1013, "插件目录配置无效"),
+    PLUGIN_PATH_MISSING(1014, "插件目录不存在"),
+    PLUGIN_PATH_NOT_READABLE(1015, "插件目录不可读"),
+    PLUGIN_UPLOAD_TEMP_INVALID(1016, "插件上传临时目录无效"),
+    PLUGIN_UPLOAD_TEMP_NOT_WRITABLE(1017, "插件上传临时目录不可写"),
+    PLUGIN_WEB_AUTHORIZER_MISSING(1018, "未配置插件 Web 鉴权器"),
+    PLUGIN_DOCTOR_UNAVAILABLE(1019, "插件自检服务不可用"),
+    PLUGIN_SCAN_EMPTY(1020, "当前未发现任何插件"),
+    PLUGIN_MANAGER_UNAVAILABLE(1021, "插件管理器不可用"),
     
     // 系统错误 2001-2099
     SYSTEM_ERROR(2001, "系统错误"),

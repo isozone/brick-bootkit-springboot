@@ -47,7 +47,7 @@ public class BrickWebProperties {
     /**
      * Authorization mode:
      * disabled: disable plugin-web authorization checks
-     * delegate: delegate decisions to host authorizer, fallback allow-all when missing
+     * delegate: delegate decisions to host authorizer, fallback deny-all when missing
      * strict: delegate decisions to host authorizer, fail startup if host authorizer missing
      */
     private String authMode = "delegate";

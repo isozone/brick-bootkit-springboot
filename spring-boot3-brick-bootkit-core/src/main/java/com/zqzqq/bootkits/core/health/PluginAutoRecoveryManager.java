@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 插件自动恢复管理器
  * 负责监控插件健康状态并在需要时执行自动恢复
+ * <p>
+ * 当前仅面向 {@code com.zqzqq.bootkits.core.plugin.PluginManager} 这一套内部模型。
  * 
  * @author zqzqq
  * @since 4.1.0

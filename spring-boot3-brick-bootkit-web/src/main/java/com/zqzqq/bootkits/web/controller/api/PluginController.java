@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -213,9 +214,17 @@ public class PluginController {
     @Operation(summary = "安装插件")
     public ApiResult<PluginDTO> install(@RequestBody PluginInstallRequest request) {
         authorize(PluginWebPermission.PLUGIN_INSTALL);
+        if (request == null || request.getPluginPath() == null || request.getPluginPath().trim().isEmpty()) {
+            return ApiResult.error(400, "请提供插件路径 (pluginPath)");
+        }
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
-            Path pluginPath = Paths.get(request.getPluginPath());
+            final Path pluginPath;
+            try {
+                pluginPath = Paths.get(request.getPluginPath());
+            } catch (InvalidPathException e) {
+                return ApiResult.error(400, "插件路径不合法: " + e.getMessage());
+            }
             PluginDTO pluginDTO = pluginWebService.installPlugin(pluginPath);
             
             // 如果 autoStart 为 true，安装后自动启动
@@ -341,9 +350,17 @@ public class PluginController {
     @Operation(summary = "验证插件")
     public ApiResult<PluginVerifyResult> verify(@RequestBody PluginVerifyRequest request) {
         authorize(PluginWebPermission.PLUGIN_VERIFY);
+        if (request == null || request.getPluginPath() == null || request.getPluginPath().trim().isEmpty()) {
+            return ApiResult.error(400, "请提供插件路径 (pluginPath)");
+        }
         PluginWebService pluginWebService = pluginWebServiceProvider.getIfAvailable();
         if (pluginWebService != null) {
-            Path pluginPath = Paths.get(request.getPluginPath());
+            final Path pluginPath;
+            try {
+                pluginPath = Paths.get(request.getPluginPath());
+            } catch (InvalidPathException e) {
+                return ApiResult.error(400, "插件路径不合法: " + e.getMessage());
+            }
             boolean valid = pluginWebService.verifyPlugin(pluginPath);
             return ApiResult.success(new PluginVerifyResult(valid, valid ? "插件验证通过" : "插件验证失败"));
         }

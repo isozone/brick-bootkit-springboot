@@ -85,8 +85,8 @@ public class PluginWebAuthorizationService {
                     "plugin.web.auth.mode=strict requires a host-defined PluginWebAuthorizer bean");
         }
         if (mode == PluginWebAuthMode.DELEGATE && authorizer.isFallback()) {
-            log.warn("Plugin web authorization is running in delegate mode with fallback authorizer (allow all). "
-                    + "Provide a custom PluginWebAuthorizer bean in host application for real authorization.");
+            log.warn("Plugin web authorization is running in delegate mode with fallback authorizer (deny all). "
+                    + "Provide a custom PluginWebAuthorizer bean in host application before exposing plugin web endpoints.");
         }
     }
 

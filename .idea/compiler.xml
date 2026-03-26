@@ -6,13 +6,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="spring-boot3-brick-bootkit-maven-packager" />
-        <module name="spring-boot3-brick-bootkit-loader" />
-        <module name="spring-boot3-brick-bootkit-core" />
-        <module name="spring-boot3-brick-bootkit-bootstrap" />
-        <module name="spring-boot3-brick-bootkit-common" />
-        <module name="spring-boot3-brick-bootkit" />
-        <module name="spring-boot3-brick-bootkit-scripts" />
       </profile>
       <profile name="Annotation profile for com.zqzqq:spring-boot3-brick-bootkit-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -21,7 +14,6 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
-        <module name="spring-boot3-brick-bootkit-web" />
       </profile>
     </annotationProcessing>
   </component>

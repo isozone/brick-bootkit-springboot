@@ -2,8 +2,8 @@
 
 export const siteMeta = {
   product: 'Brick BootKit SpringBoot',
-  version: '4.0.5',
-  checkedAt: '2026-03-01',
+  version: '4.0.6',
+  checkedAt: '2026-03-26',
   repo: 'https://github.com/v18268185209/brick-bootkit-springboot',
   docs: 'https://brick-bootkit.zqzqq.com/',
   sourceBase: 'https://github.com/v18268185209/brick-bootkit-springboot/blob/HEAD'
@@ -34,13 +34,13 @@ export const docPages = [
     path: '/',
     title: '源码驱动的文档站',
     lead: '这版 docs-website 以仓库源码为唯一事实来源，先保证“真”，再追求“好看”。',
-    badges: ['Version 4.0.5', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-03-01'],
+    badges: ['Version 4.0.6', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-03-26'],
     sections: [
       {
         id: 'facts',
         title: '事实快照',
         paragraphs: [
-          '父工程版本在 `pom.xml` 中定义为 `4.0.5`，并包含 8 个核心模块。',
+          '父工程版本在 `pom.xml` 中定义为 `4.0.6`，并包含 8 个核心模块。',
           '默认 Java 版本为 17，`spring-boot.version` 在父工程中固定为 `3.5.5`。',
           '文档中涉及的配置项来自 `AutoIntegrationConfiguration` 与 Web 模块配置类，不使用猜测字段。'
         ],
@@ -143,14 +143,14 @@ export const docPages = [
           content: String.raw`<dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit</artifactId>
-  <version>4.0.5</version>
+  <version>4.0.6</version>
 </dependency>
 
 <!-- 可选：Web 管理控制台 -->
 <dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-  <version>4.0.5</version>
+  <version>4.0.6</version>
 </dependency>`
         },
         sources: ['spring-boot3-brick-bootkit/pom.xml', 'spring-boot3-brick-bootkit-web/pom.xml']
@@ -164,20 +164,20 @@ export const docPages = [
           content: String.raw`plugin:
   enable: true
   runMode: dev
-  mainPackage: com.example.app
   pluginPath:
     - ./plugins
   pluginRestPathPrefix: /plugins
   enablePluginIdRestPathPrefix: true`
         },
         callout: {
-          tone: 'warn',
+          tone: 'info',
           title: '关键点',
-          body: '`plugin.mainPackage` 在配置校验中是必填项；路径建议使用绝对路径或明确的相对路径。'
+          body: '标准 Spring Boot 项目现在会优先自动推断 `plugin.mainPackage`。只有在非标准启动结构、多模块特殊扫描或自动推断失败时，才建议显式配置。'
         },
         sources: [
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/AutoIntegrationConfiguration.java',
-          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/DefaultIntegrationConfiguration.java'
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/DefaultIntegrationConfiguration.java',
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/ExtendPointConfiguration.java'
         ]
       },
       {
@@ -186,27 +186,39 @@ export const docPages = [
         code: {
           language: 'java',
           filename: 'Application.java',
-          content: String.raw`import com.zqzqq.bootkits.loader.launcher.SpringBootstrap;
-import com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap;
-import org.springframework.boot.SpringApplication;
+          content: String.raw`import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application implements SpringBootstrap {
+public class Application {
 
   public static void main(String[] args) {
-    SpringMainBootstrap.launch(Application.class, args);
-  }
-
-  @Override
-  public void run(String[] args) {
     SpringApplication.run(Application.class, args);
   }
 }`
         },
         sources: [
-          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
-          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringBootstrap.java'
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/SpringBootPluginStarter.java',
+          'spring-boot3-brick-bootkit/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports'
+        ]
+      },
+      {
+        id: 'doctor',
+        title: '4) 先跑自检',
+        code: {
+          language: 'text',
+          filename: 'doctor.txt',
+          content: String.raw`GET /plugins-web/api/doctor`
+        },
+        bullets: [
+          '先看主应用包名是否已自动推断成功',
+          '再看插件目录是否存在且可读',
+          '再看上传临时目录是否可写',
+          '最后确认当前发现了多少个插件'
+        ],
+        sources: [
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorService.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DoctorController.java'
         ]
       }
     ]
@@ -227,7 +239,7 @@ public class Application implements SpringBootstrap {
         bullets: [
           '父工程 artifactId: `spring-boot3-brick-bootkit-parent`',
           'groupId: `com.zqzqq`',
-          'version: `4.0.5`'
+          'version: `4.0.6`'
         ],
         sources: ['pom.xml']
       },
@@ -236,6 +248,93 @@ public class Application implements SpringBootstrap {
         title: '模块职责表',
         table: homeModulesTable,
         sources: ['pom.xml']
+      }
+    ]
+  },
+  {
+    id: 'templates',
+    path: '/templates',
+    title: '最小模板',
+    lead: '如果你不想从大 Demo 里删代码，直接从模板复制通常是最快的接入方式。',
+    badges: ['Host Template', 'Plugin Template', 'Beginner Friendly'],
+    sections: [
+      {
+        id: 'template-list',
+        title: '仓库内置模板',
+        bullets: [
+          '`templates/host-minimal`：标准 Spring Boot 宿主最小接入模板',
+          '`templates/plugin-minimal`：最小插件工程模板',
+          '`templates/host-broken-main-package`：演示主包配置缺失',
+          '`templates/host-broken-plugin-path`：演示插件目录错误',
+          '`templates/plugin-broken-packaging`：演示插件未按框架要求打包'
+        ],
+        sources: [
+          'templates/README.md',
+          'templates/host-minimal/pom.xml',
+          'templates/plugin-minimal/pom.xml',
+          'templates/host-broken-main-package/pom.xml',
+          'templates/host-broken-plugin-path/pom.xml',
+          'templates/plugin-broken-packaging/pom.xml'
+        ]
+      },
+      {
+        id: 'host-template',
+        title: '宿主模板包含什么',
+        bullets: [
+          '标准 `@SpringBootApplication` 启动类',
+          '最小 `application.yml`',
+          '`spring-boot3-brick-bootkit-web` 依赖',
+          '可直接执行 `/plugins-web/api/doctor` 的基础环境'
+        ],
+        sources: [
+          'templates/host-minimal/src/main/java/com/example/host/TemplateHostApplication.java',
+          'templates/host-minimal/src/main/resources/application.yml'
+        ]
+      },
+      {
+        id: 'plugin-template',
+        title: '插件模板包含什么',
+        bullets: [
+          '最小 `SpringPluginBootstrap` 插件入口',
+          '一个示例 REST Controller',
+          'Maven Packager 的 `prepare-meta + repackage` 配置'
+        ],
+        sources: [
+          'templates/plugin-minimal/src/main/java/com/example/plugin/TemplatePluginBootstrap.java',
+          'templates/plugin-minimal/src/main/java/com/example/plugin/controller/TemplatePluginController.java',
+          'templates/plugin-minimal/pom.xml'
+        ]
+      },
+      {
+        id: 'template-flow',
+        title: '推荐使用顺序',
+        code: {
+          language: 'text',
+          filename: 'template-flow.txt',
+          content: String.raw`1. 复制 host-minimal
+2. 复制 plugin-minimal
+3. 改包名 / artifactId / pluginInfo.id
+4. 启动宿主并执行 GET /plugins-web/api/doctor
+5. 打包插件并放入 plugin.pluginPath`
+        },
+        sources: ['templates/README.md']
+      },
+      {
+        id: 'broken-templates',
+        title: '故障示例模板',
+        table: {
+          columns: ['模板', '故意制造的问题', '适合演示什么'],
+          rows: [
+            ['host-broken-main-package', '主包配置缺失', 'doctor 如何提示主包问题、启动期如何报错'],
+            ['host-broken-plugin-path', '插件目录不存在', 'doctor 和首页 checklist 如何提示“未发现插件”'],
+            ['plugin-broken-packaging', '插件未按框架要求打包', '上传校验、错误码和排障文档如何联动']
+          ]
+        },
+        sources: [
+          'templates/host-broken-main-package/README.md',
+          'templates/host-broken-plugin-path/README.md',
+          'templates/plugin-broken-packaging/README.md'
+        ]
       }
     ]
   },
@@ -253,7 +352,7 @@ public class Application implements SpringBootstrap {
           rows: [
             ['plugin.enable', 'true', '总开关'],
             ['plugin.runMode', 'dev', '运行模式：dev / prod'],
-            ['plugin.mainPackage', '空字符串', '主程序包名（校验必填）'],
+            ['plugin.mainPackage', '空字符串', '主程序包名（标准 Spring Boot 项目优先自动推断）'],
             ['plugin.pluginPath', '["~/plugins/"]', '插件目录列表'],
             ['plugin.uploadTempPath', '系统临时目录/spring-boot3-brick-bootkit-temp', '插件上传临时目录'],
             ['plugin.backupPath', 'backupPlugin', '插件备份目录'],
@@ -537,7 +636,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
           columns: ['Goal', 'Phase', '说明'],
           rows: [
             ['repackage', 'package', '按 mode 执行 dev/prod/main 打包流程'],
-            ['prepare-meta', 'process-classes', '仅生成本地运行所需元数据（4.0.5 新增）']
+            ['prepare-meta', 'process-classes', '仅生成本地运行所需元数据']
           ]
         },
         sources: [
@@ -611,7 +710,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
           content: String.raw`<plugin>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-  <version>4.0.5</version>
+  <version>4.0.6</version>
   <configuration>
     <mode>prod</mode>
     <pluginInfo>
@@ -1113,28 +1212,103 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
     ]
   },
   {
+    id: 'troubleshooting',
+    path: '/troubleshooting',
+    title: '排障与自检',
+    lead: '小白接入最容易卡在“配置没生效、目录不对、鉴权没配”。这页只讲最常见的坑和最快的排查顺序。',
+    badges: ['Doctor', 'Troubleshooting', 'Beginner First'],
+    sections: [
+      {
+        id: 'doctor-first',
+        title: '第一步：先跑 doctor',
+        paragraphs: [
+          '接入后第一件事，不是盯着堆栈看，而是先调 `/plugins-web/api/doctor`。它会把主包推断、插件目录、上传临时目录和当前插件发现情况一次性告诉你。',
+          '启动完成后，框架也会自动打印一条 `Plugin doctor summary` 日志，适合在宿主应用日志里快速定位问题。'
+        ],
+        code: {
+          language: 'text',
+          filename: 'doctor.txt',
+          content: String.raw`GET /plugins-web/api/doctor`
+        },
+        sources: [
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorService.java',
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorStartupReporter.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DoctorController.java'
+        ]
+      },
+      {
+        id: 'common-errors',
+        title: '常见问题与建议',
+        table: {
+          columns: ['问题信号', '通常原因', '建议动作'],
+          rows: [
+            ['`plugin.mainPackage` 相关报错', '主应用包未推断成功或启动结构非标准', '保持标准 `@SpringBootApplication` 启动结构，或显式配置 `plugin.mainPackage`'],
+            ['未发现任何插件', '插件目录不存在、路径错误、目录为空', '先看 doctor 报告中的插件目录检查结果'],
+            ['Web strict/delegate 鉴权失败', '宿主没有提供 `PluginWebAuthorizer`', '生产环境注入自定义 `PluginWebAuthorizer`，不要依赖 fallback'],
+            ['上传/安装时报路径不合法', '访问了上传目录和插件根目录之外的路径', '通过上传接口生成临时文件，再安装，不要手填任意系统路径'],
+            ['启动异常看不懂', '底层异常信息太偏实现细节', '先看 Web 错误返回和启动期的友好提示，再看原始堆栈']
+          ]
+        },
+        sources: [
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginFriendlyMessageResolver.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/exception/GlobalExceptionHandler.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/service/PluginWebFileSupport.java'
+        ]
+      },
+      {
+        id: 'error-codes',
+        title: '常见错误码',
+        table: {
+          columns: ['错误码', '含义', '建议'],
+          rows: [
+            ['1012', '主应用包名未配置', '优先保持标准 `@SpringBootApplication` 启动结构，自动推断失败时再显式配置 `plugin.mainPackage`'],
+            ['1013', '插件目录配置无效', '检查 `plugin.pluginPath` 是否为空、是否误指向文件'],
+            ['1014', '插件目录不存在', '先创建目录，再把插件包放进去'],
+            ['1017', '插件上传临时目录不可写', '检查 `plugin.uploadTempPath` 和目录权限'],
+            ['1018', '未配置插件 Web 鉴权器', '生产环境注入 `PluginWebAuthorizer`，不要依赖 fallback'],
+            ['1020', '当前未发现任何插件', '先看 doctor 报告中的插件目录检查结果']
+          ]
+        },
+        sources: [
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/dto/ErrorCode.java',
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginIssueDefinition.java'
+        ]
+      },
+      {
+        id: 'monitor-overview',
+        title: '监控首页也能看到 doctor 摘要',
+        paragraphs: [
+          '监控概览接口现在会附带 doctor summary，前端首页可以直接显示“当前环境 OK / WARN / ERROR”，不用再跳两次页面。'
+        ],
+        sources: [
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/dto/MonitorOverviewDTO.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/service/MonitorWebService.java'
+        ]
+      }
+    ]
+  },
+  {
     id: 'changelog',
     path: '/changelog',
     title: '版本变化（源码可验证）',
     lead: '这里只记录在仓库中有明确代码落点的变化。',
     sections: [
       {
-        id: 'v405-highlights',
-        title: '4.0.5 可见变更',
+        id: 'v406-highlights',
+        title: '4.0.6 可见变更',
         bullets: [
-          'Maven Packager 增加 `prepare-meta` goal（`process-classes` 阶段）。',
-          '集成配置新增准入模式、灰度发布和迁移校验相关字段。',
-          'Web 鉴权支持 `disabled/delegate/strict` 三种模式。',
-          '插件管理 API 暴露能力查询接口 `/plugins/auth/capabilities`。',
-          '启动器开发模式解析增强：`ProdLauncher` 支持 Manifest 缺省时回退到系统属性/环境变量。'
+          '标准 Spring Boot 宿主会优先自动推断 `plugin.mainPackage`。',
+          '新增 doctor 自检与文本 / JSON 导出能力。',
+          'Web 首屏增加 doctor 摘要、首次接入 checklist 和统一错误面板。',
+          '仓库新增最小模板与故障示例模板。',
+          '错误码、排障文档锚点与 Web 返回结构打通。'
         ],
         sources: [
-          'spring-boot3-brick-bootkit-maven-packager/src/main/java/com/zqzqq/bootkits/plugin/pack/PrepareMetaMojo.java',
-          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/AutoIntegrationConfiguration.java',
-          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/auth/PluginWebAuthMode.java',
-          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PluginController.java',
-          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/ProdLauncher.java',
-          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/DevelopmentModeSetting.java'
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/ExtendPointConfiguration.java',
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorService.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DoctorController.java',
+          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/exception/GlobalExceptionHandler.java',
+          'templates/README.md'
         ]
       }
     ]
@@ -1149,10 +1323,11 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
         id: 'faq-main-package',
         title: 'Q1: 插件不加载，第一步查什么？',
         paragraphs: [
-          '先检查 `plugin.mainPackage` 和 `plugin.pluginPath`。`mainPackage` 为空会触发配置校验失败。',
+          '先调 `/plugins-web/api/doctor` 看主包推断和插件目录检查结果，再回头看启动日志。',
           '其次检查 `runMode` 与插件包形态是否匹配（dev/prod）。'
         ],
         sources: [
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorService.java',
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/DefaultIntegrationConfiguration.java',
           'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/IntegrationConfiguration.java'
         ]
@@ -1211,7 +1386,8 @@ export const sidebarGroups = [
       { label: '首页', path: '/' },
       { label: '框架定位', path: '/introduction' },
       { label: '快速开始', path: '/quickstart' },
-      { label: '项目结构', path: '/project-structure' }
+      { label: '项目结构', path: '/project-structure' },
+      { label: '最小模板', path: '/templates' }
     ]
   },
   {
@@ -1233,7 +1409,8 @@ export const sidebarGroups = [
       { label: '核心 API', path: '/api' },
       { label: '注解模型', path: '/annotations' },
       { label: '参数速查', path: '/config-parameters' },
-      { label: '实战示例', path: '/examples' }
+      { label: '实战示例', path: '/examples' },
+      { label: '排障与自检', path: '/troubleshooting' }
     ]
   },
   {

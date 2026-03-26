@@ -79,6 +79,12 @@ export const monitorApi = {
     service.get(API_PATHS.MONITOR_HISTORY, { params: { type, since } })
 }
 
+export const doctorApi = {
+  getReport: () => service.get(API_PATHS.DOCTOR_REPORT),
+  exportText: () => service.get(API_PATHS.DOCTOR_EXPORT_TEXT, { responseType: 'blob' }),
+  exportJson: () => service.get(API_PATHS.DOCTOR_EXPORT_JSON, { responseType: 'blob' })
+}
+
 // ==================== 脚本相关 API ====================
 
 export const scriptsApi = {
@@ -186,6 +192,15 @@ export const pluginsApi = {
   
   // 获取插件详情
   getDetail: (pluginId) => service.get(API_PATHS.PLUGINS_DETAIL.replace('{pluginId}', pluginId)),
+
+  // 上传到临时目录
+  uploadTemp: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return service.post(API_PATHS.PLUGINS_UPLOAD_TEMP, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
   
   // 上传插件
   upload: (file, autoStart = false) => {
@@ -200,6 +215,14 @@ export const pluginsApi = {
   // 安装插件
   install: (pluginPath, autoStart = false) => 
     service.post(API_PATHS.PLUGINS_INSTALL, { pluginPath, autoStart }),
+
+  // 从临时目录安装插件
+  installFromTemp: (tempFilePath, autoStart = true) =>
+    service.post(API_PATHS.PLUGINS_INSTALL_TEMP, { tempFilePath, autoStart }),
+
+  // 验证插件
+  verify: (pluginPath) =>
+    service.post(API_PATHS.PLUGINS_VERIFY, { pluginPath }),
   
   // 启动插件
   start: (pluginId) => service.post(API_PATHS.PLUGINS_START.replace('{pluginId}', pluginId)),

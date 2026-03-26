@@ -1,0 +1,8 @@
+plugin:
+  enable: true
+  runMode: dev
+  pluginPath:
+    - ./plugins
+  web:
+    enabled: true
+

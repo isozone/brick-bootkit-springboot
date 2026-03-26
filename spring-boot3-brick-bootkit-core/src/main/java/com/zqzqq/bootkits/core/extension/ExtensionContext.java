@@ -21,6 +21,9 @@ import com.zqzqq.bootkits.core.plugin.PluginManager;
 /**
  * 扩展上下文。
  * 提供扩展运行所需的环境信息和服务。
+ * <p>
+ * 这里暴露的是 core 模块内部的插件管理模型，不是宿主 Spring Boot 集成入口。
+ * 宿主项目应优先使用 {@code com.zqzqq.bootkits.core.PluginManager}。
  *
  * @author brick-bootkit
  * @version 1.0.0
@@ -31,7 +34,7 @@ public interface ExtensionContext {
     /**
      * 获取插件管理器。
      *
-     * @return 插件管理器
+     * @return core 内部插件管理器
      */
     PluginManager getPluginManager();
 

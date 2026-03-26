@@ -1,40 +1,63 @@
 package com.zqzqq.bootkits.web.config;
 
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
-import com.zqzqq.bootkits.web.auth.AllowAllPluginWebAuthorizer;
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationDecision;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizer;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 /**
  * Brick Web 自动配置类
- * 自动从 IntegrationConfiguration 读取插件相关配置
- * 
- * @author brick-bootkit
  */
 @Slf4j
 @Configuration
-@Order(Ordered.LOWEST_PRECEDENCE)  // 确保在 SpringDoc 之后加载，避免覆盖其配置
+@Order(Ordered.LOWEST_PRECEDENCE)
 @ConditionalOnProperty(prefix = "plugin.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(BrickWebProperties.class)
 public class BrickWebAutoConfiguration implements WebMvcConfigurer {
 
+    private static final String DEFAULT_PAGE_PREFIX = "/plugins-web";
+
+    private final BrickWebProperties properties;
+
+    public BrickWebAutoConfiguration(BrickWebProperties properties,
+                                     ObjectProvider<IntegrationConfiguration> integrationConfigurationProvider) {
+        this.properties = properties;
+        initializeProperties(integrationConfigurationProvider.getIfAvailable());
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public PluginWebAuthorizer pluginWebAuthorizer() {
-        return new AllowAllPluginWebAuthorizer();
+        return new PluginWebAuthorizer() {
+            @Override
+            public PluginWebAuthorizationDecision authorize(
+                    com.zqzqq.bootkits.web.auth.PluginWebAuthorizationContext context) {
+                return PluginWebAuthorizationDecision.deny("host authorizer is required");
+            }
+
+            @Override
+            public boolean isFallback() {
+                return true;
+            }
+        };
     }
 
     @Bean
@@ -44,94 +67,81 @@ public class BrickWebAutoConfiguration implements WebMvcConfigurer {
         return new PluginWebAuthorizationService(properties, pluginWebAuthorizer);
     }
 
-    /**
-     * 当存在 IntegrationConfiguration 时使用的配置
-     */
-    @Configuration
-    @ConditionalOnBean(IntegrationConfiguration.class)
-    protected static class WithIntegrationConfiguration {
-        
-        private final IntegrationConfiguration integrationConfiguration;
-
-        public WithIntegrationConfiguration(IntegrationConfiguration integrationConfiguration) {
-            this.integrationConfiguration = integrationConfiguration;
-        }
-
-        @Bean
-        @Primary
-        @ConditionalOnMissingBean
-        public BrickWebProperties brickWebProperties() {
-            BrickWebProperties properties = new BrickWebProperties();
-            
-            try {
-                // 从 IntegrationConfiguration 自动读取插件相关配置
-                properties.setPluginPaths(integrationConfiguration.pluginPath());
-                properties.setUploadTempPath(integrationConfiguration.uploadTempPath());
-                properties.setBackupPath(integrationConfiguration.backupPath());
-                properties.setPluginRestPathPrefix(integrationConfiguration.pluginRestPathPrefix());
-                log.info("Brick Web 配置已从 IntegrationConfiguration 加载");
-            } catch (Exception e) {
-                log.warn("无法从 IntegrationConfiguration 加载配置，使用默认配置: {}", e.getMessage());
-                setDefaultProperties(properties);
-            }
-            
-            return properties;
-        }
-    }
-
-    /**
-     * 当不存在 IntegrationConfiguration 时使用的默认配置
-     */
-    @Configuration
-    @ConditionalOnMissingBean(IntegrationConfiguration.class)
-    protected static class WithoutIntegrationConfiguration {
-
-        @Bean
-        @Primary
-        @ConditionalOnMissingBean
-        public BrickWebProperties brickWebProperties() {
-            BrickWebProperties properties = new BrickWebProperties();
-            setDefaultProperties(properties);
-            log.info("Brick Web 使用默认配置（未检测到 IntegrationConfiguration）");
-            return properties;
-        }
-    }
-
-    private static void setDefaultProperties(BrickWebProperties properties) {
-        properties.setPluginPaths(java.util.Collections.emptyList());
-        properties.setUploadTempPath(System.getProperty("java.io.tmpdir"));
-        properties.setBackupPath(System.getProperty("java.io.tmpdir") + "/brick-backup");
-        properties.setPluginRestPathPrefix("/api/brick");
-    }
-
-    /**
-     * 注册静态资源处理器
-     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Knife4j API 文档资源
         registry.addResourceHandler("/doc.html")
                 .addResourceLocations("classpath:/META-INF/resources/")
                 .resourceChain(true);
-        
-        // webjars 资源（Swagger UI 使用）
+
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/")
                 .resourceChain(true);
-        
-        // Vue 打包的所有静态资源（包括 index.html、assets 等）
-        registry.addResourceHandler("/plugins-web/**")
-                .addResourceLocations("classpath:/static/plugins-web/")
-                .resourceChain(true);
+
+        if (!properties.isEnableUI()) {
+            return;
+        }
+
+        for (String pagePrefix : resolvePagePrefixes()) {
+            registry.addResourceHandler(pagePrefix + "/**")
+                    .addResourceLocations("classpath:/static/plugins-web/")
+                    .resourceChain(true);
+        }
     }
-    
-    /**
-     * 配置视图控制器，直接返回静态HTML文件
-     * 避免 Thymeleaf 视图解析器干扰
-     */
+
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // 根路径重定向到 Vue 首页
-        registry.addRedirectViewController("/", "/plugins-web/");
+        if (!properties.isEnableUI()) {
+            return;
+        }
+        registry.addRedirectViewController("/", normalizePagePrefix(properties.getPagePrefix()) + "/");
+    }
+
+    private void initializeProperties(IntegrationConfiguration integrationConfiguration) {
+        if (integrationConfiguration != null) {
+            if (properties.getPluginPaths() == null || properties.getPluginPaths().isEmpty()) {
+                properties.setPluginPaths(integrationConfiguration.pluginPath());
+            }
+            if (!StringUtils.hasText(properties.getUploadTempPath())) {
+                properties.setUploadTempPath(integrationConfiguration.uploadTempPath());
+            }
+            if (!StringUtils.hasText(properties.getBackupPath())) {
+                properties.setBackupPath(integrationConfiguration.backupPath());
+            }
+            if (!StringUtils.hasText(properties.getPluginRestPathPrefix())) {
+                properties.setPluginRestPathPrefix(integrationConfiguration.pluginRestPathPrefix());
+            }
+            log.info("Brick Web 配置已从 IntegrationConfiguration 合并缺省值");
+        }
+
+        if (properties.getPluginPaths() == null) {
+            properties.setPluginPaths(Collections.emptyList());
+        }
+        if (!StringUtils.hasText(properties.getUploadTempPath())) {
+            properties.setUploadTempPath(System.getProperty("java.io.tmpdir"));
+        }
+        if (!StringUtils.hasText(properties.getBackupPath())) {
+            properties.setBackupPath(System.getProperty("java.io.tmpdir") + "/brick-backup");
+        }
+        if (!StringUtils.hasText(properties.getPluginRestPathPrefix())) {
+            properties.setPluginRestPathPrefix("/api/brick");
+        }
+    }
+
+    private List<String> resolvePagePrefixes() {
+        LinkedHashSet<String> prefixes = new LinkedHashSet<>();
+        prefixes.add(normalizePagePrefix(DEFAULT_PAGE_PREFIX));
+        prefixes.add(normalizePagePrefix(properties.getPagePrefix()));
+        return new ArrayList<>(prefixes);
+    }
+
+    private String normalizePagePrefix(String pagePrefix) {
+        String normalized = StringUtils.hasText(pagePrefix) ? pagePrefix.trim() : DEFAULT_PAGE_PREFIX;
+        if (!normalized.startsWith("/")) {
+            normalized = "/" + normalized;
+        }
+        while (normalized.length() > 1 && normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 }

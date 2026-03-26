@@ -112,11 +112,15 @@ public class DefaultPluginInsideInfo implements PluginInsideInfo {
 
     @Override
     public Map<String, Object> getExtensionInfo() {
-        return Map.of();
+        return extensionInfoSupplier.get();
     }
 
     @Override
     public void setFollowSystem(boolean follow) {
         this.isFollowInitial = follow;
+    }
+
+    public void setExtensionInfoSupplier(Supplier<Map<String, Object>> extensionInfoSupplier) {
+        this.extensionInfoSupplier = extensionInfoSupplier != null ? extensionInfoSupplier : Collections::emptyMap;
     }
 }

@@ -93,7 +93,7 @@ public class PluginLockManager {
                 ReentrantLock lock = acquiredLocks.get(i);
                 lock.unlock();
                 if (!lock.hasQueuedThreads()) {
-                    pluginLocks.remove(pluginIds.get(i), lock);
+                    pluginLocks.remove(sortedIds.get(i), lock);
                 }
             }
         }

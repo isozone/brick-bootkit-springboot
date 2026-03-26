@@ -72,6 +72,71 @@
       </n-gi>
     </n-grid>
 
+    <ErrorHintPanel
+      v-if="overviewError.message"
+      title="首页数据加载失败"
+      :message="overviewError.message"
+      :error-key="overviewError.errorKey"
+      :hint-path="overviewError.hintPath"
+      :hint-anchor="overviewError.hintAnchor"
+      class="doctor-card"
+    />
+
+    <n-grid :cols="2" :x-gap="16" :y-gap="16" class="doctor-section">
+      <n-gi>
+        <n-card title="接入自检" class="doctor-card">
+          <template #header-extra>
+            <n-tag :type="getDoctorTagType(doctorSummary.overallStatus)" size="small">
+              {{ doctorSummary.overallStatus || 'UNKNOWN' }}
+            </n-tag>
+          </template>
+          <div class="doctor-summary">
+            <p class="doctor-summary__text">{{ doctorSummary.summary || '正在等待自检结果...' }}</p>
+            <div v-if="doctorSummary.topMessages?.length" class="doctor-summary__tips">
+              <div v-for="message in doctorSummary.topMessages" :key="message" class="doctor-summary__tip">
+                {{ message }}
+              </div>
+            </div>
+            <div class="doctor-summary__actions">
+              <n-button text type="primary" @click="$router.push('/plugins-web/monitor')">
+                查看系统概览 >
+              </n-button>
+              <n-button text @click="copyDoctorSummary">复制摘要</n-button>
+              <n-button text @click="exportDoctorText">导出文本</n-button>
+              <n-button text @click="exportDoctorJson">导出 JSON</n-button>
+            </div>
+          </div>
+        </n-card>
+      </n-gi>
+      <n-gi>
+        <n-card title="首次接入清单" class="doctor-card">
+          <div class="checklist">
+            <div
+              v-for="item in checklistItems"
+              :key="item.label"
+              class="checklist-item"
+              :class="item.done ? 'done' : 'pending'"
+            >
+              <div class="checklist-item__icon">{{ item.done ? '✓' : '!' }}</div>
+              <div>
+                <div class="checklist-item__label">{{ item.label }}</div>
+                <div class="checklist-item__desc">{{ item.description }}</div>
+                <n-button
+                  v-if="item.path"
+                  text
+                  type="primary"
+                  class="checklist-item__action"
+                  @click="$router.push(item.path)"
+                >
+                  {{ item.actionLabel || '去处理' }}
+                </n-button>
+              </div>
+            </div>
+          </div>
+        </n-card>
+      </n-gi>
+    </n-grid>
+
     <!-- 图表区域 -->
     <n-grid :cols="3" :x-gap="16" :y-gap="16" class="chart-section">
       <!-- CPU 使用率 -->
@@ -162,14 +227,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { NCard, NGrid, NGi, NIcon, NButton, NTag, NProgress, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import { RefreshOutline, CubeOutline, PlayCircleOutline, StopCircleOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import * as echarts from 'echarts'
-import { monitorApi } from '@/api/services'
+import ErrorHintPanel from '@/components/ErrorHintPanel.vue'
+import { doctorApi, monitorApi } from '@/api/services'
+import { downloadBlobResponse } from '@/utils/download-helper'
+import { resolveApiErrorPayload } from '@/utils/error-helper'
 
 // 统计数据
 const stats = ref({ total: 0, started: 0, stopped: 0, failed: 0 })
+const doctorSummary = ref({ overallStatus: 'UNKNOWN', summary: '', topMessages: [] })
+const overviewError = ref({ message: '', errorKey: '', hintPath: '', hintAnchor: '' })
 
 // 系统信息
 const systemInfo = ref({ osName: '', javaVersion: '', uptime: 0 })
@@ -196,6 +266,36 @@ let jvmChart = null
 let pluginChart = null
 let refreshTimer = null
 
+const checklistItems = computed(() => [
+  {
+    label: '主应用配置已通过 doctor',
+    description: doctorSummary.value.overallStatus === 'OK'
+      ? '当前核心环境检查通过'
+      : '先解决 doctor 中的错误和告警',
+    done: doctorSummary.value.overallStatus === 'OK',
+    path: '/plugins-web/monitor',
+    actionLabel: '查看概览'
+  },
+  {
+    label: '插件目录已准备',
+    description: stats.value.total > 0
+      ? `当前已发现 ${stats.value.total} 个插件`
+      : '把插件包放到 plugin.pluginPath 指向的目录',
+    done: (stats.value.total || 0) > 0,
+    path: '/plugins-web/plugins/upload',
+    actionLabel: '去上传插件'
+  },
+  {
+    label: '至少有一个插件已启动',
+    description: stats.value.started > 0
+      ? `当前已启动 ${stats.value.started} 个插件`
+      : '完成安装后再启动一个插件验证链路',
+    done: (stats.value.started || 0) > 0,
+    path: '/plugins-web/plugins',
+    actionLabel: '去插件列表'
+  }
+])
+
 // 获取监控概览数据
 const loadOverview = async () => {
   try {
@@ -208,6 +308,11 @@ const loadOverview = async () => {
       if (d.pluginStatistics) {
         stats.value = d.pluginStatistics
       }
+
+      if (d.doctorSummary) {
+        doctorSummary.value = d.doctorSummary
+      }
+      overviewError.value = { message: '', errorKey: '', hintPath: '', hintAnchor: '' }
       
       // 更新系统信息
       if (d.system) {
@@ -235,6 +340,7 @@ const loadOverview = async () => {
     }
   } catch (e) {
     console.error('获取监控数据失败:', e)
+    overviewError.value = resolveApiErrorPayload(e, '首页监控数据加载失败')
   }
 }
 
@@ -413,9 +519,41 @@ const getProgressColor = (percent) => {
   return '#10b981'
 }
 
+const getDoctorTagType = (status) => {
+  if (status === 'ERROR') return 'error'
+  if (status === 'WARN') return 'warning'
+  return 'success'
+}
+
 // 刷新数据
 const refreshData = () => {
   loadOverview()
+}
+
+const copyDoctorSummary = async () => {
+  try {
+    await navigator.clipboard.writeText(doctorSummary.value.summary || '')
+  } catch (error) {
+    console.error('复制 doctor 摘要失败:', error)
+  }
+}
+
+const exportDoctorText = async () => {
+  try {
+    const response = await doctorApi.exportText()
+    downloadBlobResponse(response, 'doctor-report.txt')
+  } catch (error) {
+    console.error('导出 doctor 文本失败:', error)
+  }
+}
+
+const exportDoctorJson = async () => {
+  try {
+    const response = await doctorApi.exportJson()
+    downloadBlobResponse(response, 'doctor-report.json')
+  } catch (error) {
+    console.error('导出 doctor JSON 失败:', error)
+  }
 }
 
 // 窗口大小变化
@@ -542,6 +680,97 @@ onUnmounted(() => {
 
 .chart-section {
   margin-bottom: 24px;
+}
+
+.doctor-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+}
+
+.doctor-section {
+  margin-bottom: 24px;
+}
+
+.doctor-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doctor-summary__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.doctor-summary__text {
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+}
+
+.doctor-summary__tips {
+  display: grid;
+  gap: 8px;
+}
+
+.doctor-summary__tip {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+}
+
+.checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-item {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+
+  &.done {
+    background: #f0fdf4;
+  }
+}
+
+.checklist-item__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.checklist-item.done .checklist-item__icon {
+  background: #16a34a;
+}
+
+.checklist-item__label {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.checklist-item__desc {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.checklist-item__action {
+  margin-top: 8px;
 }
 
 .chart-card {

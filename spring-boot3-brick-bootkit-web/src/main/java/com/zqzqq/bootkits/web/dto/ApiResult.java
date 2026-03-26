@@ -24,21 +24,34 @@ public class ApiResult<T> implements Serializable {
     private String message;
     private T data;
     private long timestamp;
+    private String errorKey;
+    private String hintPath;
+    private String hintAnchor;
     
     public static <T> ApiResult<T> success(T data) {
-        return new ApiResult<>(200, "success", data, System.currentTimeMillis());
+        return new ApiResult<>(200, "success", data, System.currentTimeMillis(), null, null, null);
     }
     
     public static <T> ApiResult<T> success() {
-        return new ApiResult<>(200, "success", null, System.currentTimeMillis());
+        return new ApiResult<>(200, "success", null, System.currentTimeMillis(), null, null, null);
     }
     
     public static <T> ApiResult<T> error(int code, String message) {
-        return new ApiResult<>(code, message, null, System.currentTimeMillis());
+        return new ApiResult<>(code, message, null, System.currentTimeMillis(), null, null, null);
     }
     
     public static <T> ApiResult<T> error(ErrorCode errorCode) {
-        return new ApiResult<>(errorCode.getCode(), errorCode.getMessage(), null, System.currentTimeMillis());
+        return new ApiResult<>(errorCode.getCode(), errorCode.getMessage(), null, System.currentTimeMillis(),
+                errorCode.name(), null, null);
+    }
+
+    public static <T> ApiResult<T> error(ErrorCode errorCode,
+                                         String message,
+                                         String errorKey,
+                                         String hintPath,
+                                         String hintAnchor) {
+        return new ApiResult<>(errorCode.getCode(), message, null, System.currentTimeMillis(),
+                errorKey, hintPath, hintAnchor);
     }
     
     public boolean isSuccess() {

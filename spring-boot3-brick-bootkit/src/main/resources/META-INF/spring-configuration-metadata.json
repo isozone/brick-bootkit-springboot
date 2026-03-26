@@ -25,7 +25,7 @@
       "name": "plugin.mainPackage",
       "type": "java.lang.String",
       "sourceType": "com.zqzqq.bootkits.integration.AutoIntegrationConfiguration",
-      "description": "主程序包名。包名建议设置到范围最大级别，主要用于插件依赖主程序时的类加载进行包名匹配",
+      "description": "主程序包名。标准 Spring Boot 项目会优先自动推断；在非标准启动结构或多模块特殊扫描场景下建议显式配置",
       "defaultValue": ""
     },
     {

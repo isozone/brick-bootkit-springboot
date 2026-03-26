@@ -33,6 +33,8 @@
 - [插件服务通信](#-插件服务通信)
 - [环境要求](#-环境要求)
 - [快速开始](#-快速开始)
+- [Spring Boot 快速接入](#-spring-boot-快速接入)
+- [最小模板](#-最小模板)
 - [配置说明](#-配置说明)
 - [如何引入](#-如何引入)
 - [常见问题](#-常见问题-faq)
@@ -200,6 +202,51 @@ Brick BootKit 采用分层架构设计，从上到下分为：应用层、扩展
 │  └──────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## 🚀 Spring Boot 快速接入
+
+如果你是把这个项目接到一个现有的 Spring Boot 3.x 系统里，而不是先研究完整 Demo，建议直接看接入指南：
+
+- [doc/2.SpringBoot项目快速接入指南.md](doc/2.SpringBoot项目快速接入指南.md)
+
+最小接入通常只需要两步：
+
+1. 引入 `spring-boot3-brick-bootkit`
+2. 配置 `plugin.enable=true` 和 `plugin.pluginPath`
+
+对于标准 Spring Boot 启动项目，`plugin.mainPackage` 现在会优先自动推断；只有在非标准包结构或特殊启动方式下，才建议显式配置。
+
+接入后如果你不确定环境是否配置正确，可以直接访问：
+
+```text
+GET /plugins-web/api/doctor
+```
+
+它会返回主包推断、插件目录、上传临时目录、已发现插件数量等自检结果，适合第一次接入时排查问题。
+
+## 📦 最小模板
+
+仓库里已经提供可直接复制的最小模板：
+
+- `templates/host-minimal`
+- `templates/plugin-minimal`
+- `templates/host-broken-main-package`
+- `templates/host-broken-plugin-path`
+- `templates/plugin-broken-packaging`
+
+如果你是第一次接入，建议不要直接从大 Demo 拆代码，先从模板开始：
+
+1. 复制 `host-minimal`
+2. 复制 `plugin-minimal`
+3. 改包名、artifactId、插件 ID
+4. 先启动宿主并执行 `/plugins-web/api/doctor`
+5. 再打包插件放入 `plugin.pluginPath`
+
+如果你要验证排障流程，也可以直接用故障模板：
+
+- `host-broken-main-package`：演示主包配置缺失
+- `host-broken-plugin-path`：演示插件目录错误
+- `plugin-broken-packaging`：演示插件包未按框架要求打包
 
 ### 模块依赖关系图
 
@@ -851,11 +898,10 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
 
 #### 1.2 配置启动类
 
-在启动类上添加 `@ComponentScan` 注解，扫描插件框架包：
+保持标准 Spring Boot 启动类即可，通常**不需要**额外手动扫描 `com.zqzqq.bootkits`：
 
 ```java
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.zqzqq.bootkits", "你的应用包路径"})
 public class MainApplication {
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);
@@ -872,12 +918,16 @@ plugin:
   enable: true
   runMode: dev
   plugin-follow-log: true
-  mainPackage: com.your.package.YourApplication
   pluginPath:
     - ./plugins
     # 可以配置多个插件目录
     # - /path/to/second/plugins
 ```
+
+说明：
+
+- 标准 Spring Boot 项目会优先自动推断 `plugin.mainPackage`
+- 只有在非标准启动类结构、多模块特殊扫描或自动推断失败时，才建议显式配置 `plugin.mainPackage`
 
 ### 2. 创建插件项目
 
@@ -1168,10 +1218,8 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 
 ```
 
-**注意**：主应用启动类需要扫描以下包路径：
-```
-com.zqzqq.bootkits
-```
+**注意**：标准 Spring Boot 项目通常不需要额外手工扫描 `com.zqzqq.bootkits`。
+如果你的启动结构比较特殊，或者自动推断失败，再考虑显式补充扫描与 `plugin.mainPackage` 配置。
 
 ### 打包
 > mvn clean install -Dgpg.skip=true -Djacoco.skip=true  -DskipTests=true

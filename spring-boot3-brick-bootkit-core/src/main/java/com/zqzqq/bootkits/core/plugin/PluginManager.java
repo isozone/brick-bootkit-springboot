@@ -23,7 +23,11 @@ import java.util.stream.Collectors;
 /**
  * 插件管理器
  * 负责插件的安装、启动、停止和卸载
+ *
+ * @deprecated 这是 core 模块内部使用的独立插件模型，不是宿主 Spring Boot 项目的正式接入入口。
+ * 宿主集成请使用 {@code com.zqzqq.bootkits.core.PluginManager}。
  */
+@Deprecated(since = "4.0.6", forRemoval = false)
 public class PluginManager {
 
     private static final PluginLogger logger = PluginLogger.getLogger(PluginManager.class);

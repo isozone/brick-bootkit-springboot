@@ -173,7 +173,7 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
 
 
     public PluginInfo toPluginInfo() {
-        return new DefaultPluginInfo(descriptor);
+        return new DefaultPluginInfo(this);
     }
     
     public void addInterceptor(PluginStateInterceptor interceptor) {

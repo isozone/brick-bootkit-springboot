@@ -18,6 +18,7 @@ package com.zqzqq.bootkits.integration.application;
 
 import com.zqzqq.bootkits.annotation.Extract;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
+import com.zqzqq.bootkits.integration.doctor.PluginFriendlyMessageResolver;
 import com.zqzqq.bootkits.integration.listener.PluginInitializerListener;
 import com.zqzqq.bootkits.integration.operator.PluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperatorWrapper;
@@ -81,7 +82,9 @@ public class DefaultPluginApplication extends AbstractPluginApplication {
         } catch (Exception e) {
             beInitialized.set(false);
             LOG.error("初始化插件异常", e);
-            throw new RuntimeException("Failed to initialize plugin: " + e.getMessage(), e);
+            PluginFriendlyMessageResolver.Resolution resolution = PluginFriendlyMessageResolver.resolve(e);
+            throw new RuntimeException("Failed to initialize plugin: "
+                    + resolution.getMessage(), e);
         }
     }
 

@@ -2,7 +2,10 @@ package com.zqzqq.bootkits.web.service;
 
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.core.PluginManager;
+import com.zqzqq.bootkits.integration.doctor.PluginDoctorReport;
+import com.zqzqq.bootkits.integration.doctor.PluginDoctorService;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO;
+import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO.DoctorSummary;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO.PluginPerformanceDTO;
 import com.zqzqq.bootkits.web.dto.PluginDTO;
 import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
@@ -42,14 +45,18 @@ import java.util.stream.Collectors;
 public class MonitorWebService {
 
     private final ObjectProvider<PluginManager> pluginManagerProvider;
+    private final ObjectProvider<PluginDoctorService> doctorServiceProvider;
     private final MeterRegistry meterRegistry;
 
     private final OperatingSystemMXBean osMXBean;
     private final MemoryMXBean memoryMXBean;
     private final ThreadMXBean threadMXBean;
 
-    public MonitorWebService(ObjectProvider<PluginManager> pluginManagerProvider, MeterRegistry meterRegistry) {
+    public MonitorWebService(ObjectProvider<PluginManager> pluginManagerProvider,
+                             ObjectProvider<PluginDoctorService> doctorServiceProvider,
+                             MeterRegistry meterRegistry) {
         this.pluginManagerProvider = pluginManagerProvider;
+        this.doctorServiceProvider = doctorServiceProvider;
         this.meterRegistry = meterRegistry;
         this.osMXBean = ManagementFactory.getOperatingSystemMXBean();
         this.memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -119,6 +126,8 @@ public class MonitorWebService {
             pluginPerformances = new ArrayList<>();
         }
 
+        DoctorSummary doctorSummary = getDoctorSummary();
+
         return MonitorOverviewDTO.builder()
                 .pluginStatistics(stats)
                 .memory(memoryInfo)
@@ -127,6 +136,33 @@ public class MonitorWebService {
                 .system(systemInfo)
                 .gcCollectors(gcCollectors)
                 .pluginPerformances(pluginPerformances)
+                .doctorSummary(doctorSummary)
+                .build();
+    }
+
+    public DoctorSummary getDoctorSummary() {
+        PluginDoctorService doctorService = doctorServiceProvider.getIfAvailable();
+        if (doctorService == null) {
+            return DoctorSummary.builder()
+                    .overallStatus("WARN")
+                    .summary("doctor service unavailable")
+                    .errorCount(0)
+                    .warningCount(1)
+                    .topMessages(List.of("Doctor 服务当前不可用"))
+                    .build();
+        }
+        PluginDoctorReport report = doctorService.diagnose();
+        List<String> topMessages = report.getItems().stream()
+                .filter(item -> !"OK".equals(item.getSeverity()))
+                .limit(3)
+                .map(PluginDoctorReport.Item::getMessage)
+                .collect(Collectors.toList());
+        return DoctorSummary.builder()
+                .overallStatus(report.getOverallStatus())
+                .summary(report.getSummary())
+                .errorCount(report.getErrorCount())
+                .warningCount(report.getWarningCount())
+                .topMessages(topMessages)
                 .build();
     }
 

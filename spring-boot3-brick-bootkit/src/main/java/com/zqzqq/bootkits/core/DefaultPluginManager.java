@@ -38,6 +38,7 @@ import com.zqzqq.bootkits.core.scanner.DevPathResolve;
 import com.zqzqq.bootkits.core.scanner.PathResolve;
 import com.zqzqq.bootkits.core.scanner.ProdPathResolve;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
+import com.zqzqq.bootkits.core.version.VersionUtils;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.listener.DefaultPluginListenerFactory;
 import com.zqzqq.bootkits.integration.listener.PluginListenerFactory;
@@ -184,7 +185,7 @@ public class DefaultPluginManager implements PluginManager{
                 return Collections.emptyList();
             }
             Map<String, PluginInfo> pluginInfoMap = new LinkedHashMap<>(scanPluginPaths.size());
-            boolean findException = false;
+            List<Path> failedPaths = new ArrayList<>();
             for (Path path : scanPluginPaths) {
                 try {
                     PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(path);
@@ -192,27 +193,33 @@ public class DefaultPluginManager implements PluginManager{
                         log.debug("跳过非插件目录: {}", path);
                         continue;
                     }
-                    PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
-                    PluginInfo pluginInfo = new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
+                    PluginInsideInfo pluginInsideInfo =
+                            createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, EnhancedPluginState.LOADED);
+                    PluginInfo pluginInfo = createPluginSnapshot(pluginInsideInfo);
                     pluginInfoMap.put(pluginInfo.getPluginId(), pluginInfo);
                     resolvedPlugins.put(pluginInfo.getPluginId(), pluginInsideInfo);
                 } catch (Exception e) {
                     log.error("加载插件失败: " + path, e);
-                    findException = true;
+                    failedPaths.add(path);
                 }
             }
-            if(findException){
+            if(pluginInfoMap.isEmpty() && !failedPaths.isEmpty()){
                 return Collections.emptyList();
             }
             List<PluginInfo> pluginInfos = new ArrayList<>(pluginInfoMap.values());
             if(sortedPluginIds != null && !sortedPluginIds.isEmpty()){
-                pluginInfos.sort((p1, p2) -> {
-                    int index1 = sortedPluginIds.indexOf(p1.getPluginId());
-                    int index2 = sortedPluginIds.indexOf(p2.getPluginId());
-                    return Integer.compare(index1, index2);
-                });
+                Map<String, Integer> sortOrder = new HashMap<>(sortedPluginIds.size());
+                for (int i = 0; i < sortedPluginIds.size(); i++) {
+                    sortOrder.put(sortedPluginIds.get(i), i);
+                }
+                pluginInfos.sort(Comparator
+                        .comparingInt((PluginInfo pluginInfo) -> sortOrder.getOrDefault(pluginInfo.getPluginId(), Integer.MAX_VALUE))
+                        .thenComparing(PluginInfo::getPluginId));
             }
-            loaded.set(true);
+            if (!failedPaths.isEmpty()) {
+                log.warn("部分插件加载失败, successCount={}, failedPaths={}", pluginInfos.size(), failedPaths);
+            }
+            loaded.set(!pluginInfos.isEmpty());
             return pluginInfos;
         } catch (Exception e) {
             throw new PluginException("加载插件失败", e);
@@ -262,7 +269,7 @@ public class DefaultPluginManager implements PluginManager{
                     }
                     
                     // 如果旧插件正在运行，先停止
-                    PluginInsideInfo existingInsideInfo = resolvedPlugins.get(pluginId);
+                    PluginInsideInfo existingInsideInfo = getPluginInsideInfo(pluginId);
                     if (existingInsideInfo != null && existingInsideInfo.getPluginState() == EnhancedPluginState.STARTED) {
                         log.info("停止旧插件: {}", pluginId);
                         stop(pluginId);
@@ -278,7 +285,8 @@ public class DefaultPluginManager implements PluginManager{
                 FileUtils.copyFile(actualPath.toFile(), targetPath.toFile());
                 
                 // 创建插件信息
-                PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
+                PluginInsideInfo pluginInsideInfo =
+                        createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, EnhancedPluginState.LOADED);
                 
                 // 更新插件路径为复制后的目标路径（解决临时文件被删除后路径失效问题）
                 if (pluginInsideInfo.getPluginDescriptor() instanceof DefaultInsidePluginDescriptor) {
@@ -301,7 +309,7 @@ public class DefaultPluginManager implements PluginManager{
                 resolvedPlugins.put(pluginId, pluginInsideInfo);
                 
                 log.info("插件安装成功: {}, 版本: {}", pluginId, newVersion);
-                return new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
+                return createPluginSnapshot(pluginInsideInfo);
             } catch (IOException e) {
                 throw new PluginException("插件安装失败", e);
             } catch (Exception e) {
@@ -319,50 +327,10 @@ public class DefaultPluginManager implements PluginManager{
      * @return true 如果新版本大于旧版本
      */
     private boolean isVersionGreaterThan(String newVersion, String oldVersion) {
-        if (newVersion == null || oldVersion == null) {
+        if (ObjectUtils.isEmpty(newVersion) || ObjectUtils.isEmpty(oldVersion)) {
             return false;
         }
-
-        String[] newParts = newVersion.split("[.\\-_]");
-        String[] oldParts = oldVersion.split("[.\\-_]");
-
-        int maxLength = Math.max(newParts.length, oldParts.length);
-
-        for (int i = 0; i < maxLength; i++) {
-            int newPart = i < newParts.length ? parseVersionPart(newParts[i]) : 0;
-            int oldPart = i < oldParts.length ? parseVersionPart(oldParts[i]) : 0;
-
-            if (newPart > oldPart) {
-                return true;
-            } else if (newPart < oldPart) {
-                return false;
-            }
-        }
-
-        // 版本号完全相同
-        return false;
-    }
-
-    /**
-     * 解析版本号的单个部分为整数
-     * 
-     * @param part 版本号部分
-     * @return 整数值
-     */
-    private int parseVersionPart(String part) {
-        if (part == null || part.isEmpty()) {
-            return 0;
-        }
-        try {
-            // 移除可能的非数字字符前缀（如 v、release- 等）
-            String numericPart = part.replaceAll("^[^0-9]*", "");
-            if (numericPart.isEmpty()) {
-                return 0;
-            }
-            return Integer.parseInt(numericPart);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        return VersionUtils.compareVersions(newVersion, oldVersion) > 0;
     }
 
     @Override
@@ -429,10 +397,11 @@ public class DefaultPluginManager implements PluginManager{
             PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(actualPath);
             
             // 创建插件信息
-            PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
+            PluginInsideInfo pluginInsideInfo =
+                    createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, EnhancedPluginState.LOADED);
             
             log.info("插件加载成功: {}", pluginDescriptor.getPluginId());
-            return new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
+            return createPluginSnapshot(pluginInsideInfo);
         } catch (Exception e) {
             log.error("加载插件失败: {} - {}", pluginPath, e.getMessage(), e);
             throw new PluginException("加载插件失败: " + pluginPath, e);
@@ -540,8 +509,7 @@ public class DefaultPluginManager implements PluginManager{
             if (insideInfo == null) {
                 insideInfo = resolvedPlugins.get(pluginId);
             }
-            // 直接返回 PluginInsideInfo 对象，包含完整的运行时信息
-            return insideInfo;
+            return insideInfo == null ? null : createPluginSnapshot(insideInfo);
         });
     }
 
@@ -553,13 +521,13 @@ public class DefaultPluginManager implements PluginManager{
             
             // 优先添加已启动的插件
             startedPlugins.values().forEach(info -> {
-                pluginMap.put(info.getPluginId(), info);
+                pluginMap.put(info.getPluginId(), createPluginSnapshot(info));
             });
             
             // 添加已解析但未启动的插件（不覆盖已启动的插件）
             resolvedPlugins.values().forEach(info -> {
                 if (!pluginMap.containsKey(info.getPluginId())) {
-                    pluginMap.put(info.getPluginId(), info);
+                    pluginMap.put(info.getPluginId(), createPluginSnapshot(info));
                 }
             });
             return new ArrayList<>(pluginMap.values());
@@ -570,7 +538,7 @@ public class DefaultPluginManager implements PluginManager{
     public List<PluginInfo> getStartedPlugins() {
         return withGlobalReadLock(() -> {
             List<PluginInfo> plugins = new ArrayList<>();
-            startedPlugins.values().forEach(info -> plugins.add(new DefaultPluginInfo(info.getPluginDescriptor())));
+            startedPlugins.values().forEach(info -> plugins.add(createPluginSnapshot(info)));
             return plugins;
         });
     }
@@ -579,7 +547,7 @@ public class DefaultPluginManager implements PluginManager{
     public List<PluginInfo> getResolvedPlugins() {
         return withGlobalReadLock(() -> {
             List<PluginInfo> plugins = new ArrayList<>();
-            resolvedPlugins.values().forEach(info -> plugins.add(new DefaultPluginInfo(info.getPluginDescriptor())));
+            resolvedPlugins.values().forEach(info -> plugins.add(createPluginSnapshot(info)));
             return plugins;
         });
     }
@@ -625,22 +593,31 @@ public class DefaultPluginManager implements PluginManager{
                     throw new PluginException("插件不存在: " + pluginId);
                 }
                 
+                EnhancedPluginState previousState = pluginInsideInfo.getPluginState();
+
                 // 重新加载插件
                 Path pluginPath = Path.of(pluginInsideInfo.getPluginDescriptor().getPluginPath());
                 PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(pluginPath);
-                PluginInsideInfo newPluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
-                // 设置插件状态为已停止
-                newPluginInsideInfo.setPluginState(EnhancedPluginState.STOPPED);
-                log.info("创建新的 PluginInsideInfo: {}, 状态: STOPPED", pluginId);
+                EnhancedPluginState restoredState = wasStarted
+                        ? EnhancedPluginState.STOPPED
+                        : (previousState != null ? previousState : EnhancedPluginState.LOADED);
+                PluginInsideInfo newPluginInsideInfo =
+                        createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, restoredState);
+                newPluginInsideInfo.setFollowSystem(pluginInsideInfo.isFollowSystem());
+                log.info("创建新的 PluginInsideInfo: {}, 状态: {}", pluginId, restoredState);
                 
                 // 更新插件信息
                 resolvedPlugins.put(pluginId, newPluginInsideInfo);
                 
-                // 重启插件：总是尝试启动插件
-                log.info("重新启动插件: {}", pluginId);
-                start(pluginId);
+                if (wasStarted) {
+                    log.info("重新启动插件: {}", pluginId);
+                    start(pluginId);
+                } else {
+                    startedPlugins.remove(pluginId);
+                    log.info("插件保持原有未启动状态: {}", pluginId);
+                }
                 log.info("Plugin reload finished: {}, current state: {}", pluginId,
-                    startedPlugins.containsKey(pluginId) ? "STARTED" : "NOT_STARTED");
+                    startedPlugins.containsKey(pluginId) ? "STARTED" : newPluginInsideInfo.getPluginState());
                 
                 log.info("插件重新加载成功: {}", pluginId);
             } catch (Exception e) {
@@ -692,8 +669,9 @@ public class DefaultPluginManager implements PluginManager{
             PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(pluginPath);
             
             // 创建插件信息
-            PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor);
-            return new DefaultPluginInfo(pluginInsideInfo.getPluginDescriptor());
+            PluginInsideInfo pluginInsideInfo =
+                    createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, EnhancedPluginState.PARSED);
+            return createPluginSnapshot(pluginInsideInfo);
             
         } catch (Exception e) {
             log.error("解析插件失败: {} - {}", pluginPath, e.getMessage(), e);
@@ -818,5 +796,17 @@ public class DefaultPluginManager implements PluginManager{
 
     private void printOfNotFoundPlugins() {
         log.warn("No plugin found in directories {}", pluginRootDirs);
+    }
+
+    private PluginInsideInfo createPluginInsideInfo(InsidePluginDescriptor descriptor, EnhancedPluginState initialState) {
+        PluginInsideInfo pluginInsideInfo = new DefaultPluginInsideInfo(descriptor);
+        if (initialState != null) {
+            pluginInsideInfo.setPluginState(initialState);
+        }
+        return pluginInsideInfo;
+    }
+
+    private PluginInfo createPluginSnapshot(PluginInfo pluginInfo) {
+        return new DefaultPluginInfo(pluginInfo);
     }
 }

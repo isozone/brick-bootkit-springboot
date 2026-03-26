@@ -86,6 +86,9 @@ export const API_PATHS = {
   MONITOR_THREAD_POOLS: '/plugins-web/api/monitor/thread-pools',
   MONITOR_SYSTEM: '/plugins-web/api/monitor/system',
   MONITOR_HISTORY: '/plugins-web/api/monitor/history',
+  DOCTOR_REPORT: '/plugins-web/api/doctor',
+  DOCTOR_EXPORT_TEXT: '/plugins-web/api/doctor/export/text',
+  DOCTOR_EXPORT_JSON: '/plugins-web/api/doctor/export/json',
 
   // === 脚本相关接口 ===
   SCRIPTS_LIST: '/plugins-web/api/v1/scripts',
@@ -104,12 +107,15 @@ export const API_PATHS = {
   PLUGINS_LIST: '/plugins-web/api/plugins',
   PLUGINS_ALL: '/plugins-web/api/plugins/all',
   PLUGINS_DETAIL: '/plugins-web/api/plugins/{pluginId}',
+  PLUGINS_UPLOAD_TEMP: '/plugins-web/api/plugins/upload/temp',
   PLUGINS_UPLOAD: '/plugins-web/api/plugins/upload',
+  PLUGINS_INSTALL_TEMP: '/plugins-web/api/plugins/install/temp',
   PLUGINS_INSTALL: '/plugins-web/api/plugins/install',
   PLUGINS_START: '/plugins-web/api/plugins/{pluginId}/start',
   PLUGINS_STOP: '/plugins-web/api/plugins/{pluginId}/stop',
   PLUGINS_RESTART: '/plugins-web/api/plugins/{pluginId}/restart',
   PLUGINS_UNINSTALL: '/plugins-web/api/plugins/{pluginId}',
+  PLUGINS_VERIFY: '/plugins-web/api/plugins/verify',
   PLUGINS_UPLOAD_HISTORY: '/plugins-web/api/plugins/upload-history'
 }
 

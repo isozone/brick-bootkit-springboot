@@ -367,11 +367,7 @@ public class DefaultPluginOperator implements PluginOperator {
     }
 
     private boolean isPluginStarted(PluginInfo pluginInfo) {
-        if (!(pluginInfo instanceof PluginInsideInfo)) {
-            return false;
-        }
-        PluginInsideInfo insideInfo = (PluginInsideInfo) pluginInfo;
-        return insideInfo.getPluginState() == EnhancedPluginState.STARTED;
+        return pluginInfo != null && pluginInfo.getPluginState() == EnhancedPluginState.STARTED;
     }
 
     private void runGrayRolloutProbes(PluginInfo pluginInfo) {

@@ -128,6 +128,37 @@
       </n-descriptions>
     </n-card>
 
+    <ErrorHintPanel
+      v-if="overviewError.message"
+      title="系统概览加载失败"
+      :message="overviewError.message"
+      :error-key="overviewError.errorKey"
+      :hint-path="overviewError.hintPath"
+      :hint-anchor="overviewError.hintAnchor"
+      class="doctor-card"
+    />
+
+    <n-card title="环境自检" class="doctor-card">
+      <template #header-extra>
+        <n-tag :type="getDoctorTagType(doctorSummary.overallStatus)" size="small">
+          {{ doctorSummary.overallStatus || 'UNKNOWN' }}
+        </n-tag>
+      </template>
+      <div class="doctor-summary">
+        <p class="doctor-summary__text">{{ doctorSummary.summary || '正在等待自检结果...' }}</p>
+        <div v-if="doctorSummary.topMessages?.length" class="doctor-summary__tips">
+          <div v-for="message in doctorSummary.topMessages" :key="message" class="doctor-summary__tip">
+            {{ message }}
+          </div>
+        </div>
+        <div class="doctor-summary__actions">
+          <n-button text @click="copyDoctorSummary">复制摘要</n-button>
+          <n-button text @click="exportDoctorText">导出文本</n-button>
+          <n-button text @click="exportDoctorJson">导出 JSON</n-button>
+        </div>
+      </div>
+    </n-card>
+
     <!-- GC 收集器 -->
     <n-card title="GC 统计" class="gc-card">
       <n-data-table
@@ -160,7 +191,10 @@ import {
 } from 'naive-ui'
 import { RefreshOutline } from '@vicons/ionicons5'
 import * as echarts from 'echarts'
-import { monitorApi } from '@/api/services'
+import ErrorHintPanel from '@/components/ErrorHintPanel.vue'
+import { doctorApi, monitorApi } from '@/api/services'
+import { downloadBlobResponse } from '@/utils/download-helper'
+import { resolveApiErrorPayload } from '@/utils/error-helper'
 
 const message = useMessage()
 
@@ -218,6 +252,8 @@ const systemInfo = ref({})
 const threadInfo = ref({})
 const pluginStatistics = ref({})
 const gcInfo = ref([])
+const doctorSummary = ref({ overallStatus: 'UNKNOWN', summary: '', topMessages: [] })
+const overviewError = ref({ message: '', errorKey: '', hintPath: '', hintAnchor: '' })
 
 // 图表引用
 const cpuChartRef = ref(null)
@@ -279,6 +315,11 @@ const loadData = async () => {
       if (d.pluginStatistics) {
         pluginStatistics.value = d.pluginStatistics
       }
+
+      if (d.doctorSummary) {
+        doctorSummary.value = d.doctorSummary
+      }
+      overviewError.value = { message: '', errorKey: '', hintPath: '', hintAnchor: '' }
       
       // GC 收集器 - 后端返回 d.gcCollectors
       if (d.gcCollectors) {
@@ -289,6 +330,7 @@ const loadData = async () => {
     }
   } catch (e) {
     console.error('获取监控数据失败:', e)
+    overviewError.value = resolveApiErrorPayload(e, '系统概览加载失败')
   }
 }
 
@@ -428,6 +470,39 @@ const refreshData = () => {
   message.success('数据已刷新')
 }
 
+const copyDoctorSummary = async () => {
+  try {
+    await navigator.clipboard.writeText(doctorSummary.value.summary || '')
+    message.success('doctor 摘要已复制')
+  } catch (error) {
+    console.error('复制 doctor 摘要失败:', error)
+  }
+}
+
+const exportDoctorText = async () => {
+  try {
+    const response = await doctorApi.exportText()
+    downloadBlobResponse(response, 'doctor-report.txt')
+  } catch (error) {
+    console.error('导出 doctor 文本失败:', error)
+  }
+}
+
+const exportDoctorJson = async () => {
+  try {
+    const response = await doctorApi.exportJson()
+    downloadBlobResponse(response, 'doctor-report.json')
+  } catch (error) {
+    console.error('导出 doctor JSON 失败:', error)
+  }
+}
+
+const getDoctorTagType = (status) => {
+  if (status === 'ERROR') return 'error'
+  if (status === 'WARN') return 'warning'
+  return 'success'
+}
+
 // 窗口大小变化
 const handleResize = () => {
   if (cpuChart) cpuChart.resize()
@@ -494,8 +569,39 @@ onUnmounted(() => {
   margin-bottom: 16px;
 }
 
-.info-card, .thread-card, .plugin-stat-card, .gc-card, .memory-pools-card {
+.info-card, .thread-card, .plugin-stat-card, .doctor-card, .gc-card, .memory-pools-card {
   border-radius: 8px;
   margin-bottom: 24px;
+}
+
+.doctor-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doctor-summary__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.doctor-summary__text {
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+}
+
+.doctor-summary__tips {
+  display: grid;
+  gap: 8px;
+}
+
+.doctor-summary__tip {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
 }
 </style>

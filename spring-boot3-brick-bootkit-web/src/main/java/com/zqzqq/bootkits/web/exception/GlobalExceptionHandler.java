@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.web.exception;
 
 import com.zqzqq.bootkits.core.exception.PluginException;
+import com.zqzqq.bootkits.integration.doctor.PluginFriendlyMessageResolver;
+import com.zqzqq.bootkits.integration.doctor.PluginIssueDefinition;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationException;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.ErrorCode;
@@ -36,8 +38,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PluginException.class)
     public ResponseEntity<ApiResult<Void>> handlePluginException(PluginException e) {
         log.error("Plugin exception: {}", e.getMessage(), e);
+        PluginFriendlyMessageResolver.Resolution resolution = PluginFriendlyMessageResolver.resolve(e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResult.error(ErrorCode.SYSTEM_ERROR.getCode(), e.getMessage()));
+                .body(ApiResult.error(resolveErrorCode(resolution.getIssue()),
+                        resolution.getMessage(),
+                        resolution.getErrorKey(),
+                        resolution.getHintPath(),
+                        resolution.getHintAnchor()));
     }
 
     /**
@@ -68,5 +75,23 @@ public class GlobalExceptionHandler {
         log.error("System error: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResult.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统错误: " + e.getMessage()));
+    }
+
+    private ErrorCode resolveErrorCode(PluginIssueDefinition issue) {
+        if (issue == null) {
+            return ErrorCode.SYSTEM_ERROR;
+        }
+        return switch (issue) {
+            case MAIN_PACKAGE_MISSING -> ErrorCode.PLUGIN_MAIN_PACKAGE_MISSING;
+            case PLUGIN_PATH_EMPTY, PLUGIN_PATH_INVALID, PLUGIN_PATH_NOT_DIRECTORY -> ErrorCode.PLUGIN_PATH_INVALID;
+            case PLUGIN_PATH_MISSING -> ErrorCode.PLUGIN_PATH_MISSING;
+            case PLUGIN_PATH_NOT_READABLE -> ErrorCode.PLUGIN_PATH_NOT_READABLE;
+            case UPLOAD_TEMP_INVALID -> ErrorCode.PLUGIN_UPLOAD_TEMP_INVALID;
+            case UPLOAD_TEMP_NOT_WRITABLE, UPLOAD_TEMP_CREATE_FAILED -> ErrorCode.PLUGIN_UPLOAD_TEMP_NOT_WRITABLE;
+            case WEB_AUTHORIZER_MISSING -> ErrorCode.PLUGIN_WEB_AUTHORIZER_MISSING;
+            case NO_PLUGINS_FOUND -> ErrorCode.PLUGIN_SCAN_EMPTY;
+            case PLUGIN_MANAGER_UNAVAILABLE -> ErrorCode.PLUGIN_MANAGER_UNAVAILABLE;
+            case PLUGIN_PACKAGE_INVALID -> ErrorCode.PLUGIN_FILE_INVALID;
+        };
     }
 }

@@ -1,5 +1,7 @@
 package com.zqzqq.bootkits.web.controller.api;
 
+import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
+import com.zqzqq.bootkits.web.auth.PluginWebPermission;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO;
 import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
@@ -25,9 +27,16 @@ import java.util.Map;
 public class MonitorController {
 
     private final ObjectProvider<MonitorWebService> monitorWebServiceProvider;
+    private final PluginWebAuthorizationService authorizationService;
 
-    public MonitorController(ObjectProvider<MonitorWebService> monitorWebServiceProvider) {
+    public MonitorController(ObjectProvider<MonitorWebService> monitorWebServiceProvider,
+                             PluginWebAuthorizationService authorizationService) {
         this.monitorWebServiceProvider = monitorWebServiceProvider;
+        this.authorizationService = authorizationService;
+    }
+
+    private void authorize() {
+        authorizationService.check(PluginWebPermission.PLUGIN_VIEW, null);
     }
 
     /**
@@ -36,6 +45,7 @@ public class MonitorController {
     @GetMapping("/overview")
     @Operation(summary = "获取监控概览")
     public ApiResult<MonitorOverviewDTO> overview() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getOverview());
     }
 
@@ -45,6 +55,7 @@ public class MonitorController {
     @GetMapping("/memory")
     @Operation(summary = "获取内存信息")
     public ApiResult<MonitorOverviewDTO.MemoryInfo> memory() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getMemoryInfo());
     }
 
@@ -54,6 +65,7 @@ public class MonitorController {
     @GetMapping("/cpu")
     @Operation(summary = "获取 CPU 信息")
     public ApiResult<MonitorOverviewDTO.CpuInfo> cpu() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getCpuInfo());
     }
 
@@ -63,6 +75,7 @@ public class MonitorController {
     @GetMapping("/threads")
     @Operation(summary = "获取线程信息")
     public ApiResult<MonitorOverviewDTO.ThreadInfo> threads() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getThreadInfo());
     }
 
@@ -72,6 +85,7 @@ public class MonitorController {
     @GetMapping("/threads/detail")
     @Operation(summary = "获取线程详细信息")
     public ApiResult<ThreadDetailDTO> threadDetail() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getThreadDetail());
     }
 
@@ -81,6 +95,7 @@ public class MonitorController {
     @GetMapping("/system")
     @Operation(summary = "获取系统信息")
     public ApiResult<MonitorOverviewDTO.SystemInfo> system() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getSystemInfo());
     }
 
@@ -92,6 +107,7 @@ public class MonitorController {
     public ApiResult<Map<String, Object>> history(
             @RequestParam(defaultValue = "memory") String type,
             @RequestParam(defaultValue = "3600") long since) {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getHistoryData(type, since));
     }
 
@@ -101,6 +117,7 @@ public class MonitorController {
     @GetMapping("/thread-pools")
     @Operation(summary = "获取线程池信息")
     public ApiResult<List<MonitorOverviewDTO.ThreadPoolInfo>> threadPools() {
+        authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getThreadPools());
     }
 }
