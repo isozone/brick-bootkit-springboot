@@ -339,6 +339,139 @@ public class Application {
     ]
   },
   {
+    id: 'support-matrix',
+    path: '/support-matrix',
+    title: '支持矩阵',
+    lead: '开源版当前明确承诺和 CI 覆盖到的运行组合，以“说清楚”为第一原则。',
+    sections: [
+      {
+        id: 'official-baseline',
+        title: '官方基线',
+        table: {
+          columns: ['项目', '当前基线', '说明'],
+          rows: [
+            ['Java', 'JDK 17', '父工程 `java.version=17`'],
+            ['Spring Boot', '3.5.5', '父工程 `spring-boot.version=3.5.5`'],
+            ['Maven', '3.6+', '建议最低版本'],
+            ['Docs Node', '20', 'docs-website CI 使用 Node 20']
+          ]
+        },
+        sources: [
+          'pom.xml',
+          '.github/workflows/ci.yml',
+          'doc/3.兼容与支持矩阵.md'
+        ]
+      },
+      {
+        id: 'ci-scope',
+        title: 'CI 当前覆盖',
+        bullets: [
+          'GitHub Actions 当前基线为 `ubuntu-latest + Java 17`',
+          '稳定测试模块当前覆盖 `loader / core / spring-boot3-brick-bootkit`',
+          'docs-website 使用 `Node 20` 执行校验和构建'
+        ],
+        sources: ['.github/workflows/ci.yml']
+      }
+    ]
+  },
+  {
+    id: 'contributing',
+    path: '/contributing',
+    title: '参与贡献',
+    lead: '把 issue、PR、文档和模板更新都做成可协作的流程，是开源版长期可维护的前提。',
+    sections: [
+      {
+        id: 'contributing-files',
+        title: '贡献入口',
+        bullets: [
+          '`CONTRIBUTING.md`：贡献指南',
+          '`SECURITY.md`：安全问题反馈约定',
+          '`.github/ISSUE_TEMPLATE/bug_report.yml`：缺陷反馈模板',
+          '`.github/ISSUE_TEMPLATE/feature_request.yml`：需求建议模板',
+          '`.github/pull_request_template.md`：PR 模板'
+        ],
+        sources: [
+          'CONTRIBUTING.md',
+          'SECURITY.md',
+          '.github/ISSUE_TEMPLATE/bug_report.yml',
+          '.github/ISSUE_TEMPLATE/feature_request.yml',
+          '.github/pull_request_template.md'
+        ]
+      },
+      {
+        id: 'contribution-basics',
+        title: '贡献建议',
+        bullets: [
+          '提 issue 前先附上版本号、运行环境和 doctor 摘要',
+          '改了公开行为时，记得同步 README、文档站和模板',
+          '尽量避免让外部用户依赖内部实现包'
+        ],
+        sources: ['CONTRIBUTING.md']
+      }
+    ]
+  },
+  {
+    id: 'roadmap',
+    path: '/roadmap',
+    title: '路线图',
+    lead: '开源版路线图的核心不是“功能越多越好”，而是“第一次接入成功率更高、排障成本更低、协作体验更稳定”。',
+    sections: [
+      {
+        id: 'current-focus',
+        title: '当前重点',
+        bullets: [
+          '降低第一次接入门槛',
+          '打通 doctor、错误码、文档和模板',
+          '继续完善开源版稳定性和协作规范'
+        ],
+        sources: ['ROADMAP.md']
+      },
+      {
+        id: 'next-focus',
+        title: '下一阶段',
+        bullets: [
+          '完成前端静态资源构建和验收',
+          '扩展更多场景模板',
+          '继续补宿主接入与排障测试'
+        ],
+        sources: ['ROADMAP.md']
+      }
+    ]
+  },
+  {
+    id: 'release-checklist',
+    path: '/release-checklist',
+    title: '发布与验收',
+    lead: '这页不是“发布流程图”，而是每次发版前最小必须过一遍的检查清单。',
+    sections: [
+      {
+        id: 'release-items',
+        title: '最小发布检查',
+        bullets: [
+          '`git diff --check` 通过',
+          '关键模块测试通过',
+          'README / docs-website / 更新日志同步',
+          '最小模板和故障模板内容已对齐当前版本',
+          '首页 doctor 摘要和上传向导可正常工作'
+        ],
+        sources: ['doc/4.发布与验收清单.md']
+      },
+      {
+        id: 'release-script',
+        title: '自动化预检脚本',
+        bullets: [
+          '`release-precheck.sh`：Linux / macOS 下的汇总预检脚本',
+          '`release-precheck.ps1`：Windows 下的汇总预检脚本'
+        ],
+        sources: [
+          'release-precheck.sh',
+          'release-precheck.ps1',
+          'doc/4.发布与验收清单.md'
+        ]
+      }
+    ]
+  },
+  {
     id: 'configuration',
     path: '/configuration',
     title: '配置说明',
@@ -1387,7 +1520,8 @@ export const sidebarGroups = [
       { label: '框架定位', path: '/introduction' },
       { label: '快速开始', path: '/quickstart' },
       { label: '项目结构', path: '/project-structure' },
-      { label: '最小模板', path: '/templates' }
+      { label: '最小模板', path: '/templates' },
+      { label: '支持矩阵', path: '/support-matrix' }
     ]
   },
   {
@@ -1418,6 +1552,9 @@ export const sidebarGroups = [
     items: [
       { label: '企业落地建议', path: '/enterprise-users' },
       { label: '版本变化', path: '/changelog' },
+      { label: '路线图', path: '/roadmap' },
+      { label: '发布与验收', path: '/release-checklist' },
+      { label: '参与贡献', path: '/contributing' },
       { label: 'FAQ', path: '/faq' },
       { label: '联系与反馈', path: '/contact' }
     ]

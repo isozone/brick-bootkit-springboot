@@ -32,6 +32,18 @@
             <artifactId>spring-boot3-brick-bootkit-bootstrap</artifactId>
             <version>${brick-bootkit.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit</artifactId>
+            <version>${brick-bootkit.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
