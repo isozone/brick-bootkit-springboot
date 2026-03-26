@@ -21,6 +21,7 @@ class ExtendPointConfigurationTest {
 
         new ExtendPointConfiguration(applicationContext, configuration);
 
-        assertThat(configuration.mainPackage()).isEqualTo("com.example.demo");
+        assertThat(configuration.getMainPackage()).isEqualTo("com.example.demo");
+        assertThat(configuration.mainPackage()).isEqualTo("com/example/demo");
     }
 }
