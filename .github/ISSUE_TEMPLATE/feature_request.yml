@@ -1,0 +1,29 @@
+name: Feature Request
+description: 提出功能建议
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      placeholder: 一句话描述你的需求
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario
+      placeholder: 你想解决什么业务或接入问题
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: 你认为应该如何实现
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternatives considered
+      placeholder: 你尝试过的替代方案
