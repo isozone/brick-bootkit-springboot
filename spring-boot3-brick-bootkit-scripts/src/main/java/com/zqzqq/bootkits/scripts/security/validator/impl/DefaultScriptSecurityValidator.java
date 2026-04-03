@@ -645,11 +645,9 @@ public class DefaultScriptSecurityValidator implements ScriptSecurityValidator {
     
     private ScriptType detectScriptType(String scriptPath, String content) {
         if (scriptPath != null) {
-            String lowerPath = scriptPath.toLowerCase();
-            for (ScriptType type : ScriptType.values()) {
-                if (!type.getExtension().isEmpty() && lowerPath.endsWith(type.getExtension().toLowerCase())) {
-                    return type;
-                }
+            ScriptType detectedType = ScriptType.fromFileName(scriptPath);
+            if (detectedType != null) {
+                return detectedType;
             }
         }
         

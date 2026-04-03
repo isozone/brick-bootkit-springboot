@@ -1,6 +1,8 @@
 package com.zqzqq.bootkits.scripts.core.impl;
 
+import com.zqzqq.bootkits.scripts.core.ScriptExecutionResult;
 import com.zqzqq.bootkits.scripts.core.ScriptManager;
+import com.zqzqq.bootkits.scripts.core.ScriptType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -134,5 +136,26 @@ class DefaultScriptManagerConfigTest {
         
         // 清理
         scriptManager.destroy();
+    }
+
+    @Test
+    @DisplayName("测试管理器能识别CMD脚本")
+    void testCmdScriptTypeDetection() {
+        DefaultScriptManager scriptManager = new DefaultScriptManager();
+
+        assertThat(scriptManager.detectScriptType("E:\\codes\\openclaw\\dist\\window\\openclaw-portable-win-x64\\openclaw.cmd"))
+            .isEqualTo(ScriptType.BATCH);
+    }
+
+    @Test
+    @DisplayName("测试执行单行命令")
+    void testExecuteCommand() throws Exception {
+        DefaultScriptManager scriptManager = new DefaultScriptManager();
+        scriptManager.initialize();
+
+        ScriptExecutionResult result = scriptManager.executeCommand("echo command-result");
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getResultValue()).contains("command-result");
     }
 }

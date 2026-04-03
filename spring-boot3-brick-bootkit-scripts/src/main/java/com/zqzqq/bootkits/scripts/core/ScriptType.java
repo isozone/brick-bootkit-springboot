@@ -17,7 +17,7 @@ public enum ScriptType {
     /**
      * Windows批处理脚本
      */
-    BATCH(".bat", "batch"),
+    BATCH(".bat", "batch", ".cmd"),
     
     /**
      * PowerShell脚本
@@ -66,10 +66,12 @@ public enum ScriptType {
     
     private final String extension;
     private final String type;
+    private final String[] alternativeExtensions;
     
-    ScriptType(String extension, String type) {
+    ScriptType(String extension, String type, String... alternativeExtensions) {
         this.extension = extension;
         this.type = type;
+        this.alternativeExtensions = alternativeExtensions == null ? new String[0] : alternativeExtensions;
     }
     
     public String getExtension() {
@@ -78,6 +80,25 @@ public enum ScriptType {
     
     public String getType() {
         return type;
+    }
+
+    public boolean matchesFileName(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+
+        String lowerFileName = fileName.toLowerCase();
+        if (matchesExtension(lowerFileName, extension)) {
+            return true;
+        }
+
+        for (String alternativeExtension : alternativeExtensions) {
+            if (matchesExtension(lowerFileName, alternativeExtension)) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
     /**
@@ -91,10 +112,8 @@ public enum ScriptType {
             return null;
         }
         
-        String lowerFileName = fileName.toLowerCase();
         for (ScriptType type : values()) {
-            if (type.extension != null && !type.extension.isEmpty() && 
-                lowerFileName.endsWith(type.extension.toLowerCase())) {
+            if (type.matchesFileName(fileName)) {
                 return type;
             }
         }
@@ -121,5 +140,11 @@ public enum ScriptType {
         }
         
         return null;
+    }
+
+    private boolean matchesExtension(String lowerFileName, String extension) {
+        return extension != null
+            && !extension.isEmpty()
+            && lowerFileName.endsWith(extension.toLowerCase());
     }
 }

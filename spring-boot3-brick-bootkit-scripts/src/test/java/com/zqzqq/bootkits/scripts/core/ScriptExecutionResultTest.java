@@ -34,6 +34,7 @@ class ScriptExecutionResultTest {
         assertThat(result.getStdout()).isNotNull().isEmpty();
         assertThat(result.getStderr()).isNotNull().isEmpty();
         assertThat(result.getExecutionInfo()).isNull();
+        assertThat(result.getResultValue()).isNull();
         assertThat(result.getErrorMessage()).isNull();
         assertThat(result.getThrowable()).isNull();
         assertThat(result.getExecutor()).isNull();
@@ -82,6 +83,8 @@ class ScriptExecutionResultTest {
         assertThat(result.getScriptPath()).isEqualTo(scriptPath);
         assertThat(result.getScriptType()).isEqualTo(scriptType);
         assertThat(result.getOperatingSystem()).isEqualTo(os);
+        assertThat(result.getExecutionInfo()).isEqualTo("line1\nline2\nline3\nerror1\nerror2");
+        assertThat(result.getResultValue()).isEqualTo("line1\nline2\nline3\nerror1\nerror2");
         assertThat(result.getExecutionTimeMs()).isEqualTo(5000);
     }
 
@@ -97,6 +100,8 @@ class ScriptExecutionResultTest {
         assertThat(result.getStatus()).isEqualTo(status);
         assertThat(result.getExitCode()).isEqualTo(-1);
         assertThat(result.getErrorMessage()).isEqualTo(errorMessage);
+        assertThat(result.getExecutionInfo()).isEqualTo(errorMessage);
+        assertThat(result.getResultValue()).isEqualTo(errorMessage);
         assertThat(result.getThrowable()).isEqualTo(exception);
     }
 
@@ -123,6 +128,8 @@ class ScriptExecutionResultTest {
         assertThat(result.getScriptPath()).isEqualTo(scriptPath);
         assertThat(result.getScriptType()).isEqualTo(scriptType);
         assertThat(result.getOperatingSystem()).isEqualTo(os);
+        assertThat(result.getExecutionInfo()).isEqualTo("partial output\ntimeout error");
+        assertThat(result.getResultValue()).isEqualTo("partial output\ntimeout error");
     }
 
     @Test
@@ -172,6 +179,7 @@ class ScriptExecutionResultTest {
         assertThat(mergedString).contains("stdout1");
         assertThat(mergedString).contains("stderr1");
         assertThat(mergedString).contains("\n");
+        assertThat(result.getResultValue()).isEqualTo(mergedString);
     }
 
     @Test
@@ -184,6 +192,7 @@ class ScriptExecutionResultTest {
         
         String mergedString = result.getMergedOutputString();
         assertThat(mergedString).isNotNull().isEmpty();
+        assertThat(result.getResultValue()).isNull();
     }
 
     @Test
@@ -198,6 +207,7 @@ class ScriptExecutionResultTest {
         List<String> merged = result.getMergedOutput();
         assertThat(merged).hasSize(1);
         assertThat(merged).containsExactly("only stdout");
+        assertThat(result.getResultValue()).isEqualTo("only stdout");
     }
 
     @Test
@@ -212,6 +222,7 @@ class ScriptExecutionResultTest {
         List<String> merged = result.getMergedOutput();
         assertThat(merged).hasSize(1);
         assertThat(merged).containsExactly("only stderr");
+        assertThat(result.getResultValue()).isEqualTo("only stderr");
     }
 
     @Test
@@ -224,6 +235,7 @@ class ScriptExecutionResultTest {
         result.setScriptPath("/test/script.sh");
         result.setScriptType(ScriptType.SHELL);
         result.setOperatingSystem(OperatingSystem.LINUX);
+        result.setResultValue("test result");
         result.setErrorMessage("test error");
         
         String resultString = result.toString();
@@ -235,6 +247,7 @@ class ScriptExecutionResultTest {
         assertThat(resultString).contains("scriptPath='/test/script.sh'");
         assertThat(resultString).contains("scriptType=SHELL");
         assertThat(resultString).contains("operatingSystem=LINUX");
+        assertThat(resultString).contains("resultValue='test result'");
         assertThat(resultString).contains("errorMessage='test error'");
     }
 
@@ -282,6 +295,18 @@ class ScriptExecutionResultTest {
         assertThat(result.getExitCode()).isEqualTo(1);
         assertThat(result.getErrorMessage()).isEqualTo("modified error");
         assertThat(result.getExecutionInfo()).isEqualTo("modified info");
+        assertThat(result.getResultValue()).isEqualTo("modified info");
+    }
+
+    @Test
+    @DisplayName("测试结果值别名设置")
+    void testResultValueAlias() {
+        ScriptExecutionResult result = new ScriptExecutionResult();
+
+        result.setResultValue("script output value");
+
+        assertThat(result.getResultValue()).isEqualTo("script output value");
+        assertThat(result.getExecutionInfo()).isEqualTo("script output value");
     }
 
     @Test

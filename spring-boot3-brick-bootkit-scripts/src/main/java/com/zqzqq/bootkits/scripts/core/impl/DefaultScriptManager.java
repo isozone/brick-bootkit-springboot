@@ -127,6 +127,36 @@ public class DefaultScriptManager implements ScriptManager {
     }
     
     @Override
+    public ScriptExecutionResult executeCommand(String command) throws Exception {
+        return executeCommand(command, ScriptConfiguration.defaultConfiguration());
+    }
+
+    @Override
+    public ScriptExecutionResult executeCommand(String command, ScriptConfiguration configuration) throws Exception {
+        ensureInitialized();
+
+        if (command == null || command.trim().isEmpty()) {
+            return ScriptExecutionResult.failed(
+                ScriptExecutionResult.ExecutionStatus.ENVIRONMENT_ERROR,
+                "命令内容不能为空", null);
+        }
+
+        ScriptType commandScriptType = getCommandScriptType();
+        if (commandScriptType == null) {
+            return ScriptExecutionResult.failed(
+                ScriptExecutionResult.ExecutionStatus.ENVIRONMENT_ERROR,
+                "当前操作系统不支持命令执行: " + getCurrentOperatingSystem(), null);
+        }
+
+        return executeScript(
+            commandScriptType,
+            wrapCommandAsScript(commandScriptType, command),
+            new String[0],
+            configuration != null ? configuration : ScriptConfiguration.defaultConfiguration()
+        );
+    }
+
+    @Override
     public ScriptExecutionResult executeScript(ScriptType scriptType, String scriptContent, String[] arguments, 
                                              ScriptConfiguration configuration) throws Exception {
         ensureInitialized();
@@ -514,6 +544,40 @@ public class DefaultScriptManager implements ScriptManager {
         } catch (Exception e) {
             log.error("Failed to create temp script file", e);
             return null;
+        }
+    }
+
+    private ScriptType getCommandScriptType() {
+        OperatingSystem currentOperatingSystem = getCurrentOperatingSystem();
+        switch (currentOperatingSystem) {
+            case WINDOWS:
+                return ScriptType.BATCH;
+            case LINUX:
+            case MACOS:
+            case UNIX:
+                return ScriptType.SHELL;
+            default:
+                return null;
+        }
+    }
+
+    private String wrapCommandAsScript(ScriptType scriptType, String command) {
+        String normalizedCommand = command.replace("\r\n", "\n");
+        String trimmedCommand = normalizedCommand.trim();
+
+        switch (scriptType) {
+            case BATCH:
+                if (trimmedCommand.toLowerCase().startsWith("@echo off")) {
+                    return normalizedCommand;
+                }
+                return "@echo off\n" + normalizedCommand;
+            case SHELL:
+                if (trimmedCommand.startsWith("#!")) {
+                    return normalizedCommand;
+                }
+                return "#!/bin/sh\n" + normalizedCommand;
+            default:
+                return normalizedCommand;
         }
     }
     

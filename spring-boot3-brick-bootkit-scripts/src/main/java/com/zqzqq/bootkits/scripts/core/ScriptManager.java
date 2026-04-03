@@ -50,6 +50,25 @@ public interface ScriptManager {
      * @throws Exception 执行异常
      */
     ScriptExecutionResult executeScript(String scriptPath, String[] arguments, ScriptConfiguration configuration) throws Exception;
+
+    /**
+     * 执行当前操作系统上的单行命令
+     *
+     * @param command 命令内容
+     * @return 执行结果
+     * @throws Exception 执行异常
+     */
+    ScriptExecutionResult executeCommand(String command) throws Exception;
+
+    /**
+     * 执行当前操作系统上的单行命令（带配置）
+     *
+     * @param command 命令内容
+     * @param configuration 执行配置
+     * @return 执行结果
+     * @throws Exception 执行异常
+     */
+    ScriptExecutionResult executeCommand(String command, ScriptConfiguration configuration) throws Exception;
     
     /**
      * 执行指定类型的脚本

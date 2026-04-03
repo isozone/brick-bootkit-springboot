@@ -50,7 +50,7 @@ class ScriptTypeTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "script.bat", "test.bat", "install.bat", "setup.bat"
+        "script.bat", "test.bat", "install.bat", "setup.bat", "openclaw.cmd", "OPENCLAW.CMD"
     })
     @DisplayName("测试批处理脚本类型检测")
     void testBatchScriptDetection(String fileName) {
@@ -58,6 +58,13 @@ class ScriptTypeTest {
         assertThat(detectedType).isEqualTo(ScriptType.BATCH);
         assertThat(detectedType.getExtension()).isEqualTo(".bat");
         assertThat(detectedType.getType()).isEqualTo("batch");
+    }
+
+    @Test
+    @DisplayName("测试Windows CMD完整路径类型检测")
+    void testCmdPathDetection() {
+        ScriptType detectedType = ScriptType.fromFileName("E:\\codes\\openclaw\\dist\\window\\openclaw-portable-win-x64\\openclaw.cmd");
+        assertThat(detectedType).isEqualTo(ScriptType.BATCH);
     }
 
     @ParameterizedTest

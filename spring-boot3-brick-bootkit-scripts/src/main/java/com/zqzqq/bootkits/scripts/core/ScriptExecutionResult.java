@@ -157,6 +157,7 @@ public class ScriptExecutionResult {
         result.setScriptPath(scriptPath);
         result.setScriptType(scriptType);
         result.setOperatingSystem(operatingSystem);
+        result.setExecutionInfo(buildResultValue(stdout, stderr, null));
         result.setExecutionTimeMs(java.time.Duration.between(startTime, endTime).toMillis());
         return result;
     }
@@ -173,6 +174,7 @@ public class ScriptExecutionResult {
         ScriptExecutionResult result = new ScriptExecutionResult(status, -1);
         result.setErrorMessage(errorMessage);
         result.setThrowable(throwable);
+        result.setExecutionInfo(buildResultValue(null, null, errorMessage));
         return result;
     }
     
@@ -197,6 +199,7 @@ public class ScriptExecutionResult {
         result.setScriptPath(scriptPath);
         result.setScriptType(scriptType);
         result.setOperatingSystem(operatingSystem);
+        result.setExecutionInfo(buildResultValue(stdout, stderr, null));
         return result;
     }
     
@@ -271,12 +274,20 @@ public class ScriptExecutionResult {
     }
     
     public String getExecutionInfo() {
-        return executionInfo;
+        return executionInfo != null ? executionInfo : buildResultValue(stdout, stderr, errorMessage);
     }
     
     public ScriptExecutionResult setExecutionInfo(String executionInfo) {
         this.executionInfo = executionInfo;
         return this;
+    }
+
+    public String getResultValue() {
+        return getExecutionInfo();
+    }
+
+    public ScriptExecutionResult setResultValue(String resultValue) {
+        return setExecutionInfo(resultValue);
     }
     
     public String getErrorMessage() {
@@ -382,6 +393,29 @@ public class ScriptExecutionResult {
     public String getMergedOutputString() {
         return String.join("\n", getMergedOutput());
     }
+
+    private static String buildResultValue(List<String> stdout, List<String> stderr, String fallback) {
+        List<String> merged = new ArrayList<>();
+        if (stdout != null) {
+            merged.addAll(stdout);
+        }
+        if (stderr != null && !stderr.isEmpty()) {
+            merged.addAll(stderr);
+        }
+
+        if (!merged.isEmpty()) {
+            return String.join("\n", merged);
+        }
+
+        return fallback;
+    }
+
+    private static String abbreviateForLog(String value) {
+        if (value == null || value.length() <= 200) {
+            return value;
+        }
+        return value.substring(0, 197) + "...";
+    }
     
     @Override
     public String toString() {
@@ -392,6 +426,7 @@ public class ScriptExecutionResult {
                 ", scriptPath='" + scriptPath + '\'' +
                 ", scriptType=" + scriptType +
                 ", operatingSystem=" + operatingSystem +
+                ", resultValue='" + abbreviateForLog(getResultValue()) + '\'' +
                 ", errorMessage='" + errorMessage + '\'' +
                 '}';
     }

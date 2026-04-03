@@ -2,6 +2,7 @@ package com.zqzqq.bootkits.scripts.cache.impl;
 
 import com.zqzqq.bootkits.scripts.cache.*;
 import com.zqzqq.bootkits.scripts.core.ScriptExecutionResult;
+import com.zqzqq.bootkits.scripts.core.ScriptType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -763,26 +764,37 @@ public class DefaultScriptResultCache implements ScriptResultCache {
     }
     
     private String getScriptTypeFromPath(String scriptPath) {
-        if (scriptPath == null) return "unknown";
-        String lowerPath = scriptPath.toLowerCase();
-        if (lowerPath.endsWith(".sh") || lowerPath.endsWith(".bash") || lowerPath.endsWith(".zsh")) {
-            return "shell";
-        } else if (lowerPath.endsWith(".py")) {
-            return "python";
-        } else if (lowerPath.endsWith(".lua")) {
-            return "lua";
-        } else if (lowerPath.endsWith(".ps1")) {
-            return "powershell";
-        } else if (lowerPath.endsWith(".rb")) {
-            return "ruby";
-        } else if (lowerPath.endsWith(".pl")) {
-            return "perl";
-        } else if (lowerPath.endsWith(".js")) {
-            return "nodejs";
-        } else if (lowerPath.endsWith(".groovy")) {
-            return "groovy";
-        } else {
+        if (scriptPath == null) {
+            return "unknown";
+        }
+
+        ScriptType scriptType = ScriptType.fromFileName(scriptPath);
+        if (scriptType == null) {
             return "other";
+        }
+
+        switch (scriptType) {
+            case SHELL:
+                return "shell";
+            case BATCH:
+                return "batch";
+            case POWERSHELL:
+                return "powershell";
+            case LUA:
+                return "lua";
+            case PYTHON:
+                return "python";
+            case RUBY:
+                return "ruby";
+            case PERL:
+                return "perl";
+            case JAVASCRIPT:
+            case NODEJS:
+                return "nodejs";
+            case GROOVY:
+                return "groovy";
+            default:
+                return "other";
         }
     }
     
