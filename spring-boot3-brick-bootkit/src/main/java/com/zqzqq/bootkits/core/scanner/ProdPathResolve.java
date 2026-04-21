@@ -72,14 +72,6 @@ public class ProdPathResolve implements PathResolve{
             return path;
         }
 
-        // 3. 如果是目录，扫描目录内的 JAR 文件（包括子目录）
-        if(file.isDirectory()) {
-            File jarFile = findJarInDir(file);
-            if(jarFile != null) {
-                return jarFile.toPath();
-            }
-        }
-
         return null;
     }
 
@@ -93,38 +85,6 @@ public class ProdPathResolve implements PathResolve{
                 PackageStructure.PROD_MANIFEST_PATH
         )));
         return file.exists() && file.isFile();
-    }
-
-    /**
-     * 递归查找目录内的 JAR/ZIP 文件
-     */
-    private File findJarInDir(File dir) {
-        if(dir == null || !dir.exists() || !dir.isDirectory()) {
-            return null;
-        }
-
-        File[] files = dir.listFiles();
-        if(files == null) {
-            return null;
-        }
-
-        for (File file : files) {
-            if(file.isFile()) {
-                String name = file.getName().toLowerCase();
-                for (String suffix : pluginPackageSuffixes) {
-                    if(name.endsWith(suffix.toLowerCase())) {
-                        return file;
-                    }
-                }
-            } else if(file.isDirectory()) {
-                // 递归检查子目录
-                File jarFile = findJarInDir(file);
-                if(jarFile != null) {
-                    return jarFile;
-                }
-            }
-        }
-        return null;
     }
 }
 

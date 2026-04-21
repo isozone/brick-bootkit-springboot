@@ -71,18 +71,26 @@
         <module>spring-boot3-brick-bootkit-maven-packager</module>
         <module>spring-boot3-brick-bootkit-scripts</module>
         <module>spring-boot3-brick-bootkit-web</module>
+        <module>spring-boot3-brick-bootkit-openclaw-protocol</module>
+        <module>spring-boot3-brick-bootkit-openclaw-control-core</module>
+        <module>spring-boot3-brick-bootkit-openclaw-control-storage-jdbc</module>
+        <module>spring-boot3-brick-bootkit-openclaw-control-client</module>
+        <module>spring-boot3-brick-bootkit-openclaw-control-client-starter</module>
+        <module>spring-boot3-brick-bootkit-openclaw-tentacle-adapter</module>
+        <module>spring-boot3-brick-bootkit-openclaw-control-starter</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <lombok.version>1.18.24</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <powermock.version>2.0.9</powermock.version>
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
         <junit.version>5.10.0</junit.version>
-        <mockito.version>5.5.0</mockito.version>
+        <mockito.version>5.16.0</mockito.version>
+        <byte-buddy.version>1.17.5</byte-buddy.version>
         <assertj.version>3.24.2</assertj.version>
         <slf4j.version>2.0.9</slf4j.version>
         <logback.version>1.4.11</logback.version>
@@ -103,6 +111,7 @@
         <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
         <springdoc.version>2.5.0</springdoc.version>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
+        <jakarta.websocket-api.version>2.1.1</jakarta.websocket-api.version>
         <java-semver.version>0.9.0</java-semver.version>
         <knife4j.version>4.4.0</knife4j.version>
         <micrometer.version>1.12.0</micrometer.version>
@@ -112,6 +121,7 @@
         <jackson.version>2.16.0</jackson.version>
         <aspectj.version>1.9.20</aspectj.version>
         <springdoc-openapi.version>1.8.0</springdoc-openapi.version>
+        <h2.version>2.2.224</h2.version>
     </properties>
 
     <dependencyManagement>
@@ -144,6 +154,18 @@
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
 
             <!-- Logback 测试依赖管理 -->
@@ -183,6 +205,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-websocket</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.thymeleaf</groupId>
                 <artifactId>thymeleaf-spring6</artifactId>
                 <version>${thymeleaf.version}</version>
@@ -204,6 +238,18 @@
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>${jakarta.servlet-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
+                <version>${jakarta.websocket-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>${jakarta.websocket-api.version}</version>
             </dependency>
 
             <dependency>
@@ -264,6 +310,13 @@
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
                 <version>${aspectj.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Spring Boot 核心依赖 -->
@@ -384,6 +437,13 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <parameters>true</parameters>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 

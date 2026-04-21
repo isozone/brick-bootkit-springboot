@@ -1,0 +1,21 @@
+package com.zqzqq.bootkits.openclaw.protocol;
+
+public enum ControlMessageType {
+    REGISTER,
+    REGISTERED,
+    HEARTBEAT,
+    HEARTBEAT_ACK,
+    CLAIM_TASK,
+    TASK_CLAIMED,
+    TASK_ASSIGNED,
+    TASK_CANCELLED,
+    TASK_PROGRESS,
+    TASK_PROGRESS_ACK,
+    TASK_RESULT,
+    TASK_RESULT_ACK,
+    TASK_LEASE_RENEW,
+    TASK_LEASE_RENEWED,
+    LIST_INTEGRATIONS,
+    INTEGRATIONS,
+    ERROR
+}
