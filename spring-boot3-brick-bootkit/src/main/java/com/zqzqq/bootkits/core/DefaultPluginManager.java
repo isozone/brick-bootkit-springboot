@@ -184,18 +184,21 @@ public class DefaultPluginManager implements PluginManager{
                 printOfNotFoundPlugins();
                 return Collections.emptyList();
             }
+            log.info("扫描到 {} 个插件路径，开始加载...", scanPluginPaths.size());
             Map<String, PluginInfo> pluginInfoMap = new LinkedHashMap<>(scanPluginPaths.size());
             List<Path> failedPaths = new ArrayList<>();
             for (Path path : scanPluginPaths) {
                 try {
+                    log.debug("正在加载插件: {}", path);
                     PluginDescriptor pluginDescriptor = provider.getPluginDescriptorLoader().load(path);
                     if (pluginDescriptor == null) {
-                        log.debug("跳过非插件目录: {}", path);
+                        log.warn("跳过非插件目录或插件描述符加载失败: {}", path);
                         continue;
                     }
                     PluginInsideInfo pluginInsideInfo =
                             createPluginInsideInfo((InsidePluginDescriptor) pluginDescriptor, EnhancedPluginState.LOADED);
                     PluginInfo pluginInfo = createPluginSnapshot(pluginInsideInfo);
+                    log.info("成功加载插件: {} ({})", pluginInfo.getPluginId(), path);
                     pluginInfoMap.put(pluginInfo.getPluginId(), pluginInfo);
                     resolvedPlugins.put(pluginInfo.getPluginId(), pluginInsideInfo);
                 } catch (Exception e) {

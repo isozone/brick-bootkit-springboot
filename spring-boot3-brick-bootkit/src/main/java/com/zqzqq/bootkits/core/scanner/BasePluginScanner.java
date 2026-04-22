@@ -19,6 +19,8 @@ package com.zqzqq.bootkits.core.scanner;
 import com.zqzqq.bootkits.common.Constants;
 import com.zqzqq.bootkits.utils.FilesUtils;
 import com.zqzqq.bootkits.utils.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -33,6 +35,8 @@ import java.util.List;
  * @version 3.0.0
  */
 public class BasePluginScanner implements PluginScanner{
+
+    private static final Logger log = LoggerFactory.getLogger(BasePluginScanner.class);
 
     private final PathResolve pathResolve;
 
@@ -65,19 +69,27 @@ public class BasePluginScanner implements PluginScanner{
         }
         List<Path> pluginPaths = new ArrayList<>();
         if(pathResolve == null){
+            log.warn("PathResolve 为空，无法扫描插件");
             return pluginPaths;
         }
+        log.info("开始扫描插件目录，共 {} 个根目录", rootDir.size());
         for (String dir : rootDir) {
             if(ObjectUtils.isEmpty(dir)){
                 continue;
             }
             File file = resolvePathToFile(dir);
+            log.info("扫描插件目录: {}, 是否存在: {}", file.getAbsolutePath(), file.exists());
 
             if(!file.exists()){
+                log.warn("插件目录不存在，跳过: {}", file.getAbsolutePath());
                 continue;
             }
+            int beforeCount = pluginPaths.size();
             resolve(file, pluginPaths);
+            int foundCount = pluginPaths.size() - beforeCount;
+            log.info("在目录 {} 中发现 {} 个插件", file.getAbsolutePath(), foundCount);
         }
+        log.info("插件扫描完成，共发现 {} 个插件", pluginPaths.size());
         return pluginPaths;
     }
 
@@ -105,14 +117,19 @@ public class BasePluginScanner implements PluginScanner{
             return;
         }
         Path currentPath = currentFile.toPath();
+        log.trace("正在检查路径: {}", currentPath);
         currentPath = pathResolve.resolve(currentPath);
         if(currentPath != null){
+            log.info("发现插件: {}", currentPath);
             pluginPaths.add(currentPath);
         } else {
+            log.trace("路径不是插件，尝试递归: {}", currentFile.getAbsolutePath());
             File[] files = currentFile.listFiles();
             if(files == null || files.length == 0){
+                log.debug("目录为空: {}", currentFile.getAbsolutePath());
                 return;
             }
+            log.debug("递归扫描目录: {}, 包含 {} 个文件/目录", currentFile.getAbsolutePath(), files.length);
             for (File file : files) {
                 resolve(file, pluginPaths);
             }

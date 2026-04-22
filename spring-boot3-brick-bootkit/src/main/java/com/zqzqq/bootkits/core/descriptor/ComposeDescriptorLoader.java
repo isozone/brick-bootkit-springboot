@@ -78,17 +78,28 @@ public class ComposeDescriptorLoader implements PluginDescriptorLoader{
     
     @Override
     public InsidePluginDescriptor load(Path location) throws PluginException {
+        log.debug("开始加载插件描述符: {}", location);
         for (PluginDescriptorLoader pluginDescriptorLoader : pluginDescriptorLoaders) {
             try {
+                log.debug("尝试使用 {} 加载: {}", pluginDescriptorLoader.getClass().getSimpleName(), location);
                 InsidePluginDescriptor pluginDescriptor = pluginDescriptorLoader.load(location);
                 if(pluginDescriptor != null){
+                    log.debug("成功使用 {} 加载描述符: {}, pluginId={}", 
+                            pluginDescriptorLoader.getClass().getSimpleName(), 
+                            location, 
+                            pluginDescriptor.getPluginId());
                     pluginChecker.checkDescriptor(pluginDescriptor);
                     return pluginDescriptor;
                 }
             } catch (Exception e){
-                log.debug("非法路径插件: {}", location);
+                log.warn("插件描述符加载失败 ({}) {}, 错误: {}", 
+                        pluginDescriptorLoader.getClass().getSimpleName(), 
+                        location, 
+                        e.getMessage());
+                log.debug("详细错误信息:", e);
             }
         }
+        log.warn("所有插件描述加载器都无法加载: {}", location);
         return null;
     }
 
