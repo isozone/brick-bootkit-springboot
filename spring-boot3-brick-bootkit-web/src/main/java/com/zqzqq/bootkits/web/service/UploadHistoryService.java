@@ -5,7 +5,6 @@ import com.zqzqq.bootkits.web.dto.PageResult;
 import com.zqzqq.bootkits.web.dto.PluginUploadHistory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;

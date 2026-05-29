@@ -21,7 +21,6 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFacto
 import com.zqzqq.bootkits.loader.classloader.resource.storage.AbstractResourceStorage;
 import com.zqzqq.bootkits.loader.classloader.resource.storage.CacheFastResourceStorage;
 import com.zqzqq.bootkits.loader.classloader.resource.storage.CachePerpetualResourceStorage;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Objects;

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AutoConfiguration
-@ConditionalOnProperty(prefix = "openclaw.agent", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "openclaw.agent", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(OpenClawAgentProperties.class)
 public class OpenClawControlClientAutoConfiguration {
 

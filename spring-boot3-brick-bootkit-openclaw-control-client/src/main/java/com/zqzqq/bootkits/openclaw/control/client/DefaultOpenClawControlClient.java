@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -40,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +69,7 @@ public class DefaultOpenClawControlClient implements OpenClawControlClient {
         this.authSigner = new OpenClawClientAuthSigner(properties, this.objectMapper);
         this.restClient = RestClient.builder()
                 .baseUrl(requiredBaseUrl())
+                .requestFactory(requestFactory(this.properties.getRequestTimeout()))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
@@ -267,6 +268,20 @@ public class DefaultOpenClawControlClient implements OpenClawControlClient {
         } catch (Exception ex) {
             throw new OpenClawControlClientException("control request failed: POST " + path, ex);
         }
+    }
+
+    private SimpleClientHttpRequestFactory requestFactory(Duration timeout) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        int timeoutMillis = toTimeoutMillis(timeout);
+        requestFactory.setConnectTimeout(timeoutMillis);
+        requestFactory.setReadTimeout(timeoutMillis);
+        return requestFactory;
+    }
+
+    private int toTimeoutMillis(Duration timeout) {
+        Duration effectiveTimeout = timeout == null ? Duration.ofSeconds(10) : timeout;
+        long millis = Math.max(1L, effectiveTimeout.toMillis());
+        return millis > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) millis;
     }
 
     private ControlMessageEnvelope sendWebSocketRequest(ControlMessageType type,

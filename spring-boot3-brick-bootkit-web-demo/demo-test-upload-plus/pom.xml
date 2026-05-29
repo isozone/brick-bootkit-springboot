@@ -81,6 +81,19 @@
 
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <configLocation>${project.basedir}/../../checkstyle.xml</configLocation>
+                    <suppressionsLocation>${project.basedir}/../../checkstyle-suppressions.xml</suppressionsLocation>
+                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <linkXRef>false</linkXRef>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.zqzqq</groupId>
                 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
                 <version>4.0.7</version>

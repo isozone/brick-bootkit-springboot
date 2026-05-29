@@ -23,7 +23,6 @@ import com.zqzqq.bootkits.core.launcher.plugin.PluginInteractive;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.spring.MainApplicationContext;
 import com.zqzqq.bootkits.spring.SpringBeanFactory;
-import com.zqzqq.bootkits.spring.environment.EnvironmentProvider;
 import lombok.Getter;
 import org.springframework.core.io.ResourceLoader;
 

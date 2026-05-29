@@ -21,7 +21,6 @@ import com.zqzqq.bootkits.loader.archive.ExplodedArchive;
 import com.zqzqq.bootkits.loader.archive.JarFileArchive;
 import com.zqzqq.bootkits.loader.utils.FilesUtils;
 import com.zqzqq.bootkits.loader.utils.ResourceUtils;
-import lombok.AllArgsConstructor;
 
 import java.io.File;
 import java.io.FileFilter;

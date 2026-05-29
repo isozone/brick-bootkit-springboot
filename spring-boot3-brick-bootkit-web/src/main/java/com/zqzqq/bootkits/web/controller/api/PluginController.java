@@ -1,6 +1,5 @@
 package com.zqzqq.bootkits.web.controller.api;
 
-import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
 import com.zqzqq.bootkits.web.auth.PluginWebPermission;

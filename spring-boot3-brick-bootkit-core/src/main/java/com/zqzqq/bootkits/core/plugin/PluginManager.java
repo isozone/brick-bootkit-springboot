@@ -10,7 +10,6 @@ import com.zqzqq.bootkits.core.health.PluginHealthStatus;
 import com.zqzqq.bootkits.core.health.PluginHealthReport;
 import com.zqzqq.bootkits.core.health.PluginAutoRecoveryManager;
 import com.zqzqq.bootkits.core.version.PluginVersionInfo;
-import com.zqzqq.bootkits.core.version.VersionUtils;
 import com.zqzqq.bootkits.core.dependency.*;
 import com.zqzqq.bootkits.core.isolation.*;
 import com.zqzqq.bootkits.core.performance.*;
@@ -18,7 +17,6 @@ import com.zqzqq.bootkits.core.performance.*;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * 插件管理器

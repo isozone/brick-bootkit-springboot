@@ -8,6 +8,7 @@ import com.zqzqq.bootkits.openclaw.gateway.protocol.GatewayRequestFrame;
 import com.zqzqq.bootkits.openclaw.gateway.protocol.OpenClawGatewayConstants;
 import com.zqzqq.bootkits.openclaw.gateway.protocol.ToolInvokeRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 
 import java.util.Map;
 
@@ -61,5 +62,17 @@ class OpenClawGatewayProtocolTest {
         assertThatThrownBy(() -> new DefaultOpenClawGatewayClient(properties, objectMapper))
                 .isInstanceOf(OpenClawControlClientException.class)
                 .hasMessageContaining("plaintext endpoints");
+    }
+
+    @Test
+    void shouldUseBearerAuthForGatewayPasswordHttpApi() {
+        OpenClawGatewayClientProperties properties = new OpenClawGatewayClientProperties();
+        properties.setAuthPassword("password-1");
+        DefaultOpenClawGatewayClient client = new DefaultOpenClawGatewayClient(properties, objectMapper);
+        HttpHeaders headers = new HttpHeaders();
+
+        client.applyAuthHeaders(headers);
+
+        assertThat(headers.getFirst(HttpHeaders.AUTHORIZATION)).isEqualTo("Bearer password-1");
     }
 }

@@ -1,7 +1,5 @@
 package com.zqzqq.bootkits.core.isolation;
 
-import java.util.Objects;
-
 /**
  * 资源配额配置
  * 定义插件可以使用的各种资源配额限制

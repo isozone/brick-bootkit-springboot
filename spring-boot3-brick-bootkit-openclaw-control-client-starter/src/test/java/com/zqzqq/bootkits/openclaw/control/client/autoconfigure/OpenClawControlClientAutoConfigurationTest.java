@@ -23,6 +23,8 @@ import com.zqzqq.bootkits.openclaw.protocol.TaskResultReport;
 import com.zqzqq.bootkits.openclaw.protocol.TaskSnapshot;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import java.time.Duration;
 import java.util.List;
@@ -35,6 +37,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OpenClawControlClientAutoConfigurationTest {
 
     private final OpenClawControlClientAutoConfiguration autoConfiguration = new OpenClawControlClientAutoConfiguration();
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(OpenClawControlClientAutoConfiguration.class));
+
+    @Test
+    void shouldKeepAgentAutoConfigurationDisabledByDefault() {
+        contextRunner.run(context -> assertThat(context).doesNotHaveBean(OpenClawControlClient.class));
+    }
 
     @Test
     void shouldMapAgentPropertiesToClientProperties() {

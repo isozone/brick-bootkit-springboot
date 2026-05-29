@@ -7,9 +7,7 @@ import com.zqzqq.bootkits.integration.doctor.PluginDoctorService;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO.DoctorSummary;
 import com.zqzqq.bootkits.web.dto.MonitorOverviewDTO.PluginPerformanceDTO;
-import com.zqzqq.bootkits.web.dto.PluginDTO;
 import com.zqzqq.bootkits.web.dto.ThreadDetailDTO;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -27,10 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 /**

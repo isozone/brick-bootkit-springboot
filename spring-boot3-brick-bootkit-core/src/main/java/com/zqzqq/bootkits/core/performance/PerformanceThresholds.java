@@ -1,7 +1,5 @@
 package com.zqzqq.bootkits.core.performance;
 
-import java.util.Objects;
-
 /**
  * 性能阈值配置
  * 定义各种性能指标的警告和临界阈值

@@ -1,7 +1,5 @@
 package com.zqzqq.bootkits.core.version;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

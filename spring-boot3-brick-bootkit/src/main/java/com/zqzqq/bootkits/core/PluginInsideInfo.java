@@ -2,9 +2,6 @@ package com.zqzqq.bootkits.core;
 
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
 /**
  * 插件内部信息接口
  * 定义了插件内部管理所需的方法

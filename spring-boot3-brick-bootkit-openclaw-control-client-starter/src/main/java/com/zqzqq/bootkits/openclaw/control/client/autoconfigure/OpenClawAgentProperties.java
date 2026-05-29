@@ -15,7 +15,7 @@ import java.util.Set;
 @ConfigurationProperties(prefix = "openclaw.agent")
 public class OpenClawAgentProperties {
 
-    private boolean enabled = true;
+    private boolean enabled;
     private boolean autoStartup = true;
     private String baseUrl;
     private String apiBasePath = "/openclaw/control";

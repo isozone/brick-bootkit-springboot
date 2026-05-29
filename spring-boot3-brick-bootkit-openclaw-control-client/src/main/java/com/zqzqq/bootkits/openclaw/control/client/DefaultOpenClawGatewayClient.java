@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -27,6 +28,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +56,7 @@ public class DefaultOpenClawGatewayClient implements OpenClawGatewayClient {
         assertAllowedEndpoint(URI.create(this.properties.getBaseUrl()));
         this.restClient = RestClient.builder()
                 .baseUrl(this.properties.getBaseUrl())
+                .requestFactory(requestFactory(this.properties.getRequestTimeout()))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
@@ -166,6 +169,20 @@ public class DefaultOpenClawGatewayClient implements OpenClawGatewayClient {
         }
     }
 
+    private SimpleClientHttpRequestFactory requestFactory(Duration timeout) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        int timeoutMillis = toTimeoutMillis(timeout);
+        requestFactory.setConnectTimeout(timeoutMillis);
+        requestFactory.setReadTimeout(timeoutMillis);
+        return requestFactory;
+    }
+
+    private int toTimeoutMillis(Duration timeout) {
+        Duration effectiveTimeout = timeout == null ? Duration.ofSeconds(10) : timeout;
+        long millis = Math.max(1L, effectiveTimeout.toMillis());
+        return millis > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) millis;
+    }
+
     private GatewayConnectParams prepareConnectParams(GatewayConnectParams params) {
         GatewayConnectParams payload = params == null ? new GatewayConnectParams() : params;
         GatewayAuth auth = payload.getAuth();
@@ -182,13 +199,13 @@ public class DefaultOpenClawGatewayClient implements OpenClawGatewayClient {
         return payload;
     }
 
-    private void applyAuthHeaders(HttpHeaders headers) {
+    void applyAuthHeaders(HttpHeaders headers) {
         if (!isBlank(properties.getAuthToken())) {
             headers.setBearerAuth(properties.getAuthToken());
             return;
         }
         if (!isBlank(properties.getAuthPassword())) {
-            headers.setBasicAuth("openclaw", properties.getAuthPassword());
+            headers.setBearerAuth(properties.getAuthPassword());
         }
     }
 
