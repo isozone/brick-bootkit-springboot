@@ -1,20 +1,23 @@
 package com.zqzqq.bootkits.core.state;
 
+import com.zqzqq.bootkits.core.PluginState;
+
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * 增强版插件状态机
- * @since 3.5.5
+ * Enhanced plugin lifecycle state.
  */
-public enum EnhancedPluginState {
-    PARSED("插件描述文件已解析"),
-    LOADED("插件已加载"),
-    STARTED("插件已启动"),
-    STOPPED("插件已停止"),
-    DISABLED("插件已禁用"), 
-    UNLOADED("插件已卸载");
+public enum EnhancedPluginState implements PluginState {
+    PARSED("Plugin descriptor parsed"),
+    LOADED("Plugin loaded"),
+    STARTED("Plugin started"),
+    STOPPED("Plugin stopped"),
+    DISABLED("Plugin disabled"),
+    UNLOADED("Plugin unloaded"),
+    STOPPED_FAILURE("Plugin stop failed"),
+    STARTED_FAILURE("Plugin start failed");
 
     private Set<EnhancedPluginState> allowedTransitions;
     private final String description;
@@ -22,37 +25,39 @@ public enum EnhancedPluginState {
     static {
         PARSED.allowedTransitions = EnumSet.of(LOADED, DISABLED);
         LOADED.allowedTransitions = EnumSet.of(STARTED, DISABLED, UNLOADED);
-        STARTED.allowedTransitions = EnumSet.of(STOPPED, UNLOADED);
-        STOPPED.allowedTransitions = EnumSet.of(STARTED, UNLOADED);
+        STARTED.allowedTransitions = EnumSet.of(STOPPED, STOPPED_FAILURE, UNLOADED);
+        STOPPED.allowedTransitions = EnumSet.of(STARTED, STARTED_FAILURE, UNLOADED);
         DISABLED.allowedTransitions = EnumSet.of(LOADED, UNLOADED);
         UNLOADED.allowedTransitions = EnumSet.noneOf(EnhancedPluginState.class);
+        STOPPED_FAILURE.allowedTransitions = EnumSet.of(STOPPED, STARTED, UNLOADED);
+        STARTED_FAILURE.allowedTransitions = EnumSet.of(STOPPED, STARTED, UNLOADED);
     }
 
     EnhancedPluginState(String description) {
         this.description = description;
     }
 
-    /**
-     * 检查状态转换是否合规
-     */
     public boolean canTransitionTo(EnhancedPluginState newState) {
-        Objects.requireNonNull(newState);
+        Objects.requireNonNull(newState, "newState");
         if (this == newState) {
             throw new IllegalArgumentException("Cannot transition to same state");
         }
         return allowedTransitions.contains(newState);
     }
 
-    /**
-     * 获取所有允许的转换状态
-     */
+    @Override
+    public boolean canTransitionTo(PluginState targetState) {
+        if (targetState instanceof EnhancedPluginState) {
+            return canTransitionTo((EnhancedPluginState) targetState);
+        }
+        return false;
+    }
+
     public Set<EnhancedPluginState> getAllowedTransitions() {
         return EnumSet.copyOf(allowedTransitions);
     }
 
-    /**
-     * 获取状态描述
-     */
+    @Override
     public String getDescription() {
         return description;
     }

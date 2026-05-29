@@ -11,7 +11,7 @@ import java.util.Map;
 public class OpenClawControlProperties {
 
     private boolean enabled = true;
-    private boolean exposeHttpEndpoints = true;
+    private boolean exposeHttpEndpoints = false;
     private String storeType = "auto";
     private String apiBasePath = "/openclaw/control";
     private long heartbeatIntervalSeconds = 30L;
@@ -122,7 +122,7 @@ public class OpenClawControlProperties {
 
     public static class Auth {
 
-        private boolean enabled;
+        private boolean enabled = true;
         private String mode = "token";
         private String sharedToken;
         private String sharedSecret;
@@ -226,10 +226,10 @@ public class OpenClawControlProperties {
 
     public static class WebSocket {
 
-        private boolean enabled = true;
+        private boolean enabled = false;
         private boolean pushTaskAssignments = true;
         private String endpointPath = "/openclaw/control/ws";
-        private List<String> allowedOriginPatterns = new ArrayList<>(List.of("*"));
+        private List<String> allowedOriginPatterns = new ArrayList<>();
 
         public boolean isEnabled() {
             return enabled;
@@ -261,7 +261,7 @@ public class OpenClawControlProperties {
 
         public void setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
             this.allowedOriginPatterns = allowedOriginPatterns == null
-                    ? new ArrayList<>(List.of("*"))
+                    ? new ArrayList<>()
                     : new ArrayList<>(allowedOriginPatterns);
         }
     }

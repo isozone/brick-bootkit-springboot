@@ -1,1 +1,2 @@
 com.zqzqq.bootkits.openclaw.control.client.autoconfigure.OpenClawControlClientAutoConfiguration
+com.zqzqq.bootkits.openclaw.control.client.autoconfigure.OpenClawGatewayAutoConfiguration

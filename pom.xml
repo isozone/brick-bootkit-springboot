@@ -78,6 +78,8 @@
         <module>spring-boot3-brick-bootkit-openclaw-control-client-starter</module>
         <module>spring-boot3-brick-bootkit-openclaw-tentacle-adapter</module>
         <module>spring-boot3-brick-bootkit-openclaw-control-starter</module>
+        <module>spring-boot3-brick-bootkit-web-demo</module>
+        <module>spring-boot3-brick-bootkit-web-demo/demo-test-upload-plus</module>
     </modules>
 
     <properties>
@@ -96,7 +98,7 @@
         <logback.version>1.4.11</logback.version>
         <spring-boot.version>3.5.5</spring-boot.version>
         <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <jacoco.version>0.8.11</jacoco.version>
         <jacoco.check.percentage>80</jacoco.check.percentage>
         <maven.javadoc.skip>false</maven.javadoc.skip>
@@ -107,25 +109,27 @@
         
         <!-- 统一依赖版本 -->
         <commons-io.version>2.15.1</commons-io.version>
-        <spring.version>6.1.5</spring.version>
         <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
         <springdoc.version>2.5.0</springdoc.version>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
         <jakarta.websocket-api.version>2.1.1</jakarta.websocket-api.version>
         <java-semver.version>0.9.0</java-semver.version>
         <knife4j.version>4.4.0</knife4j.version>
-        <micrometer.version>1.12.0</micrometer.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
-        <spring-security.version>6.2.0</spring-security.version>
         <asm.version>9.6</asm.version>
-        <jackson.version>2.16.0</jackson.version>
         <aspectj.version>1.9.20</aspectj.version>
         <springdoc-openapi.version>1.8.0</springdoc-openapi.version>
-        <h2.version>2.2.224</h2.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- SLF4J 依赖管理 -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -199,24 +203,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-webmvc</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-websocket</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jdbc</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.thymeleaf</groupId>
                 <artifactId>thymeleaf-spring6</artifactId>
                 <version>${thymeleaf.version}</version>
@@ -265,24 +251,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>${micrometer.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${snakeyaml.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-core</artifactId>
-                <version>${spring-security.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
                 <version>${asm.version}</version>
@@ -295,28 +263,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
                 <version>${aspectj.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Spring Boot 核心依赖 -->
@@ -463,6 +412,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin.version}</version>
                         <configuration>
                             <skip>true</skip>
                         </configuration>
@@ -521,7 +471,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <configuration>
                             <skip>false</skip>
                             <gpgArguments>

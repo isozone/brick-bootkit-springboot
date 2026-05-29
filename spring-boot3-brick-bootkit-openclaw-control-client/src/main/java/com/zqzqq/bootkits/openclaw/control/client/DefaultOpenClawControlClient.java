@@ -51,10 +51,10 @@ public class DefaultOpenClawControlClient implements OpenClawControlClient {
 
     private final OpenClawControlClientProperties properties;
     private final RestClient restClient;
-    private final StandardWebSocketClient webSocketClient;
     private final ObjectMapper objectMapper;
     private final OpenClawClientAuthSigner authSigner;
     private final ConcurrentMap<String, CompletableFuture<ControlMessageEnvelope>> pendingRequests = new ConcurrentHashMap<>();
+    private volatile StandardWebSocketClient webSocketClient;
     private volatile WebSocketSession webSocketSession;
     private volatile OpenClawControlMessageListener messageListener;
     private volatile String sessionId;
@@ -71,7 +71,6 @@ public class DefaultOpenClawControlClient implements OpenClawControlClient {
                 .baseUrl(requiredBaseUrl())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
-        this.webSocketClient = new StandardWebSocketClient();
     }
 
     @Override
@@ -214,11 +213,16 @@ public class DefaultOpenClawControlClient implements OpenClawControlClient {
         }
         this.messageListener = listener;
         try {
+            StandardWebSocketClient client = webSocketClient;
+            if (client == null) {
+                client = new StandardWebSocketClient();
+                webSocketClient = client;
+            }
             WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
             if (!isBlank(properties.getClientId())) {
                 headers.add(OpenClawClientAuthSigner.HEADER_CLIENT_ID, properties.getClientId());
             }
-            this.webSocketSession = webSocketClient.execute(
+            this.webSocketSession = client.execute(
                     new ClientWebSocketHandler(),
                     headers,
                     URI.create(resolveWebSocketUrl())

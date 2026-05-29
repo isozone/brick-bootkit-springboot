@@ -94,11 +94,14 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
 
     private void setEnhancedPluginState(EnhancedPluginState newState) {
         PluginState oldState = this.state;
+        EnhancedPluginState oldEnhancedState = oldState instanceof EnhancedPluginState
+                ? (EnhancedPluginState) oldState
+                : null;
         
         try {
             // 预先拦截检查
             for (PluginStateInterceptor interceptor : interceptors) {
-                if (!interceptor.preStateChange(this, oldState, newState)) {
+                if (!interceptor.preStateChange(getPluginId(), oldEnhancedState, newState)) {
                     return;
                 }
             }
@@ -129,12 +132,12 @@ public class EnhancedPluginInsideInfo implements PluginInsideInfo {
             
             // 后置通知
             for (PluginStateInterceptor interceptor : interceptors) {
-                interceptor.postStateChange(this, oldState, newState);
+                interceptor.postStateChange(getPluginId(), oldEnhancedState, newState);
             }
         } catch (Exception e) {
             // 异常通知
             for (PluginStateInterceptor interceptor : interceptors) {
-                interceptor.onStateChangeFailure(this, oldState, newState, e);
+                interceptor.onStateChangeFailure(getPluginId(), oldEnhancedState, newState, e);
             }
             throw new IllegalStateException("Failed to change plugin state: " + e.getMessage(), e);
         }

@@ -16,6 +16,22 @@ public class EnhancedPluginException extends RuntimeException {
     private final LocalDateTime timestamp;
     private String pluginId;
 
+    public EnhancedPluginException() {
+        this(PluginErrorCode.SYSTEM_ERROR);
+    }
+
+    public EnhancedPluginException(String message) {
+        this(PluginErrorCode.SYSTEM_ERROR, message);
+    }
+
+    public EnhancedPluginException(String message, Throwable cause) {
+        this(PluginErrorCode.SYSTEM_ERROR, message, cause);
+    }
+
+    public EnhancedPluginException(Throwable cause) {
+        this(PluginErrorCode.SYSTEM_ERROR, cause);
+    }
+
     public EnhancedPluginException(PluginErrorCode errorCode) {
         super(errorCode.getDescription());
         this.errorCode = errorCode;
