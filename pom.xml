@@ -71,13 +71,6 @@
         <module>spring-boot3-brick-bootkit-maven-packager</module>
         <module>spring-boot3-brick-bootkit-scripts</module>
         <module>spring-boot3-brick-bootkit-web</module>
-        <module>spring-boot3-brick-bootkit-openclaw-protocol</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-core</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-storage-jdbc</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-client</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-client-starter</module>
-        <module>spring-boot3-brick-bootkit-openclaw-tentacle-adapter</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-starter</module>
     </modules>
 
     <properties>
