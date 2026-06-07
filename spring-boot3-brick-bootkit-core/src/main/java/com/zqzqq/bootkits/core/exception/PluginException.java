@@ -16,6 +16,8 @@
 
 package com.zqzqq.bootkits.core.exception;
 
+import java.util.function.Supplier;
+
 /**
  * 插件异常基类
  *
@@ -26,16 +28,33 @@ public class PluginException extends RuntimeException {
 
     private final String pluginId;
 
+    public PluginException() {
+        super();
+        this.pluginId = null;
+    }
+
     public PluginException(String message) {
         super(message);
         this.pluginId = null;
     }
 
+    public PluginException(Throwable cause) {
+        super(cause);
+        this.pluginId = null;
+    }
 
+    public PluginException(String message, Throwable cause) {
+        super(message, cause);
+        this.pluginId = null;
+    }
 
     public PluginException(String pluginId, String message) {
         super(message);
         this.pluginId = pluginId;
+    }
+
+    public PluginException(Object pluginDescriptor, String message) {
+        this(resolvePluginId(pluginDescriptor), messageFor(resolvePluginId(pluginDescriptor), message));
     }
 
     public PluginException(String pluginId, String message, Throwable cause) {
@@ -43,15 +62,38 @@ public class PluginException extends RuntimeException {
         this.pluginId = pluginId;
     }
 
-
-
-    public PluginException(String pluginId, Throwable cause) {
-        super(cause);
-        this.pluginId = pluginId;
+    public PluginException(Object pluginDescriptor, String opType, Throwable cause) {
+        this(resolvePluginId(pluginDescriptor), messageFor(resolvePluginId(pluginDescriptor), opType), cause);
     }
 
     public String getPluginId() {
         return pluginId;
+    }
+
+    public static PluginException getPluginException(Throwable throwable, Supplier<PluginException> getException) {
+        if (throwable instanceof PluginException) {
+            return (PluginException) throwable;
+        }
+        return getException.get();
+    }
+
+    private static String resolvePluginId(Object pluginDescriptor) {
+        if (pluginDescriptor == null) {
+            return null;
+        }
+        try {
+            Object value = pluginDescriptor.getClass().getMethod("getPluginId").invoke(pluginDescriptor);
+            return value == null ? null : String.valueOf(value);
+        } catch (ReflectiveOperationException ex) {
+            return String.valueOf(pluginDescriptor);
+        }
+    }
+
+    private static String messageFor(String pluginId, String message) {
+        if (pluginId == null || pluginId.isBlank()) {
+            return message;
+        }
+        return "Plugin[" + pluginId + "] " + message;
     }
 
     @Override

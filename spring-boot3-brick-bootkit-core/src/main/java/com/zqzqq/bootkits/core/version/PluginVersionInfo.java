@@ -2,8 +2,6 @@ package com.zqzqq.bootkits.core.version;
 
 import com.zqzqq.bootkits.core.dependency.VersionConstraint;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 插件版本信息

@@ -9,17 +9,17 @@
     <suppress checks="Complexity" files=".*Test\.java$"/>
     
     <!-- 抑制第三方库代码的检查 -->
-    <suppress checks=".*" files=".*/generated/.*"/>
-    <suppress checks=".*" files=".*/target/.*"/>
-    <suppress checks=".*" files=".*/build/.*"/>
+    <suppress checks=".*" files=".*[/\\]generated[/\\].*"/>
+    <suppress checks=".*" files=".*[/\\]target[/\\].*"/>
+    <suppress checks=".*" files=".*[/\\]build[/\\].*"/>
     
     <!-- 抑制Spring Boot配置类的检查 -->
     <suppress checks=".*" files=".*Configuration\.java$"/>
     <suppress checks=".*" files=".*AutoConfiguration\.java$"/>
     
     <!-- 抑制某些特定的警告 -->
-    <suppress checks=".*" files=".*/test/.*"/>
-    <suppress checks=".*" files=".*/it/.*"/>
+    <suppress checks=".*" files=".*[/\\]test[/\\].*"/>
+    <suppress checks=".*" files=".*[/\\]it[/\\].*"/>
     
     <!-- 抑制特定规则的检查 -->
     <suppress checks="MagicNumber" files=".*Test\.java$"/>

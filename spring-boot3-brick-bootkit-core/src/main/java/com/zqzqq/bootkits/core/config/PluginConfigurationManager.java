@@ -3,7 +3,6 @@ package com.zqzqq.bootkits.core.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.io.IOException;
 import java.nio.file.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;

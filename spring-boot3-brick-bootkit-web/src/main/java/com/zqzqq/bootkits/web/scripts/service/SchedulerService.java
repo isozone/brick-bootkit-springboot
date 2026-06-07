@@ -4,7 +4,6 @@ import com.zqzqq.bootkits.scripts.core.ScriptConfiguration;
 import com.zqzqq.bootkits.scripts.core.ScriptExecutionResult;
 import com.zqzqq.bootkits.scripts.core.ScriptManager;
 import com.zqzqq.bootkits.scripts.core.ScriptType;
-import com.zqzqq.bootkits.web.scripts.dto.ExecutionRecordDTO;
 import com.zqzqq.bootkits.web.scripts.dto.SchedulerTaskDTO;
 import com.zqzqq.bootkits.web.scripts.storage.ScriptStorage;
 import com.zqzqq.bootkits.web.scripts.storage.StorageException;

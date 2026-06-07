@@ -6,7 +6,6 @@ import com.zqzqq.bootkits.core.logging.PluginLogger;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 插件资源隔离管理器

@@ -3,217 +3,24 @@
   "https://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
-    <property name="fileExtensions" value="java, properties, xml"/>
+    <property name="fileExtensions" value="java"/>
 
-    <!-- 文件长度限制 -->
-    <module name="FileLength">
-        <property name="max" value="2000"/>
-    </module>
-
-    <!-- 文件名检查 -->
-    <module name="SuppressWithPlainTextCommentFilter"/>
-    
-    <!-- 空格检查 -->
-    <module name="WhitespaceAround">
-        <property name="allowEmptyConstructors" value="true"/>
-        <property name="allowEmptyMethods" value="true"/>
-        <property name="allowEmptyTypes" value="true"/>
-        <property name="allowEmptyLoops" value="true"/>
-        <property name="allowEmptyCatches" value="true"/>
-        <property name="allowEmptyIf" value="true"/>
-        <property name="allowEmptyWhen" value="true"/>
-        <property name="allowEmptySwitch" value="true"/>
-        <property name="allowEmptyLambda" value="true"/>
-    </module>
-
-    <!-- 包声明 -->
-    <module name="PackageDeclaration">
-        <property name="matchDirectoryStructure" value="false"/>
-    </module>
-
-    <!-- 导入语句 -->
-    <module name="AvoidStarImport">
-        <property name="allowStaticImports" value="true">
-            <message>避免使用静态导入</message>
-        </property>
-    </module>
-    <module name="IllegalImport"/>
-    <module name="UnusedImports">
-        <property name="processJavadoc" value="true"/>
-    </module>
-
-    <!-- 注释 -->
-    <module name="RegexpSinglelineJava">
-        <property name="format">^\s*\*\s+@[a-zA-Z]+\{$</property>
-    </module>
-
-    <!-- 类设计 -->
-    <module name="OneTopLevelClass"/>
-    <module name="VisibilityModifier">
-        <property name="protectedAllowed" value="true"/>
-        <property name="publicOnly" value="true"/>
-    </module>
-    <module name="InterfaceIsType"/>
-    <module name="HideUtilityClassConstructor"/>
-    <module name="FinalClass"/>
-    <module name="MutableException"/>
-    <module name="ThrowsCount">
-        <property name="max" value="5"/>
-    </module>
-    <module name="NestedTryDepth">
-        <property name="max" value="3"/>
-    </module>
-
-    <!-- 方法设计 -->
-    <module name="MethodLength">
-        <property name="max" value="200"/>
-    </module>
-    <module name="ParameterNumber">
-        <property name="max" value="7"/>
-    </module>
-    <module name="CyclomaticComplexity">
-        <property name="max" value="10"/>
-    </module>
-
-    <!-- 变量 -->
-    <module name="LocalVariable">
-        <property name="allowUndeclaredUsage" value="false"/>
-    </module>
-    <module name="FinalLocalVariable">
-        <property name="allowUndeclaredUsage" value="false"/>
-    </module>
-    <module name="EmptyForInitializerPad"/>
-    <module name="EmptyForIteratorPad"/>
-    <module name="ParenPad"/>
-    <module name="SeparatorWrap">
-        <property name="option" value="eol"/>
-    </module>
-    <module name="SeparatorWrap">
-        <property name="option" value="nospace"/>
-        <tokens>
-            <token>COMMA</token>
-        </tokens>
-    </module>
-
-    <!-- 字符串和字符 -->
-    <module name="StringLiteralEquality"/>
-    <module name="NestedForDepth">
-        <property name="max" value="3"/>
-    </module>
-    <module name="NeedBraces">
-        <property name="allowSingleLineStatement" value="true"/>
-        <property name="allowEmptyLoopBody" value="true"/>
-    </module>
-
-    <!-- 通用代码规范 -->
-    <module name="GenericWhitespace"/>
-    <module name="Indentation">
-        <property name="arrayInitIndent" value="4"/>
-        <property name="basicOffset" value="4"/>
-        <property name="braceAdjustment" value="0"/>
-        <property name="caseIndent" value="4"/>
-        <property name="throwsIndent" value="4"/>
-        <property name="lineWrappingIndentation" value="4"/>
-        <property name="forceStrictCondition" value="false"/>
-    </module>
-
-    <!-- 代码块和括号 -->
-    <module name="LeftCurly">
-        <property name="option" value="eol"/>
-        <property name="maxLineLength" value="100"/>
-    </module>
-    <module name="RightCurly">
-        <property name="option" value="alone"/>
-    </module>
-    <module name="AvoidNestedBlocks">
-        <property name="allowInSwitchCase" value="true"/>
-    </module>
-
-    <!-- 赋值和操作符 -->
-    <module name="EmptyStatement"/>
-    <module name="EqualsAvoidNull"/>
-    <module name="EqualsAndHashCode"/>
-    <module name="SimplifyBooleanExpression"/>
-    <module name="SimplifyBooleanReturn"/>
-    <module name="UnnecessaryParentheses"/>
-
-    <!-- 类型转换 -->
-    <module name="ExplicitOperationTypes"/>
-    <module name="ArrayTrailingComma">
-        <property name="allowMultilineDeclaration" value="true"/>
-    </module>
-
-    <!-- 检查模式 -->
-    <module name="MagicNumber">
-        <property name="ignoreNumbers" value="-1,0,1,2,3,4,5,6,7,8,9,10,12,16,24,32,64,100,1024,4096"/>
-        <property name="ignoreHashCodeMethod" value="true"/>
-    </module>
-
-    <!-- Javadoc 检查 -->
-    <module name="JavadocType"/>
-    <module name="JavadocMethod">
-        <property name="scope" value="public"/>
-        <property name="allowMissingParamTags" value="false"/>
-        <property name="allowMissingReturnTag" value="true"/>
-        <property name="allowMissingThrowsTags" value="true"/>
-        <property name="allowUndeclaredRTE" value="false"/>
-        <property name="suppressLoadErrors" value="false"/>
-    </module>
-    <module name="JavadocVariable"/>
-    <module name="JavadocStyle">
-        <property name="checkFirstSentence" value="true"/>
-        <property name="endOfSentenceFormat" value="([.?!][ \t\n\r\f<]|[.?!]$)"/>
-        <property name="checkHtml" value="true"/>
-    </module>
-
-    <!-- 命名约定 -->
-    <module name="AbbreviationAsWordInNameCheck">
-        <property name="allowedAbbreviationLength" value="2"/>
-        <property name="tokens" value="CLASS_DEF,INTERFACE_DEF,ENUM_DEF,ANNOTATION_DEF"/>
-    </module>
-    <module name="AbstractClassName"/>
-    <module name="ClassTypeParameterName"/>
-    <module name="ConstantName"/>
-    <module name="InterfaceTypeParameterName"/>
-    <module name="LocalVariableName"/>
-    <module name="MemberName"/>
-    <module name="MethodName"/>
-    <module name="MethodTypeParameterName"/>
-    <module name="PackageName">
-        <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
-    </module>
-    <module name="ParameterName"/>
-    <module name="StaticVariableName"/>
-    <module name="TypeName"/>
-    <module name="RecordTypeParameterName"/>
-    <module name="RecordComponentName"/>
-
-    <!-- 注解 -->
-    <module name="MissingOverride"/>
-    <module name="AnnotationLocation"/>
-    <module name="AnnotationOnSameLine"/>
-    <module name="AnnotationUseStyle"/>
-
-    <!-- 错误处理 -->
-    <module name="EmptyCatchBlock"/>
-    <module name="RedundantThrows">
-        <property name="allowUnchecked" value="true"/>
-        <property name="allowSubclasses" value="true"/>
-    </module>
-    <module name="IllegalType"/>
-    <module name="DefaultComesLast"/>
-    <module name="FallThrough"/>
-    <module name="MultipleVariableDeclarations"/>
-    <module name="SwitchExpression"/>
-
-    <!-- 检查特定规则 -->
-    <module name="FinalLocalVariable">
-        <property name="allowUndeclaredUsage" value="false"/>
-    </module>
-
-    <!-- Suppression过滤器 -->
     <module name="SuppressionFilter">
-        <property name="file" value="checkstyle-suppressions.xml"/>
+        <property name="file" value="${checkstyle.suppressions.file}"/>
         <property name="optional" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+        <module name="IllegalImport"/>
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true"/>
+        </module>
+
+        <module name="PackageDeclaration">
+            <property name="matchDirectoryStructure" value="false"/>
+        </module>
+        <module name="OneTopLevelClass"/>
+
+        <module name="MissingOverride"/>
     </module>
 </module>

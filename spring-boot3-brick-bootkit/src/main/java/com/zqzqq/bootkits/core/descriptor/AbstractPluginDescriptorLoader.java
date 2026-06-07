@@ -24,8 +24,6 @@ import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.utils.FilesUtils;
 import com.zqzqq.bootkits.utils.ObjectUtils;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

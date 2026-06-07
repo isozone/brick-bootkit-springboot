@@ -18,7 +18,6 @@ package com.zqzqq.bootkits.core;
 
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
-import com.zqzqq.bootkits.utils.Assert;
 
 import java.util.Collections;
 import java.util.Date;

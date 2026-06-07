@@ -20,7 +20,6 @@ import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.loader.classloader.GenericClassLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
 import com.zqzqq.bootkits.utils.ObjectUtils;
-import com.zqzqq.bootkits.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -114,10 +113,7 @@ public class PluginClassLoader extends GenericClassLoader implements PluginResou
         if(ObjectUtils.isEmpty(name)){
             return false;
         }
-        String normalizedName = UrlUtils.formatMatchUrl(name);
-        if(normalizedName.startsWith("/")){
-            normalizedName = normalizedName.substring(1);
-        }
+        String normalizedName = normalizeResourceName(name);
         if(SPRING_FACTORIES_RESOURCE.equals(normalizedName)){
             return true;
         }
@@ -126,6 +122,14 @@ public class PluginClassLoader extends GenericClassLoader implements PluginResou
         }
         return normalizedName.endsWith(SPRING_IMPORTS_SUFFIX)
                 || normalizedName.endsWith(SPRING_REPLACEMENTS_SUFFIX);
+    }
+
+    private String normalizeResourceName(String name){
+        String normalizedName = name.replace("\\", "/");
+        while(normalizedName.startsWith("/")){
+            normalizedName = normalizedName.substring(1);
+        }
+        return normalizedName;
     }
 
     @Override
