@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zqzqq</groupId>
+        <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
+        <version>4.2.0</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>spring-boot3-brick-bootkit-spring-boot-starter</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Brick BootKit Spring Boot Starter</description>
+
+    <dependencies>
+        <!-- Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Brick BootKit Core & SDK -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-sdk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Micrometer -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
