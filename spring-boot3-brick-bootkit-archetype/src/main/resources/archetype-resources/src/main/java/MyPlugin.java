@@ -1,4 +1,4 @@
-package #;
+package ;
 
 import com.zqzqq.bootkits.sdk.annotation.BrickPlugin;
 import com.zqzqq.bootkits.sdk.annotation.BrickService;
@@ -19,7 +19,7 @@ import com.zqzqq.bootkits.core.plugin.AbstractPlugin;
  * @since 1.0.0
  */
 @BrickPlugin(
-    id = "#package#.my-plugin",
+    id = ".my-plugin",
     name = "My Plugin",
     description = "Brick BootKit 插件示例",
     author = "你的名字",

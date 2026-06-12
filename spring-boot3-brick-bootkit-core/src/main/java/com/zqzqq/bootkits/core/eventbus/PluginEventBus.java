@@ -4,6 +4,8 @@ import com.zqzqq.bootkits.core.logging.PluginLogger;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -166,7 +168,8 @@ public class PluginEventBus {
      * 获取事件统计
      */
     public Map<String, Integer> getEventCounts() {
-        return new HashMap<>(eventCounters);
+        return eventCounters.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
     }
 
     /**

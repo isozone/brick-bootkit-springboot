@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/spring-boot3-brick-bootkit-archetype/src/main/resources/archetype-resources" includeSubdirectories="true" />
+    </excludeFromCompile>
     <annotationProcessing>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -14,7 +17,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="spring-boot3-brick-bootkit-web" />
       </profile>
@@ -23,24 +26,26 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="spring-boot3-brick-bootkit-openclaw-tentacle-adapter" />
-        <module name="spring-boot3-brick-bootkit-openclaw-control-starter" />
+        <module name="spring-boot3-brick-bootkit-maven-packager" />
         <module name="spring-boot3-brick-bootkit-loader" />
-        <module name="spring-boot3-brick-bootkit-openclaw-control-core" />
+        <module name="spring-boot3-brick-bootkit-core" />
         <module name="spring-boot3-brick-bootkit-bootstrap" />
         <module name="spring-boot3-brick-bootkit-common" />
-        <module name="spring-boot3-brick-bootkit-openclaw-control-storage-jdbc" />
-        <module name="spring-boot3-brick-bootkit-scripts" />
-        <module name="spring-boot3-brick-bootkit-openclaw-protocol" />
-        <module name="spring-boot3-brick-bootkit-openclaw-control-client" />
-        <module name="spring-boot3-brick-bootkit-maven-packager" />
-        <module name="spring-boot3-brick-bootkit-openclaw-control-client-starter" />
-        <module name="spring-boot3-brick-bootkit-core" />
         <module name="spring-boot3-brick-bootkit" />
+        <module name="spring-boot3-brick-bootkit-scripts" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="spring-boot3-brick-bootkit-openclaw-control-client" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-control-client-starter" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-control-core" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-control-starter" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-control-storage-jdbc" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-protocol" target="17" />
+      <module name="spring-boot3-brick-bootkit-openclaw-tentacle-adapter" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

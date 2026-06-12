@@ -47,7 +47,7 @@ public class PluginHealthIndicator implements HealthIndicator {
             // 判断总体状态
             Status overallStatus = Status.UP;
             for (PluginHealthStatus status : pluginHealthCache.values()) {
-                if (status == PluginHealthStatus.UNHEALTHY) {
+                if (!status.isHealthy()) {
                     overallStatus = Status.DOWN;
                     break;
                 } else if (status == PluginHealthStatus.WARNING) {

@@ -14,6 +14,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,8 +79,6 @@ public class BrickBootkitAutoConfiguration implements ApplicationRunner {
             }
         }
 
-        // 注册 Spring 事件监听
-        registerSpringEventListeners();
 
         log.info("Brick BootKit Spring Boot Starter 初始化完成，已加载 {} 个插件", loadedPlugins.size());
     }

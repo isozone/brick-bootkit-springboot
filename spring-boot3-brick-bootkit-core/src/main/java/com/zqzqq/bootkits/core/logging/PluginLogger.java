@@ -87,6 +87,51 @@ public class PluginLogger {
         }
     }
 
+    public void error(Throwable throwable) {
+        logWithMdc(Level.ERROR, throwable.getMessage(), throwable);
+    }
+
+    public void lifecycle(String sourcePluginId, PluginLifecycleEvent event, String message) {
+        MDC.put("plugin.id", sourcePluginId);
+        MDC.put("component", "lifecycle");
+        MDC.put("lifecycle.event", event.name());
+        try {
+            logger.info(message);
+        } finally {
+            MDC.remove("plugin.id");
+            MDC.remove("component");
+            MDC.remove("lifecycle.event");
+        }
+    }
+
+    public void performance(String sourcePluginId, String operation, long durationMillis) {
+        MDC.put("plugin.id", sourcePluginId);
+        MDC.put("component", "performance");
+        try {
+            logger.info("操作性能: {} 耗时={}ms", operation, durationMillis);
+        } finally {
+            MDC.remove("plugin.id");
+            MDC.remove("component");
+        }
+    }
+
+    public void security(String sourcePluginId, String action, String message) {
+        MDC.put("plugin.id", sourcePluginId);
+        MDC.put("component", "security");
+        try {
+            logger.warn("安全事件: {} - {}", action, message);
+        } finally {
+            MDC.remove("plugin.id");
+            MDC.remove("component");
+        }
+    }
+    /**
+     * 插件生命周期事件。
+     */
+    public enum PluginLifecycleEvent {
+        STARTING, STARTED, STOPPING, STOPPED, FAILED
+    }
+
     /**
      * 日志级别
      */
