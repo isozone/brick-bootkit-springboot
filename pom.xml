@@ -6,7 +6,7 @@
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.7</version>
+    <version>4.0.8</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>
         在项目开发中，使用到了原作者的框架，但升级到springboot3.5之后，无法使用，原作者也已经多年未更新，因此针对此项目进行二次修改后进行开源，
@@ -71,15 +71,9 @@
         <module>spring-boot3-brick-bootkit-maven-packager</module>
         <module>spring-boot3-brick-bootkit-scripts</module>
         <module>spring-boot3-brick-bootkit-web</module>
-        <module>spring-boot3-brick-bootkit-openclaw-protocol</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-core</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-storage-jdbc</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-client</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-client-starter</module>
-        <module>spring-boot3-brick-bootkit-openclaw-tentacle-adapter</module>
-        <module>spring-boot3-brick-bootkit-openclaw-control-starter</module>
-        <module>spring-boot3-brick-bootkit-web-demo</module>
-        <module>spring-boot3-brick-bootkit-web-demo/demo-test-upload-plus</module>
+        <module>spring-boot3-brick-bootkit-sdk</module>
+        <module>spring-boot3-brick-bootkit-spring-boot-starter</module>
+        <module>spring-boot3-brick-bootkit-archetype</module>
     </modules>
 
     <properties>
@@ -186,6 +180,20 @@
                 <artifactId>spring-boot-starter-test</artifactId>
                 <version>${spring-boot.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- Spring Boot Actuator -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            
+            <!-- Micrometer Prometheus -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>1.12.0</version>
             </dependency>
             
             <dependency>

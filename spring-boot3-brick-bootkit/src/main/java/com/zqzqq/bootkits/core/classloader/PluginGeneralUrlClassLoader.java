@@ -18,24 +18,31 @@ package com.zqzqq.bootkits.core.classloader;
 
 import com.zqzqq.bootkits.core.descriptor.InsidePluginDescriptor;
 import com.zqzqq.bootkits.loader.classloader.GeneralUrlClassLoader;
+import com.zqzqq.bootkits.loader.classloader.GenericClassLoader;
+import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResourceLoaderFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 /**
- * 插件基础 url classLoader
+ * 插件基础 classLoader。
+ * <p>
+ * 共存模式下插件包通常是嵌套包结构：外层插件 jar 内包含 classes/ 与 lib/*.jar。
+ * 标准 URLClassLoader 不能直接加载 jar 内部的 jar，因此这里必须使用
+ * GenericClassLoader + ResourceLoaderFactory 的资源存储体系，由
+ * NestedPluginJarResourceLoader 解析外层插件包并把内嵌依赖 class 缓存到本地资源中。
  *
  * @author starBlues
- * @version 3.1.0
+ * @version 4.0.8
  * @since 3.0.4
  */
 @Slf4j
-public class PluginGeneralUrlClassLoader extends GeneralUrlClassLoader implements PluginResourceLoaderFactory{
+public class PluginGeneralUrlClassLoader extends GenericClassLoader implements PluginResourceLoaderFactory {
 
     private final PluginResourceLoaderFactory proxy;
 
     public PluginGeneralUrlClassLoader(String name, GeneralUrlClassLoader parent) {
-        super(name, parent);
+        super(name, parent, new DefaultResourceLoaderFactory(name));
         this.proxy = new PluginResourceLoaderFactoryProxy(this, parent);
     }
 
@@ -44,43 +51,52 @@ public class PluginGeneralUrlClassLoader extends GeneralUrlClassLoader implement
         proxy.addResource(descriptor);
     }
 
-    @Override
-    public void close() throws IOException {
-        super.close();
-    }
-    
     /**
-     * 增强与Spring Boot 3.5.x的兼容性
-     * Spring Boot 3.5.x中可能使用了更严格的类加载机制
+     * 增强与 Spring Boot 3.5.x 的兼容性：Spring/Jakarta/JDK 相关类优先交给父加载器，
+     * 业务插件类和插件内嵌依赖仍由 GenericClassLoader 的资源存储体系加载。
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         try {
-            // 首先尝试从父类加载器加载Spring相关类
-            if (name.startsWith("org.springframework.") || 
-                name.startsWith("jakarta.") || 
-                name.startsWith("java.") ||
-                name.startsWith("javax.")) {
+            if (name.startsWith("org.springframework.")
+                    || name.startsWith("jakarta.")
+                    || name.startsWith("java.")
+                    || name.startsWith("javax.")) {
                 try {
-                    return getParent().loadClass(name);
+                    Class<?> clazz = getParent().loadClass(name);
+                    if (resolve) {
+                        resolveClass(clazz);
+                    }
+                    return clazz;
                 } catch (ClassNotFoundException ignored) {
-                    // 忽略异常，继续尝试其他方式加载
+                    // 忽略异常，继续走插件本地加载逻辑
                 }
             }
-            // 使用标准类加载逻辑
-            return super.loadClass(name, resolve);
+            Class<?> clazz = super.loadClass(name);
+            if (resolve) {
+                resolveClass(clazz);
+            }
+            return clazz;
         } catch (ClassNotFoundException e) {
-            // 如果标准加载失败，尝试从线程上下文件类加载器加
-            try {
-                ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-                if (contextClassLoader != null && contextClassLoader != this) {
-                    return contextClassLoader.loadClass(name);
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            if (contextClassLoader != null && contextClassLoader != this) {
+                try {
+                    Class<?> clazz = contextClassLoader.loadClass(name);
+                    if (resolve) {
+                        resolveClass(clazz);
+                    }
+                    return clazz;
+                } catch (ClassNotFoundException ignored) {
+                    // 忽略异常，抛出原始异常
                 }
-            } catch (ClassNotFoundException ignored) {
-                // 忽略异常
             }
             throw e;
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
     }
 }
 

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
-        <version>4.0.7</version>
+        <version>4.0.8</version>
     </parent>
     
     <artifactId>spring-boot3-brick-bootkit-web</artifactId>
@@ -126,7 +126,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.36</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

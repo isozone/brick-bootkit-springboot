@@ -41,6 +41,21 @@ public class PluginSecurityValidationResult {
         this.validationTime = LocalDateTime.now();
     }
 
+    public static PluginSecurityValidationResult success(String pluginId, String message) {
+        PluginSecurityValidationResult result = new PluginSecurityValidationResult(pluginId);
+        if (message != null && !message.isEmpty()) {
+            result.addWarning(message);
+        }
+        result.setValid(true);
+        result.setRiskLevel(SecurityRiskLevel.LOW);
+        return result;
+    }
+
+    public static PluginSecurityValidationResult failure(String pluginId, String message) {
+        PluginSecurityValidationResult result = new PluginSecurityValidationResult(pluginId);
+        result.addViolation(message);
+        return result;
+    }
     /**
      * 添加安全违规
      *
