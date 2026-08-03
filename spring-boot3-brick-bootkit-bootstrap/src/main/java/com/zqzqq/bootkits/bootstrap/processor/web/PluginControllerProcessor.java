@@ -94,11 +94,9 @@ public class PluginControllerProcessor implements SpringPluginProcessor {
             return;
         }
         GenericApplicationContext applicationContext = processorContext.getApplicationContext();
-
         Iterator<ControllerWrapper> iterator = controllerWrappers.iterator();
         String pathPrefix = PluginConfigUtils.getPluginRestPrefix(processorContext.getConfiguration(), pluginId);
         PluginRequestMappingHandlerMapping pluginHandlerMapping = new PluginRequestMappingHandlerMapping(pathPrefix);
-
         while (iterator.hasNext()){
             ControllerWrapper controllerWrapper = iterator.next();
             if(!applicationContext.containsBean(controllerWrapper.getBeanName())){
@@ -107,7 +105,6 @@ public class PluginControllerProcessor implements SpringPluginProcessor {
             Object controllerBean = applicationContext.getBean(controllerWrapper.getBeanName());
             pluginHandlerMapping.registerHandler(controllerBean);
             List<RegisterMappingInfo> registerMappingInfo = pluginHandlerMapping.getAndClear();
-
             Set<RequestMappingInfo> requestMappingInfoSet = new HashSet<>(registerMappingInfo.size());
             for (RegisterMappingInfo mappingInfo : registerMappingInfo) {
                 RequestMappingInfo requestMappingInfo = mappingInfo.getRequestMappingInfo();
@@ -116,11 +113,13 @@ public class PluginControllerProcessor implements SpringPluginProcessor {
                         mappingInfo.getHandler(),
                         mappingInfo.getMethod()
                 );
-                LOG.info("插件[{}]注册接口: {}", pluginId, requestMappingInfo);
                 requestMappingInfoSet.add(requestMappingInfo);
             }
             controllerWrapper.setRequestMappingInfo(requestMappingInfoSet);
+            LOG.info("插件[{}]注册接口数量: {}", pluginId,requestMappingInfoSet.size());
         }
+
+
     }
 
     @Override
