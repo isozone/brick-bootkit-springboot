@@ -26,6 +26,8 @@ logging:
     com.zqzqq.bootkits: INFO
     org.springframework.web: INFO
     org.springframework.boot: INFO
+  file:
+    name: ./logs/brick-demo.log
 
 # SpringDoc OpenAPI 配置
 springdoc:
@@ -53,6 +55,10 @@ plugin:
   mainPackage: com.zqzqq.bootkits.web.demo.DemoApplication
   pluginPath:
     - ./plugins
+  web:
+    enabled: true
+    enable-ui: true
+    auth-mode: disabled
   #   - D:\codes\brick-bootkit-springboot\spring-boot3-brick-bootkit-web-demo\demo-test-upload-plus\target
   # 脚本管理配置
   scripts:

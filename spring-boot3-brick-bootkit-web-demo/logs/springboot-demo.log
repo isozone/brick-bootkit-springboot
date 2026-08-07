@@ -298,3 +298,205 @@ Caused by: org.springframework.beans.factory.support.BeanDefinitionOverrideExcep
 2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.b.p.w.PluginControllerProcessor - 插件[demoTestUploadPlus]注册接口数量: 1
 2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 插件启动成功: demoTestUploadPlus, startedPlugins 大小: 1
 2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.i.d.PluginDoctorStartupReporter - Plugin doctor summary: doctor=OK, errors=0, warnings=0, plugins=1, started=1
+2026-08-08 00:19:31 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-08 00:19:31 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-08-08 00:19:31 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-08-08 00:19:31 [http-nio-8080-exec-1] WARN  c.z.b.w.a.PluginWebAuthorizationService - Plugin web authorization denied. principal=anonymous, permission=PLUGIN_VIEW, pluginId=null, uri=/plugins-web/api/doctor, reason=host authorizer is required
+2026-08-08 00:19:31 [http-nio-8080-exec-1] WARN  c.z.b.w.e.GlobalExceptionHandler - Permission denied: host authorizer is required
+2026-08-08 00:19:31 [http-nio-8080-exec-2] WARN  c.z.b.w.a.PluginWebAuthorizationService - Plugin web authorization denied. principal=anonymous, permission=PLUGIN_VIEW, pluginId=null, uri=/plugins-web/api/plugins, reason=host authorizer is required
+2026-08-08 00:19:31 [http-nio-8080-exec-2] WARN  c.z.b.w.e.GlobalExceptionHandler - Permission denied: host authorizer is required
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-08 00:19:58 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager shutdown completed
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceMonitor - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceMonitor - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.i.r.ServiceRegistryLifecycleExtension - 插件服务已注销: pluginId=demoTestUploadPlus
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.core.DefaultPluginManager - 插件停止成功: demoTestUploadPlus
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.core.DefaultPluginManager - 插件管理器已关闭
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.i.cluster.ClusterNodeRegistry - 集群节点已注销: nodeId=a5b019df
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:19:58 [SpringApplicationShutdownHook] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务已关闭
+2026-08-08 00:20:02 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 34443 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:20:02 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:20:03 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-08-08 00:20:03 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:20:03 [Thread-0] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-08-08 00:20:03 [Thread-0] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-08 00:20:03 [Thread-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-08-08 00:20:03 [Thread-0] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 692 ms
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.c.BrickWebAutoConfiguration - Brick Web 配置已从 IntegrationConfiguration 合并缺省值
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 加载 0 条上传历史记录
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务初始化完成，历史文件路径: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/upload-history/upload-history.json
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.s.c.ScriptStorageAutoConfiguration - Initializing FileScriptStorage with data-path: ./scripts-data
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.s.s.impl.FileScriptStorage - FileScriptStorage initialized at: ./scripts-data
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - Initializing ScriptManager...
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - ScriptManager initialized successfully
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:20:03 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - web-console
+2026-08-08 00:20:04 [Thread-0] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-08-08 00:20:04 [Thread-0] WARN  o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.i.c.ClusterLifecycleExtension - 集群插件状态同步扩展已初始化
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationAutoConfiguration - Initializing Plugin Configuration Manager with properties: com.zqzqq.bootkits.core.config.PluginConfigurationProperties@7f895fc3
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Configuration file watcher started
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Loaded 0 plugin configurations
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager initialized with hot reload: true
+2026-08-08 00:20:04 [Thread-0] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-08-08 00:20:04 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:20:04 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Started SpringMainBootstrap in 1.703 seconds (process running for 1.866)
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin environment: prod
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin development mode: isolation
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Begin load plugins from:
+./plugins
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.s.w.PluginStaticResourceConfig - 插件静态资源配置: /plugins/{{pluginId}}/*
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 开始扫描插件目录，共 1 个根目录
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 扫描插件目录: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins, 是否存在: true
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/demoTestUploadPlus-0.0.3-repackage.jar
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 在目录 /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins 中发现 2 个插件
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 插件扫描完成，共发现 2 个插件
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 扫描到 2 个插件路径，开始加载...
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 成功加载插件: demoTestUploadPlus (./plugins/demoTestUploadPlus-0.0.3-repackage.jar)
+2026-08-08 00:20:04 [Thread-0] WARN  c.z.b.c.d.ComposeDescriptorLoader - 所有插件描述加载器都无法加载: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:20:04 [Thread-0] WARN  c.z.b.core.DefaultPluginManager - 跳过非插件目录或插件描述符加载失败: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.b.ConfigurePluginEnvironment - Plugin[demoTestUploadPlus@0.0.3]  No active profile set, falling back to default profiles : default
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.b.p.w.PluginControllerProcessor - 插件[demoTestUploadPlus]注册接口数量: 1
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 插件启动成功: demoTestUploadPlus, startedPlugins 大小: 1
+2026-08-08 00:20:04 [Thread-0] INFO  c.z.b.i.d.PluginDoctorStartupReporter - Plugin doctor summary: doctor=OK, errors=0, warnings=0, plugins=1, started=1
+2026-08-08 00:21:11 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-08 00:21:11 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-08-08 00:21:11 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-08-08 00:21:11 [http-nio-8080-exec-2] INFO  c.z.b.web.service.PluginWebService - PluginManagerProvider 返回: com.zqzqq.bootkits.core.PluginLauncherManager
+2026-08-08 00:21:11 [http-nio-8080-exec-2] INFO  c.z.b.web.service.PluginWebService - 获取插件列表，PluginManager 实例: com.zqzqq.bootkits.core.PluginLauncherManager
+2026-08-08 00:21:11 [http-nio-8080-exec-2] INFO  c.z.b.web.service.PluginWebService - 过滤后有 1 个插件
+2026-08-08 00:21:20 [http-nio-8080-exec-4] INFO  c.z.b.c.s.PluginSecurityManager - 开始验证插件安全性: demoTestUploadPlus
+2026-08-08 00:21:20 [http-nio-8080-exec-4] INFO  c.z.b.c.security.PluginCodeScanner - 开始扫描插件代码: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/plugins/demoTestUploadPlus-0.0.3-repackage.jar
+2026-08-08 00:21:20 [http-nio-8080-exec-4] INFO  c.z.b.c.security.PluginCodeScanner - 插件代码扫描完成: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/plugins/demoTestUploadPlus-0.0.3-repackage.jar, 风险评分: 0
+2026-08-08 00:21:20 [http-nio-8080-exec-4] INFO  PLUGIN_SECURITY_AUDIT - 插件安全验证通过 - 插件ID: demoTestUploadPlus, 风险级别: LOW, 验证时间: 2026-08-08T00:21:20.071879
+2026-08-08 00:21:20 [http-nio-8080-exec-4] INFO  c.z.b.c.s.PluginSecurityManager - 插件安全验证完成: demoTestUploadPlus, 结果: 通过
+2026-08-08 00:21:28 [http-nio-8080-exec-10] ERROR c.z.b.w.e.GlobalExceptionHandler - Plugin exception: 未找到日志文件，请配置 logging.file.name 或在工作目录放置日志文件
+com.zqzqq.bootkits.core.exception.PluginException: 未找到日志文件，请配置 logging.file.name 或在工作目录放置日志文件
+	at com.zqzqq.bootkits.web.service.LogWebService.readLogs(LogWebService.java:54)
+	at com.zqzqq.bootkits.web.controller.api.LogController.logs(LogController.java:60)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-08 00:21:54 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager shutdown completed
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceMonitor - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.i.PluginResourceMonitor - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.i.r.ServiceRegistryLifecycleExtension - 插件服务已注销: pluginId=demoTestUploadPlus
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.core.DefaultPluginManager - 插件停止成功: demoTestUploadPlus
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.core.DefaultPluginManager - 插件管理器已关闭
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.i.cluster.ClusterNodeRegistry - 集群节点已注销: nodeId=f20affa6
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.c.s.PluginSecurityManager - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:21:54 [SpringApplicationShutdownHook] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务已关闭
+2026-08-08 00:21:58 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 34601 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:21:58 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:21:59 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-08-08 00:21:59 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:21:59 [Thread-0] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-08-08 00:21:59 [Thread-0] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-08 00:21:59 [Thread-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-08-08 00:21:59 [Thread-0] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 666 ms
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.c.BrickWebAutoConfiguration - Brick Web 配置已从 IntegrationConfiguration 合并缺省值
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 加载 0 条上传历史记录
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务初始化完成，历史文件路径: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/upload-history/upload-history.json
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.s.c.ScriptStorageAutoConfiguration - Initializing FileScriptStorage with data-path: ./scripts-data
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.s.s.impl.FileScriptStorage - FileScriptStorage initialized at: ./scripts-data
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - Initializing ScriptManager...
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - ScriptManager initialized successfully
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - web-console
+2026-08-08 00:21:59 [Thread-0] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-08-08 00:21:59 [Thread-0] WARN  o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.i.c.ClusterLifecycleExtension - 集群插件状态同步扩展已初始化
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationAutoConfiguration - Initializing Plugin Configuration Manager with properties: com.zqzqq.bootkits.core.config.PluginConfigurationProperties@6d63ac4b
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Configuration file watcher started
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Loaded 0 plugin configurations
+2026-08-08 00:21:59 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager initialized with hot reload: true
+2026-08-08 00:21:59 [Thread-0] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-08-08 00:21:59 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:21:59 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Started SpringMainBootstrap in 1.785 seconds (process running for 1.964)
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin environment: prod
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin development mode: isolation
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Begin load plugins from:
+./plugins
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.s.w.PluginStaticResourceConfig - 插件静态资源配置: /plugins/{{pluginId}}/*
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 开始扫描插件目录，共 1 个根目录
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 扫描插件目录: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins, 是否存在: true
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/demoTestUploadPlus-0.0.3-repackage.jar
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 在目录 /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins 中发现 2 个插件
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 插件扫描完成，共发现 2 个插件
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 扫描到 2 个插件路径，开始加载...
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 成功加载插件: demoTestUploadPlus (./plugins/demoTestUploadPlus-0.0.3-repackage.jar)
+2026-08-08 00:22:00 [Thread-0] WARN  c.z.b.c.d.ComposeDescriptorLoader - 所有插件描述加载器都无法加载: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:22:00 [Thread-0] WARN  c.z.b.core.DefaultPluginManager - 跳过非插件目录或插件描述符加载失败: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.b.ConfigurePluginEnvironment - Plugin[demoTestUploadPlus@0.0.3]  No active profile set, falling back to default profiles : default
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.b.p.w.PluginControllerProcessor - 插件[demoTestUploadPlus]注册接口数量: 1
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 插件启动成功: demoTestUploadPlus, startedPlugins 大小: 1
+2026-08-08 00:22:00 [Thread-0] INFO  c.z.b.i.d.PluginDoctorStartupReporter - Plugin doctor summary: doctor=OK, errors=0, warnings=0, plugins=1, started=1
