@@ -103,13 +103,22 @@ public class PluginResourceLoaderFactoryProxy implements PluginResourceLoaderFac
         Path insidePluginPath = descriptor.getInsidePluginPath();
         String pluginUnique = MsgUtils.getPluginUnique(descriptor);
 
-        File classesDir = insidePluginPath.resolve(pluginClassPath.replace("/", "")).toFile();
+        // 健壮化: 旧实现用 pluginClassPath.replace("/", "") 拼接, 在 pluginClassPath
+        // 含子目录 (如 "target/classes") 时会被压成 "targetclasses", 导致路径错误。
+        // 改用 Path.resolve: 自动处理分隔符与归一化, Windows/Unix 通用。
+        File classesDir;
+        if (pluginClassPath == null || pluginClassPath.isEmpty()) {
+            classesDir = insidePluginPath.toFile();
+        } else {
+            classesDir = insidePluginPath.resolve(pluginClassPath).toFile();
+        }
 
         if(classesDir.exists() && classesDir.isDirectory()){
             addResource(classesDir);
             log.debug("插件[{}]Classpath已被加载: {}", pluginUnique, classesDir.getPath());
         } else {
-            log.warn("插件[{}]未发现Classpath: {}", pluginUnique, classesDir.getPath());
+            log.warn("插件[{}]未发现Classpath: insidePluginPath=[{}], pluginClassPath=[{}], 解析后路径=[{}]",
+                    pluginUnique, insidePluginPath, pluginClassPath, classesDir.getPath());
         }
     }
 

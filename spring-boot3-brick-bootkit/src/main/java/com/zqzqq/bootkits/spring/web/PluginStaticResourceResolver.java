@@ -53,9 +53,11 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     private final static Map<String, PluginStaticResource> PLUGIN_RESOURCE_MAP = new ConcurrentHashMap<>();
 
     private final PluginStaticResourceConfig config;
+    private final PluginResourcePathParser pathParser;
 
     public PluginStaticResourceResolver(PluginStaticResourceConfig config) {
         this.config = config;
+        this.pathParser = new PluginResourcePathParser(config);
     }
 
 
@@ -63,32 +65,43 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     protected Resource resolveResourceInternal(HttpServletRequest request,
                                                String requestPath, List<? extends Resource> locations,
                                                ResourceResolverChain chain) {
-        if(request != null){
-            String requestUri = request.getRequestURI();
-            String formatUri = UrlUtils.format(requestUri);
-            // fix https://gitee.com/starblues/springboot-plugin-framework-parent/issues/I53T9W
-            requestPath = UrlUtils.format(formatUri.replaceFirst(config.getPathPrefix(), ""));
+        // 入参 requestPath 是 Spring 解析后的路径, 已去掉 context-path, 格式形如
+        // "plugins/plugin1/index.html"。直接基于该入参去除 pathPrefix 前缀即可,
+        // 不应再通过 request.getRequestURI() 重新解析, 否则在主服务配置了
+        // server.servlet.context-path 时会得到错误的 requestPath。
+        // fix https://gitee.com/starblues/springboot-plugin-framework-parent/issues/I53T9W
+        PluginResourcePathParser.ParseResult parsed = pathParser.parse(requestPath);
+        String pluginId = parsed.getPluginId();
+        String partialPath = parsed.getPartialPath();
+
+        // 空路径或无法解析出 pluginId: 直接交由 chain 兜底, 不污染缓存
+        if (pluginId == null || pluginId.isEmpty()) {
+            return chain.resolveResource(request, requestPath, locations);
         }
-        int startOffset = requestPath.indexOf("/");
-        String pluginId = null;
-        String partialPath = null;
-        if (startOffset == -1) {
-            pluginId = requestPath;
-            partialPath = config.getIndexPageName();
-        } else {
-            pluginId = requestPath.substring(0, startOffset);
-            partialPath = requestPath.substring(startOffset + 1);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("插件静态资源解析: requestPath=[{}], pluginId=[{}], partialPath=[{}]",
+                    requestPath, pluginId, partialPath);
         }
 
         PluginStaticResource pluginResource = PLUGIN_RESOURCE_MAP.get(pluginId);
 
         if(pluginResource == null){
+            if (logger.isDebugEnabled()) {
+                logger.debug("未找到插件[{}]的静态资源配置, 交由 chain 处理: requestPath=[{}]",
+                        pluginId, requestPath);
+            }
             return chain.resolveResource(request, requestPath, locations);
         }
 
-        String key = computeKey(request, requestPath);
-        // 先不检查缓存中是否存在?
+        // 缓存 key 用归一化后的 pluginId/partialPath, 保证 put/get 一致
+        String normalizedPath = pluginId + UrlUtils.PATH_SEPARATOR + partialPath;
+        String key = computeKey(request, normalizedPath);
+        // null-sentinel: 缓存命中直接返回; 命中 null-sentinel 返回 null 避免 404 反复扫描
         Resource resource = pluginResource.getCacheResource(key);
+        if(PluginStaticResource.isNullSentinel(resource)){
+            return null;
+        }
         if(resource != null){
             return resource;
         }
@@ -103,7 +116,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
                 indexPageName = PluginStaticResourceConfig.DEFAULT_INDEX_PAGE_NAME;
             }
             if(partialPath.lastIndexOf(".") > -1){
-                // 存在后缀
+                // 存在后缀, 缓存 null 标记
+                pluginResource.putCacheResource(key, null);
                 return null;
             }
 
@@ -127,13 +141,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         if(resource != null){
             return resource;
         }
-
         // 从外部文件路径获取资源?
-        resource = resolveFilePath(pluginResource, partialPath);
-        if(resource != null){
-            return resource;
-        }
-        return resource;
+        return resolveFilePath(pluginResource, partialPath);
     }
 
     /**
@@ -323,6 +332,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         if(pluginResource == null){
             return;
         }
+        // 清理缓存中可能持有文件句柄/ClassLoader 引用的 Resource, 防止内存与句柄泄漏
+        pluginResource.clearCache();
         PLUGIN_RESOURCE_MAP.remove(pluginId);
     }
 
@@ -389,15 +400,44 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         }
 
 
+        /**
+         * null-sentinel: 标记某个 key 已经被解析过但未找到资源 (404),
+         * 避免 404 反复扫描。与真正的 Resource 区分开。
+         */
+        private static final Resource NULL_SENTINEL =
+                new org.springframework.core.io.ByteArrayResource(new byte[0], "plugin-null-sentinel");
+
+        /**
+         * 取缓存。返回值语义:
+         *  - NULL_SENTINEL: 该 key 之前解析过但未找到 (404), 调用方应返回 null
+         *  - 其他非 null: 命中真实资源
+         *  - null: 该 key 从未解析过
+         */
         Resource getCacheResource(String key){
             return cacheResourceMaps.get(key);
         }
 
+        static boolean isNullSentinel(Resource resource) {
+            return resource == NULL_SENTINEL;
+        }
+
         void putCacheResource(String key, Resource resource){
-            if(StringUtils.isEmpty(key) || resource == null){
+            if(StringUtils.isEmpty(key)){
                 return;
             }
-            cacheResourceMaps.put(key, resource);
+            if(resource == null){
+                // 缓存 null-sentinel, 防止 404 反复扫描
+                cacheResourceMaps.put(key, NULL_SENTINEL);
+            } else {
+                cacheResourceMaps.put(key, resource);
+            }
+        }
+
+        /**
+         * 卸载插件时清理缓存, 释放可能持有的文件句柄与 ClassLoader 引用
+         */
+        void clearCache(){
+            cacheResourceMaps.clear();
         }
     }
 

@@ -28,6 +28,7 @@ public class UrlUtils {
     private UrlUtils(){}
 
     public static final String PATH_SEPARATOR = "/";
+    public static final char PATH_SEPARATOR_CHAR = '/';
 
     public final static String SEPARATOR_DOT = ".";
     public final static String SEPARATOR_BACKSLASH = "\\";
@@ -100,6 +101,11 @@ public class UrlUtils {
         if(ObjectUtils.isEmpty(url)){
             return url;
         }
+        // 热路径优化: Spring 传入的 requestPath 通常已是归一化形式
+        // (无连续分隔符、不以分隔符开头), 此时直接返回, 避免 split
+        if (isAlreadyNormalized(url)) {
+            return url;
+        }
         String[] split = url.split(PATH_SEPARATOR);
         StringBuilder stringBuilder = new StringBuilder();
         int length = split.length;
@@ -115,6 +121,30 @@ public class UrlUtils {
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * 判断 url 是否已经是归一化形式: 不以分隔符开头, 且不含连续分隔符
+     * @param url 待检测的 url, 调用方保证非空
+     * @return 如果已经归一化返回 true
+     * @since 3.0.3
+     */
+    private static boolean isAlreadyNormalized(String url){
+        int length = url.length();
+        if(length == 0){
+            return true;
+        }
+        // 不以 '/' 开头
+        if(url.charAt(0) == PATH_SEPARATOR_CHAR){
+            return false;
+        }
+        // 不含连续 '/'
+        for(int i = 1; i < length; i++){
+            if(url.charAt(i) == PATH_SEPARATOR_CHAR && url.charAt(i - 1) == PATH_SEPARATOR_CHAR){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

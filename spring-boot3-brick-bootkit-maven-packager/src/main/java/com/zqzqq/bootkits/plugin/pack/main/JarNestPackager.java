@@ -111,6 +111,7 @@ public class JarNestPackager implements Repackager {
     protected void writeDependencies() throws Exception {
         Set<Artifact> dependencies = repackageMojo.getSourceDependencies();
         String libDirEntryName = createLibEntry();
+        boolean loaderExtracted = false;
         for (Artifact artifact : dependencies) {
             if(filterArtifact(artifact)){
                 continue;
@@ -118,9 +119,22 @@ public class JarNestPackager implements Repackager {
             if(CommonUtils.isPluginFrameworkLoader(artifact)){
                 // 非核心loader依赖
                 packageJar.copyZipToPackage(artifact.getFile());
+                loaderExtracted = true;
             } else {
                 packageJar.writeDependency(artifact.getFile(), libDirEntryName);
             }
+        }
+        // 诊断: loader 未被识别/提取时, 启动会报找不到 SpringMainProdBootstrap
+        if (!loaderExtracted && repackageMojo.getLog() != null) {
+            repackageMojo.getLog().error(
+                    "[brick-bootkit] 未识别到框架 loader 依赖 (期望坐标: "
+                            + CommonUtils.PLUGIN_FRAMEWORK_GROUP_ID + ":"
+                            + CommonUtils.PLUGIN_FRAMEWORK_LOADER_ARTIFACT_ID
+                            + ")。prod 启动将报 '找不到或无法加载主类 "
+                            + "com.zqzqq.bootkits.loader.launcher.SpringMainProdBootstrap'。"
+                            + "请检查: 1) 主程序是否声明该依赖; 2) fork 改包名时通过 "
+                            + "-DbrickBootkit.framework.groupId / "
+                            + "-DbrickBootkit.framework.loaderArtifactId 覆盖默认坐标。");
         }
     }
 

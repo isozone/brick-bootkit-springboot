@@ -20,6 +20,7 @@ import com.zqzqq.bootkits.common.PackageStructure;
 import com.zqzqq.bootkits.common.PackageType;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
 import com.zqzqq.bootkits.utils.FilesUtils;
+import com.zqzqq.bootkits.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,15 +57,25 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
                 FilesUtils.joiningFilePath(location.toString(),
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME),
-                // 兼容旧目录结构
+                // 兼容旧目录结构 (Maven: target/META-INF/PLUGIN.META)
                 FilesUtils.joiningFilePath(location.toString(),
                         "target",
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME),
-                // 兼容 Maven 默认编译输出目录
+                // 兼容 Maven 默认编译输出目录 (target/classes/META-INF/PLUGIN.META)
                 FilesUtils.joiningFilePath(location.toString(),
                         "target",
                         PackageStructure.CLASSES_NAME,
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容 Gradle 默认编译输出目录 (build/classes/java/main/META-INF/PLUGIN.META)
+                FilesUtils.joiningFilePath(location.toString(),
+                        "build", "classes", "java", "main",
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容 Gradle resources 输出目录 (build/resources/main/META-INF/PLUGIN.META)
+                FilesUtils.joiningFilePath(location.toString(),
+                        "build", "resources", "main",
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME)
         };
@@ -100,9 +111,14 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
         final DefaultInsidePluginDescriptor descriptor = super.create(pluginMeta, path);
         descriptor.setType(PluginType.DEV);
 
-        // 在 dev 模式下，使用 "classes" 作为 pluginClassPath（目录相对路径）
-        // 这样 addDirPluginClasspath 才能正确构建类目录路径
-        descriptor.setPluginClassPath("classes");
+        // dev 模式下 pluginClassPath 直接沿用 super.create 从 plugin.system.path 读取的值
+        // (例如 "target/classes")。此前在此处硬编码 "classes", 在主服务配置
+        // plugin.pluginPath 指向插件根目录时, PluginResourceLoaderFactoryProxy.addDirPluginClasspath
+        // 会把 insidePluginPath 与 "classes" 拼成不存在的路径, 导致 "插件xxx未发现Classpath" 启动失败。
+        String pluginClassPath = descriptor.getPluginClassPath();
+        if (ObjectUtils.isEmpty(pluginClassPath)) {
+            descriptor.setPluginClassPath(PackageStructure.CLASSES_NAME);
+        }
 
         return descriptor;
     }
