@@ -332,6 +332,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         if(pluginResource == null){
             return;
         }
+        // 清理缓存中可能持有文件句柄/ClassLoader 引用的 Resource, 防止内存与句柄泄漏
+        pluginResource.clearCache();
         PLUGIN_RESOURCE_MAP.remove(pluginId);
     }
 
@@ -429,6 +431,13 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
             } else {
                 cacheResourceMaps.put(key, resource);
             }
+        }
+
+        /**
+         * 卸载插件时清理缓存, 释放可能持有的文件句柄与 ClassLoader 引用
+         */
+        void clearCache(){
+            cacheResourceMaps.clear();
         }
     }
 
