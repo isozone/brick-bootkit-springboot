@@ -57,15 +57,25 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
                 FilesUtils.joiningFilePath(location.toString(),
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME),
-                // 兼容旧目录结构
+                // 兼容旧目录结构 (Maven: target/META-INF/PLUGIN.META)
                 FilesUtils.joiningFilePath(location.toString(),
                         "target",
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME),
-                // 兼容 Maven 默认编译输出目录
+                // 兼容 Maven 默认编译输出目录 (target/classes/META-INF/PLUGIN.META)
                 FilesUtils.joiningFilePath(location.toString(),
                         "target",
                         PackageStructure.CLASSES_NAME,
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容 Gradle 默认编译输出目录 (build/classes/java/main/META-INF/PLUGIN.META)
+                FilesUtils.joiningFilePath(location.toString(),
+                        "build", "classes", "java", "main",
+                        PackageStructure.META_INF_NAME,
+                        PackageStructure.PLUGIN_META_NAME),
+                // 兼容 Gradle resources 输出目录 (build/resources/main/META-INF/PLUGIN.META)
+                FilesUtils.joiningFilePath(location.toString(),
+                        "build", "resources", "main",
                         PackageStructure.META_INF_NAME,
                         PackageStructure.PLUGIN_META_NAME)
         };

@@ -53,9 +53,11 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     private final static Map<String, PluginStaticResource> PLUGIN_RESOURCE_MAP = new ConcurrentHashMap<>();
 
     private final PluginStaticResourceConfig config;
+    private final PluginResourcePathParser pathParser;
 
     public PluginStaticResourceResolver(PluginStaticResourceConfig config) {
         this.config = config;
+        this.pathParser = new PluginResourcePathParser(config);
     }
 
 
@@ -68,35 +70,31 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         // 不应再通过 request.getRequestURI() 重新解析, 否则在主服务配置了
         // server.servlet.context-path 时会得到错误的 requestPath。
         // fix https://gitee.com/starblues/springboot-plugin-framework-parent/issues/I53T9W
-        requestPath = UrlUtils.format(requestPath);
-        String pathPrefix = config.getPathPrefix();
-        if (pathPrefix != null && !pathPrefix.isEmpty()) {
-            int prefixIndex = requestPath.indexOf(pathPrefix);
-            if (prefixIndex == 0) {
-                requestPath = requestPath.substring(pathPrefix.length());
-            }
-        }
-        requestPath = UrlUtils.format(requestPath);
+        PluginResourcePathParser.ParseResult parsed = pathParser.parse(requestPath);
+        String pluginId = parsed.getPluginId();
+        String partialPath = parsed.getPartialPath();
+        // pathParser 内部已经 format 过, 这里 requestPath 取解析后的 pluginId/partialPath 重建
+        requestPath = (partialPath == null || partialPath.isEmpty())
+                ? pluginId
+                : pluginId + UrlUtils.PATH_SEPARATOR + partialPath;
 
-        int startOffset = requestPath.indexOf("/");
-        String pluginId = null;
-        String partialPath = null;
-        if (startOffset == -1) {
-            pluginId = requestPath;
-            partialPath = config.getIndexPageName();
-        } else {
-            pluginId = requestPath.substring(0, startOffset);
-            partialPath = requestPath.substring(startOffset + 1);
+        if (logger.isDebugEnabled()) {
+            logger.debug("插件静态资源解析: requestPath=[{}], pluginId=[{}], partialPath=[{}]",
+                    requestPath, pluginId, partialPath);
         }
 
         PluginStaticResource pluginResource = PLUGIN_RESOURCE_MAP.get(pluginId);
 
         if(pluginResource == null){
+            if (logger.isDebugEnabled()) {
+                logger.debug("未找到插件[{}]的静态资源配置, 交由 chain 处理: requestPath=[{}]",
+                        pluginId, requestPath);
+            }
             return chain.resolveResource(request, requestPath, locations);
         }
 
         String key = computeKey(request, requestPath);
-        // 先不检查缓存中是否存在?
+        // null-sentinel: 缓存命中(含 null 标记)直接返回, 避免 404 反复扫描
         Resource resource = pluginResource.getCacheResource(key);
         if(resource != null){
             return resource;
@@ -112,7 +110,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
                 indexPageName = PluginStaticResourceConfig.DEFAULT_INDEX_PAGE_NAME;
             }
             if(partialPath.lastIndexOf(".") > -1){
-                // 存在后缀
+                // 存在后缀, 缓存 null 标记
+                pluginResource.putCacheResource(key, null);
                 return null;
             }
 
@@ -398,15 +397,26 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         }
 
 
+        /**
+         * null-sentinel: 标记某个 key 已经被解析过但未找到资源 (404),
+         * 避免后续重复扫描。与真正的 null 区分开。
+         */
+        private static final Resource NULL_RESOURCE = new org.springframework.core.io.ByteArrayResource(new byte[0], "plugin-null-sentinel");
+
         Resource getCacheResource(String key){
             return cacheResourceMaps.get(key);
         }
 
         void putCacheResource(String key, Resource resource){
-            if(StringUtils.isEmpty(key) || resource == null){
+            if(StringUtils.isEmpty(key)){
                 return;
             }
-            cacheResourceMaps.put(key, resource);
+            if(resource == null){
+                // 缓存 null-sentinel, 防止 404 反复扫描
+                cacheResourceMaps.put(key, NULL_RESOURCE);
+            } else {
+                cacheResourceMaps.put(key, resource);
+            }
         }
     }
 

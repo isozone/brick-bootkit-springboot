@@ -40,15 +40,29 @@ import java.util.jar.JarFile;
 public class CommonUtils {
 
     private static final Logger log = LoggerFactory.getLogger(CommonUtils.class);
-    public final static String PLUGIN_FRAMEWORK_GROUP_ID = "com.zqzqq";
-    public final static String PLUGIN_FRAMEWORK_ARTIFACT_ID = "spring-boot3-brick-bootkit";
 
-    public final static String PLUGIN_FRAMEWORK_LOADER_ARTIFACT_ID = "spring-boot3-brick-bootkit-loader";
+    /**
+     * 框架坐标默认值。可通过系统属性覆盖, 便于 fork 改包名等场景:
+     *   -DbrickBootkit.framework.groupId=...
+     *   -DbrickBootkit.framework.artifactId=...
+     *   -DbrickBootkit.framework.loaderArtifactId=...
+     */
+    public final static String PLUGIN_FRAMEWORK_GROUP_ID =
+            resolveSystemProperty("brickBootkit.framework.groupId", "com.zqzqq");
+    public final static String PLUGIN_FRAMEWORK_ARTIFACT_ID =
+            resolveSystemProperty("brickBootkit.framework.artifactId", "spring-boot3-brick-bootkit");
+    public final static String PLUGIN_FRAMEWORK_LOADER_ARTIFACT_ID =
+            resolveSystemProperty("brickBootkit.framework.loaderArtifactId", "spring-boot3-brick-bootkit-loader");
 
     public static final String PATTERN = "yyyy-MM-dd HH:mm:ss";
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(PATTERN);
 
     private CommonUtils(){}
+
+    private static String resolveSystemProperty(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        return (value == null || value.isEmpty()) ? defaultValue : value;
+    }
 
     public static Exclude getPluginFrameworkExclude(){
         return Exclude.get(PLUGIN_FRAMEWORK_GROUP_ID, PLUGIN_FRAMEWORK_ARTIFACT_ID);
