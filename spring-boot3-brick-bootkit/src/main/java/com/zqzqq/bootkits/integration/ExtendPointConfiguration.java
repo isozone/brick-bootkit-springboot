@@ -30,11 +30,16 @@ import com.zqzqq.bootkits.core.isolation.PluginResourceIsolation;
 import com.zqzqq.bootkits.core.isolation.PluginResourceMonitor;
 import com.zqzqq.bootkits.core.isolation.QuotaManager;
 import com.zqzqq.bootkits.core.launcher.plugin.DefaultMainResourcePatternDefiner;
+import com.zqzqq.bootkits.core.lock.ClusterLockProvider;
+import com.zqzqq.bootkits.core.lock.RedisClusterLockProvider;
 import com.zqzqq.bootkits.core.performance.PerformanceThresholds;
 import com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer;
 import com.zqzqq.bootkits.core.sandbox.PluginSandbox;
 import com.zqzqq.bootkits.core.security.PluginSecurityConfiguration;
 import com.zqzqq.bootkits.core.security.PluginSecurityManager;
+import com.zqzqq.bootkits.integration.cluster.ClusterLifecycleExtension;
+import com.zqzqq.bootkits.integration.cluster.ClusterNodeRegistry;
+import com.zqzqq.bootkits.integration.cluster.PluginClusterStateSync;
 import com.zqzqq.bootkits.integration.doctor.PluginDoctorService;
 import com.zqzqq.bootkits.integration.doctor.PluginDoctorStartupReporter;
 import com.zqzqq.bootkits.integration.operator.DefaultPluginOperator;
@@ -45,6 +50,7 @@ import com.zqzqq.bootkits.integration.user.DefaultPluginUser;
 import com.zqzqq.bootkits.integration.user.PluginUser;
 import com.zqzqq.bootkits.spring.extract.ExtractFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.beans.factory.ObjectProvider;
@@ -52,6 +58,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -228,6 +235,56 @@ public class ExtendPointConfiguration {
     @ConditionalOnMissingBean
     public PluginPerformanceAnalyzer pluginPerformanceAnalyzer() {
         return new PluginPerformanceAnalyzer(PerformanceThresholds.defaultThresholds());
+    }
+
+    // ==================== 集群管理（Redis 分布式锁） ====================
+
+    /**
+     * 当容器中存在 StringRedisTemplate（宿主引入了 spring-boot-starter-data-redis 并配置了连接）
+     * 且未自定义 ClusterLockProvider 时，注册 Redis 分布式锁实现。
+     * 否则回退到默认的文件锁实现（FileClusterLockProvider）。
+     */
+    @Bean
+    @ConditionalOnBean(StringRedisTemplate.class)
+    @ConditionalOnMissingBean
+    public ClusterLockProvider redisClusterLockProvider(StringRedisTemplate redisTemplate) {
+        return new RedisClusterLockProvider(redisTemplate);
+    }
+
+    // ==================== 集群节点注册与插件状态同步 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ClusterNodeRegistry clusterNodeRegistry() {
+        return new ClusterNodeRegistry(resolveClusterSharedRoot());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginClusterStateSync pluginClusterStateSync() {
+        return new PluginClusterStateSync(resolveClusterSharedRoot());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ClusterLifecycleExtension clusterLifecycleExtension(PluginClusterStateSync pluginClusterStateSync,
+                                                               ClusterNodeRegistry clusterNodeRegistry) {
+        return new ClusterLifecycleExtension(pluginClusterStateSync, clusterNodeRegistry);
+    }
+
+    /**
+     * 解析集群共享根目录：优先使用 cluster.shared-path 配置，否则取第一个插件根目录。
+     */
+    private java.nio.file.Path resolveClusterSharedRoot() {
+        String sharedPath = configuration.clusterSharedPath();
+        if (StringUtils.hasText(sharedPath)) {
+            return java.nio.file.Paths.get(sharedPath).toAbsolutePath().normalize();
+        }
+        List<String> pluginPaths = configuration.pluginPath();
+        if (pluginPaths != null && !pluginPaths.isEmpty() && StringUtils.hasText(pluginPaths.get(0))) {
+            return java.nio.file.Paths.get(pluginPaths.get(0)).toAbsolutePath().normalize();
+        }
+        return java.nio.file.Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
     }
 
 }

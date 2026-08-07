@@ -121,6 +121,20 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+
+        <!-- Redis distributed lock (optional: 需要时引入 spring-boot-starter-data-redis) -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>
