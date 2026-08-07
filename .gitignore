@@ -1,9 +1,21 @@
 # Build outputs
 **/target/
+node_modules/
 
 # IDE / local workspace
 .idea/
 *.iml
+.DS_Store
 
 # Local temp directories
 _tmp_version_test/
+
+# 运行时生成目录（插件、日志、上传历史、集群共享、备份等）
+spring-boot3-brick-bootkit-web-demo/plugins/
+spring-boot3-brick-bootkit-web-demo/logs/
+spring-boot3-brick-bootkit-web-demo/upload-history/
+spring-boot3-brick-bootkit-web-demo/scripts-data/
+backupPlugin/
+upload_temp/
+cluster-shared/
+plugins/
