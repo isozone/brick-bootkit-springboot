@@ -1,4 +1,4 @@
-export const DOCS_BASE_URL = 'https://brick-bootkit.zqzqq.com'
+export const DOCS_BASE_URL = 'http://brickbootkit.aius.autos'
 
 export function resolveApiErrorPayload(error, fallbackMessage = '操作失败') {
   const payload = error?.response?.data || {}

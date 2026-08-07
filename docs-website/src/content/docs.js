@@ -5,7 +5,7 @@ export const siteMeta = {
   version: '4.0.6',
   checkedAt: '2026-03-26',
   repo: 'https://github.com/v18268185209/brick-bootkit-springboot',
-  docs: 'https://brick-bootkit.zqzqq.com/',
+  docs: 'http://brickbootkit.aius.autos/',
   sourceBase: 'https://github.com/v18268185209/brick-bootkit-springboot/blob/HEAD'
 };
 

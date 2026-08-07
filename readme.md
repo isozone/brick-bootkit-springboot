@@ -11,7 +11,7 @@
 
 一个强大的 Spring Boot 插件化开发框架，支持插件动态加载、热插拔、类隔离等功能
 
-[✨ 文档](https://brick-bootkit.zqzqq.com/) · [📦 示例](https://github.com/v18268185209/brick-bootkit-springboot-demo.git) · [📝 更新日志](#更新) · [💬 联系我们](#联系我们)
+[✨ 文档](http://brickbootkit.aius.autos/) · [📦 示例](https://github.com/v18268185209/brick-bootkit-springboot-demo.git) · [📝 更新日志](#更新) · [💬 联系我们](#联系我们)
 
 </div>
 
@@ -1416,7 +1416,7 @@ logging:
 
 
 ### 文档地址
-https://brick-bootkit.zqzqq.com/
+http://brickbootkit.aius.autos/
 
 ## 📄 许可证
 
