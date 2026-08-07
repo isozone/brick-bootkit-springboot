@@ -1,0 +1,57 @@
+name: Bug Report
+description: 报告缺陷或异常行为
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      placeholder: 一句话描述缺陷现象
+    validations:
+      required: true
+  - type: input
+    id: brick-version
+    attributes:
+      label: Brick BootKit Version
+      placeholder: 例如 4.0.9
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: JDK 版本 / Spring Boot 版本 / 操作系统
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: 你期望发生什么
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: 实际发生了什么，附上堆栈或错误码
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduce steps
+      placeholder: 最小复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor summary
+      placeholder: 如有 doctor 自检摘要请粘贴，便于快速定位
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      placeholder: 其他有用信息（配置片段、日志、截图等）
