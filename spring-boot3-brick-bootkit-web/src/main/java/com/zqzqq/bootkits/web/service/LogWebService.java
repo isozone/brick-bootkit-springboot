@@ -108,6 +108,22 @@ public class LogWebService {
         } catch (IOException ignored) {
             // ignore
         }
+
+        // 4. logs/ 子目录（logback 常见 LOG_HOME 位置）下的任意 .log 文件
+        Path logsDir = Paths.get(userDir, "logs");
+        if (Files.isDirectory(logsDir)) {
+            try (Stream<Path> stream = Files.list(logsDir)) {
+                List<Path> logFiles = stream
+                        .filter(Files::isRegularFile)
+                        .filter(p -> p.getFileName().toString().endsWith(".log"))
+                        .collect(Collectors.toList());
+                if (!logFiles.isEmpty()) {
+                    return logFiles.get(0);
+                }
+            } catch (IOException ignored) {
+                // ignore
+            }
+        }
         return null;
     }
 
