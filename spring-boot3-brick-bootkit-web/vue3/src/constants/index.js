@@ -54,6 +54,30 @@ export const MENU_CONFIG = {
       ]
     },
     {
+      key: 'security',
+      label: '安全中心',
+      icon: 'ShieldCheckmarkOutline',
+      path: '/plugins-web/security'
+    },
+    {
+      key: 'registry',
+      label: '服务注册中心',
+      icon: 'GitNetworkOutline',
+      path: '/plugins-web/registry'
+    },
+    {
+      key: 'config',
+      label: '插件配置',
+      icon: 'SettingsOutline',
+      path: '/plugins-web/config'
+    },
+    {
+      key: 'performance',
+      label: '性能分析',
+      icon: 'SpeedometerOutline',
+      path: '/plugins-web/performance'
+    },
+    {
       key: 'monitor',
       label: '系统监控',
       icon: 'StatsChartOutline',
@@ -116,7 +140,37 @@ export const API_PATHS = {
   PLUGINS_RESTART: '/plugins-web/api/plugins/{pluginId}/restart',
   PLUGINS_UNINSTALL: '/plugins-web/api/plugins/{pluginId}',
   PLUGINS_VERIFY: '/plugins-web/api/plugins/verify',
-  PLUGINS_UPLOAD_HISTORY: '/plugins-web/api/plugins/upload-history'
+  PLUGINS_UPLOAD_HISTORY: '/plugins-web/api/plugins/upload-history',
+
+  // === 安全中心相关接口 ===
+  SECURITY_SCAN_BY_ID: '/plugins-web/api/security/scan',
+  SECURITY_SCAN_BY_PATH: '/plugins-web/api/security/scan',
+  SECURITY_POLICY: '/plugins-web/api/security/policy',
+  SECURITY_PERMISSIONS: '/plugins-web/api/security/permissions',
+
+  // === 服务注册中心相关接口 ===
+  REGISTRY_STATISTICS: '/plugins-web/api/registry/statistics',
+  REGISTRY_SERVICES: '/plugins-web/api/registry/services',
+  REGISTRY_SERVICES_BY_PLUGIN: '/plugins-web/api/registry/services',
+  REGISTRY_PLUGINS: '/plugins-web/api/registry/plugins',
+
+  // === 插件配置相关接口 ===
+  CONFIG_STATISTICS: '/plugins-web/api/configurations/statistics',
+  CONFIG_LIST: '/plugins-web/api/configurations',
+  CONFIG_DETAIL: '/plugins-web/api/configurations',
+  CONFIG_VERSIONS: '/plugins-web/api/configurations',
+  CONFIG_ROLLBACK: '/plugins-web/api/configurations',
+
+  // === 性能分析相关接口 ===
+  PERFORMANCE_ANALYZE: '/plugins-web/api/performance/analyze',
+  PERFORMANCE_USAGE: '/plugins-web/api/performance/usage',
+  PERFORMANCE_SUMMARY: '/plugins-web/api/performance/summary',
+  PERFORMANCE_SYSTEM: '/plugins-web/api/performance/system',
+  PERFORMANCE_HISTORY: '/plugins-web/api/performance/history',
+  PERFORMANCE_SCORES: '/plugins-web/api/performance/scores',
+  PERFORMANCE_QUOTA: '/plugins-web/api/performance/quota',
+  PERFORMANCE_BASELINE_COMPARE: '/plugins-web/api/performance/baseline/compare',
+  PERFORMANCE_BASELINE: '/plugins-web/api/performance/baseline'
 }
 
 // 状态常量

@@ -48,6 +48,30 @@ const routes = [
     meta: { title: '插件列表' }
   },
   {
+    path: '/plugins-web/security',
+    name: 'Security',
+    component: () => import('@/views/security/index.vue'),
+    meta: { title: '安全中心' }
+  },
+  {
+    path: '/plugins-web/registry',
+    name: 'Registry',
+    component: () => import('@/views/registry/index.vue'),
+    meta: { title: '服务注册中心' }
+  },
+  {
+    path: '/plugins-web/config',
+    name: 'Config',
+    component: () => import('@/views/config/index.vue'),
+    meta: { title: '插件配置' }
+  },
+  {
+    path: '/plugins-web/performance',
+    name: 'Performance',
+    component: () => import('@/views/performance/index.vue'),
+    meta: { title: '性能分析' }
+  },
+  {
     path: '/plugins-web/plugins/upload',
     name: 'PluginUpload',
     component: () => import('@/views/plugins/upload.vue'),

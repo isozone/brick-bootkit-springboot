@@ -35,8 +35,15 @@ public class PluginAutoRecoveryManager {
     
     // 状态跟踪
     private final ConcurrentHashMap<String, PluginRecoveryContext> recoveryContexts = new ConcurrentHashMap<>();
+    private final java.util.concurrent.atomic.AtomicBoolean closed = new java.util.concurrent.atomic.AtomicBoolean(false);
     
     public PluginAutoRecoveryManager(PluginManager pluginManager, PluginHealthChecker healthChecker) {
+        if (pluginManager == null) {
+            throw new NullPointerException("pluginManager cannot be null");
+        }
+        if (healthChecker == null) {
+            throw new NullPointerException("healthChecker cannot be null");
+        }
         this.pluginManager = pluginManager;
         this.healthChecker = healthChecker;
         this.scheduler = Executors.newScheduledThreadPool(2, r -> {
@@ -260,6 +267,7 @@ public class PluginAutoRecoveryManager {
      * 手动触发单个插件的健康检查
      */
     public PluginHealthReport checkPluginHealth(String pluginId) {
+        assertNotClosed();
         Plugin plugin = pluginManager.getPlugin(pluginId);
         if (plugin == null) {
             return PluginHealthReport.createUnknown(pluginId, "插件不存在", null);
@@ -272,6 +280,7 @@ public class PluginAutoRecoveryManager {
      * 手动触发单个插件的恢复
      */
     public boolean triggerManualRecovery(String pluginId) {
+        assertNotClosed();
         Plugin plugin = pluginManager.getPlugin(pluginId);
         if (plugin == null) {
             logger.warn("system", "手动恢复失败：插件不存在", pluginId);
@@ -298,6 +307,7 @@ public class PluginAutoRecoveryManager {
         logger.info("system", "关闭插件自动恢复管理器");
         
         try {
+            closed.set(true);
             scheduler.shutdown();
             if (!scheduler.awaitTermination(10, TimeUnit.SECONDS)) {
                 scheduler.shutdownNow();
@@ -306,6 +316,15 @@ public class PluginAutoRecoveryManager {
             logger.info("system", "插件自动恢复管理器已关闭");
         } catch (Exception e) {
             logger.error("system", "关闭自动恢复管理器时发生错误", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 校验管理器未被关闭，否则抛出异常
+     */
+    private void assertNotClosed() {
+        if (closed.get()) {
+            throw new IllegalStateException("插件自动恢复管理器已关闭");
         }
     }
     

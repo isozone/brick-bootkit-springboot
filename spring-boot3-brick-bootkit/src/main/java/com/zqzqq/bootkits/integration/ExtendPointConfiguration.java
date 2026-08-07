@@ -20,20 +20,35 @@ import com.zqzqq.bootkits.core.DefaultRealizeProvider;
 import com.zqzqq.bootkits.core.RealizeProvider;
 import com.zqzqq.bootkits.core.classloader.DefaultMainResourceMatcher;
 import com.zqzqq.bootkits.core.classloader.MainResourceMatcher;
+import com.zqzqq.bootkits.core.communication.DefaultPluginServiceRegistry;
+import com.zqzqq.bootkits.core.communication.PluginServiceRegistry;
+import com.zqzqq.bootkits.core.config.PluginConfigurationManager;
+import com.zqzqq.bootkits.core.config.PluginConfigurationProperties;
 import com.zqzqq.bootkits.core.descriptor.decrypt.DefaultPluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
+import com.zqzqq.bootkits.core.isolation.PluginResourceIsolation;
+import com.zqzqq.bootkits.core.isolation.PluginResourceMonitor;
+import com.zqzqq.bootkits.core.isolation.QuotaManager;
 import com.zqzqq.bootkits.core.launcher.plugin.DefaultMainResourcePatternDefiner;
+import com.zqzqq.bootkits.core.performance.PerformanceThresholds;
+import com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer;
+import com.zqzqq.bootkits.core.sandbox.PluginSandbox;
+import com.zqzqq.bootkits.core.security.PluginSecurityConfiguration;
+import com.zqzqq.bootkits.core.security.PluginSecurityManager;
 import com.zqzqq.bootkits.integration.doctor.PluginDoctorService;
 import com.zqzqq.bootkits.integration.doctor.PluginDoctorStartupReporter;
 import com.zqzqq.bootkits.integration.operator.DefaultPluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperatorWrapper;
+import com.zqzqq.bootkits.integration.security.PluginSecurityAdmissionCheck;
 import com.zqzqq.bootkits.integration.user.DefaultPluginUser;
 import com.zqzqq.bootkits.integration.user.PluginUser;
 import com.zqzqq.bootkits.spring.extract.ExtractFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
@@ -47,6 +62,7 @@ import java.util.List;
  * @version 3.0.3
  */
 @Configuration
+@EnableConfigurationProperties(PluginConfigurationProperties.class)
 public class ExtendPointConfiguration {
 
     private final GenericApplicationContext applicationContext;
@@ -142,6 +158,76 @@ public class ExtendPointConfiguration {
     @ConditionalOnMissingBean
     public PluginDoctorStartupReporter pluginDoctorStartupReporter(PluginDoctorService pluginDoctorService) {
         return new PluginDoctorStartupReporter(pluginDoctorService);
+    }
+
+    // ==================== 插件安全中心 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginSecurityConfiguration pluginSecurityConfiguration() {
+        return new PluginSecurityConfiguration();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginSecurityManager pluginSecurityManager(PluginSecurityConfiguration securityConfiguration) {
+        return new PluginSecurityManager(securityConfiguration);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginSandbox pluginSandbox() {
+        return new PluginSandbox();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginSecurityAdmissionCheck pluginSecurityAdmissionCheck(PluginSecurityManager securityManager) {
+        return new PluginSecurityAdmissionCheck(securityManager);
+    }
+
+    // ==================== 插件服务注册中心 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginServiceRegistry pluginServiceRegistry() {
+        return new DefaultPluginServiceRegistry();
+    }
+
+    // ==================== 插件配置热更新 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginConfigurationManager pluginConfigurationManager(ApplicationEventPublisher eventPublisher,
+                                                                 PluginConfigurationProperties properties) {
+        return new PluginConfigurationManager(eventPublisher, properties);
+    }
+
+    // ==================== 插件性能分析与资源隔离 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public QuotaManager quotaManager() {
+        return new QuotaManager();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginResourceMonitor pluginResourceMonitor() {
+        return new PluginResourceMonitor();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginResourceIsolation pluginResourceIsolation(QuotaManager quotaManager,
+                                                           PluginResourceMonitor resourceMonitor) {
+        return new PluginResourceIsolation(quotaManager, resourceMonitor);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginPerformanceAnalyzer pluginPerformanceAnalyzer() {
+        return new PluginPerformanceAnalyzer(PerformanceThresholds.defaultThresholds());
     }
 
 }

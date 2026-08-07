@@ -1,21 +1,20 @@
 package com.zqzqq.bootkits.springboot.starter.actuator;
 
+import com.zqzqq.bootkits.core.PluginInfo;
+import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.monitoring.PluginMetrics;
-import com.zqzqq.bootkits.core.plugin.Plugin;
-import com.zqzqq.bootkits.core.plugin.PluginManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.stereotype.Component;
 
 /**
  * 插件 Metrics 配置
  * 注册插件相关的 Prometheus 指标
- * 
+ * 基于主框架真实运行时（com.zqzqq.bootkits.core.PluginManager）
+ *
  * @author brick-bootkit
  * @since 4.2.0
  */
@@ -38,10 +37,13 @@ public class PluginMetricsConfiguration {
 
     @PostConstruct
     public void registerPluginMetrics() {
-        // 注册插件数量指标
+        // 注册插件数量指标（基于真实运行时已启动插件数）
         io.micrometer.core.instrument.Gauge.builder(
                 "plugin.active.count",
-                () -> (double) pluginManager.getRunningPluginCount()
+                () -> {
+                    List<PluginInfo> startedPlugins = pluginManager == null ? null : pluginManager.getStartedPlugins();
+                    return startedPlugins == null ? 0.0 : startedPlugins.size();
+                }
         ).description("当前活跃插件数量").register(meterRegistry);
 
         // 注册插件内存使用指标

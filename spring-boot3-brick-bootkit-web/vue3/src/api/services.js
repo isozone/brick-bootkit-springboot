@@ -260,4 +260,113 @@ export const pluginsApi = {
   clearAllUploadHistory: () => service.delete(API_PATHS.PLUGINS_UPLOAD + '/history/all')
 }
 
+// ==================== 安全中心相关 API ====================
+
+export const securityApi = {
+  // 按插件 ID 扫描
+  scanByPluginId: (pluginId) => service.get(`${API_PATHS.SECURITY_SCAN_BY_ID}/${pluginId}`),
+
+  // 按文件路径扫描
+  scanByPath: (path) => service.get(API_PATHS.SECURITY_SCAN_BY_PATH, { params: { path } }),
+
+  // 获取插件安全策略
+  getPolicy: (pluginId) => service.get(`${API_PATHS.SECURITY_POLICY}/${pluginId}`),
+
+  // 设置插件安全策略
+  setPolicy: (data) => service.post(API_PATHS.SECURITY_POLICY, data),
+
+  // 授予插件权限
+  grantPermission: (data) => service.post(`${API_PATHS.SECURITY_PERMISSIONS}/grant`, data),
+
+  // 撤销插件权限
+  revokePermission: (data) => service.post(`${API_PATHS.SECURITY_PERMISSIONS}/revoke`, data),
+
+  // 获取插件已授予的权限
+  getPermissions: (pluginId) => service.get(`${API_PATHS.SECURITY_PERMISSIONS}/${pluginId}`)
+}
+
+// ==================== 服务注册中心相关 API ====================
+
+export const registryApi = {
+  // 获取注册中心统计信息
+  getStatistics: () => service.get(API_PATHS.REGISTRY_STATISTICS),
+
+  // 获取所有注册服务（按插件分组）
+  getServices: () => service.get(API_PATHS.REGISTRY_SERVICES),
+
+  // 获取指定插件的服务列表
+  getServicesByPlugin: (pluginId) => service.get(`${API_PATHS.REGISTRY_SERVICES_BY_PLUGIN}/${pluginId}`),
+
+  // 获取所有注册的插件 ID
+  getPlugins: () => service.get(API_PATHS.REGISTRY_PLUGINS)
+}
+
+// ==================== 插件配置相关 API ====================
+
+export const configApi = {
+  // 获取配置统计
+  getStatistics: () => service.get(API_PATHS.CONFIG_STATISTICS),
+
+  // 获取所有插件配置
+  getAll: () => service.get(API_PATHS.CONFIG_LIST),
+
+  // 获取指定插件配置
+  getByPluginId: (pluginId) => service.get(`${API_PATHS.CONFIG_DETAIL}/${pluginId}`),
+
+  // 热更新插件配置
+  update: (pluginId, configuration, versionDescription) =>
+    service.put(`${API_PATHS.CONFIG_DETAIL}/${pluginId}`, { configuration, versionDescription }),
+
+  // 获取配置版本历史
+  getVersions: (pluginId) => service.get(`${API_PATHS.CONFIG_VERSIONS}/${pluginId}/versions`),
+
+  // 回滚配置
+  rollback: (pluginId, versionId) =>
+    service.post(`${API_PATHS.CONFIG_ROLLBACK}/${pluginId}/rollback`, { versionId }),
+
+  // 删除插件配置
+  remove: (pluginId) => service.delete(`${API_PATHS.CONFIG_DETAIL}/${pluginId}`)
+}
+
+// ==================== 性能分析相关 API ====================
+
+export const performanceApi = {
+  // 分析插件性能
+  analyze: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_ANALYZE}/${pluginId}`),
+
+  // 获取插件资源使用情况
+  getUsage: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_USAGE}/${pluginId}`),
+
+  // 获取所有插件资源使用情况
+  getAllUsage: () => service.get(API_PATHS.PERFORMANCE_USAGE),
+
+  // 获取资源监控摘要
+  getSummary: () => service.get(API_PATHS.PERFORMANCE_SUMMARY),
+
+  // 获取系统资源信息
+  getSystem: () => service.get(API_PATHS.PERFORMANCE_SYSTEM),
+
+  // 获取插件性能历史
+  getHistory: (pluginId, limit = 20) =>
+    service.get(`${API_PATHS.PERFORMANCE_HISTORY}/${pluginId}`, { params: { limit } }),
+
+  // 获取所有插件性能评分
+  getScores: () => service.get(API_PATHS.PERFORMANCE_SCORES),
+
+  // 获取插件配额
+  getQuota: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_QUOTA}/${pluginId}`),
+
+  // 设置插件配额
+  setQuota: (pluginId, quota) => service.post(`${API_PATHS.PERFORMANCE_QUOTA}/${pluginId}`, quota),
+
+  // 获取默认配额
+  getDefaultQuota: () => service.get(`${API_PATHS.PERFORMANCE_QUOTA}/default`),
+
+  // 对比插件性能与基线
+  compareBaseline: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_BASELINE_COMPARE}/${pluginId}`),
+
+  // 获取插件性能基线
+  getBaseline: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_BASELINE}/${pluginId}`)
+}
+
 export default service

@@ -18,83 +18,18 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-archetype" />
-        <module name="spring-boot3-brick-bootkit-core" />
-        <module name="spring-boot3-brick-bootkit-common" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-bootstrap" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-bootstrap" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-loader" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-loader" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-maven-packager" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-maven-packager" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-scripts" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-scripts" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-sdk" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
-        <module name="spring-boot3-brick-bootkit-sdk" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-spring-boot-starter" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="spring-boot3-brick-bootkit-spring-boot-starter" />
-      </profile>
-      <profile name="Annotation profile for spring-boot3-brick-bootkit-web" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../hDocuments/repos/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-        </processorPath>
+        <module name="spring-boot3-brick-bootkit-archetype" />
+        <module name="spring-boot3-brick-bootkit-sdk" />
+        <module name="spring-boot3-brick-bootkit-maven-packager" />
+        <module name="spring-boot3-brick-bootkit-loader" />
+        <module name="spring-boot3-brick-bootkit-core" />
+        <module name="spring-boot3-brick-bootkit-bootstrap" />
+        <module name="spring-boot3-brick-bootkit-common" />
         <module name="spring-boot3-brick-bootkit-web" />
+        <module name="spring-boot3-brick-bootkit" />
+        <module name="spring-boot3-brick-bootkit-scripts" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

@@ -28,6 +28,17 @@ public class BasicHealthChecker implements PluginHealthChecker {
         LocalDateTime checkTime = LocalDateTime.now();
         ArrayList<PluginHealthReport.HealthCheckResult> results = new ArrayList<>();
 
+        if (plugin == null) {
+            return PluginHealthReport.createDead("unknown", "插件对象为空", null);
+        }
+
+        String pluginId;
+        try {
+            pluginId = plugin.getId();
+        } catch (Exception e) {
+            return PluginHealthReport.createDead("unknown", "无法获取插件ID: " + e.getMessage(), e);
+        }
+
         try {
             // 检查1: 插件接口完整性
             results.add(checkPluginInterface(plugin));
@@ -47,12 +58,12 @@ public class BasicHealthChecker implements PluginHealthChecker {
             
             long responseTime = System.currentTimeMillis() - startTime;
             
-            return new PluginHealthReport(plugin.getId(), overallStatus, checkTime, 
+            return new PluginHealthReport(pluginId, overallStatus, checkTime, 
                                         responseTime, results, message, null);
             
         } catch (Exception e) {
             long responseTime = System.currentTimeMillis() - startTime;
-            return PluginHealthReport.createDead(plugin.getId(), 
+            return PluginHealthReport.createDead(pluginId, 
                                                "健康检查执行失败: " + e.getMessage(), e);
         }
     }

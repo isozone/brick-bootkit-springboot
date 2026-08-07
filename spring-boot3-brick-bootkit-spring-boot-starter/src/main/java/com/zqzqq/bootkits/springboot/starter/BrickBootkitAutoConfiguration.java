@@ -1,18 +1,20 @@
 package com.zqzqq.bootkits.springboot.starter;
 
-import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
+import com.zqzqq.bootkits.core.PluginInfo;
+import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.eventbus.PluginEvent;
-import com.zqzqq.bootkits.core.eventbus.PluginEventListener;
-import com.zqzqq.bootkits.core.plugin.Plugin;
-import com.zqzqq.bootkits.core.plugin.PluginManager;
+import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
 import com.zqzqq.bootkits.springboot.starter.properties.BrickBootkitProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.*;
@@ -20,67 +22,90 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Brick BootKit Spring Boot Starter
- * 自动初始化插件框架和 EventBus
- * 
+ * 统一基于主框架（spring-boot3-brick-bootkit）的真实运行时：
+ * 注入真实 {@link com.zqzqq.bootkits.core.PluginManager}，不再使用 core 模块弃用的简化版。
+ * 插件生命周期（加载/启动/停止）由主框架的自动装配（SpringBootPluginStarter）负责，
+ * 本类只做事件桥接与旧配置（brick-bootkit.plugin-path）的兼容兜底。
+ *
  * @author brick-bootkit
  * @since 4.2.0
  */
 @Slf4j
-@Component
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(BrickBootkitProperties.class)
 public class BrickBootkitAutoConfiguration implements ApplicationRunner {
 
     private final BrickBootkitProperties properties;
-    private final PluginManager pluginManager;
+    private final ObjectProvider<PluginManager> pluginManagerProvider;
     private final PluginEventBus eventBus;
-    private final Map<String, Plugin> loadedPlugins = new ConcurrentHashMap<>();
+    private final Map<String, PluginInfo> loadedPlugins = new ConcurrentHashMap<>();
 
-    public BrickBootkitAutoConfiguration(
-            BrickBootkitProperties properties,
-            PluginManager pluginManager,
-            PluginEventBus eventBus) {
+    public BrickBootkitAutoConfiguration(BrickBootkitProperties properties,
+                                         ObjectProvider<PluginManager> pluginManagerProvider,
+                                         ObjectProvider<PluginEventBus> eventBusProvider) {
         this.properties = properties;
-        this.pluginManager = pluginManager;
-        this.eventBus = eventBus;
+        this.pluginManagerProvider = pluginManagerProvider;
+        this.eventBus = eventBusProvider.getIfAvailable(PluginEventBus::new);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginEventBus pluginEventBus() {
+        return new PluginEventBus();
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         if (!properties.isEnabled()) {
             log.info("Brick BootKit 插件框架已禁用");
             return;
         }
 
-        log.info("Brick BootKit Spring Boot Starter 初始化中...");
+        PluginManager pluginManager = pluginManagerProvider.getIfAvailable();
+        if (pluginManager == null) {
+            log.warn("未装配主框架 PluginManager，请确认已引入 spring-boot3-brick-bootkit 且 plugin.enable=true");
+            return;
+        }
+        log.info("Brick BootKit Spring Boot Starter 初始化中（主框架真实运行时）...");
 
-        // 自动发现并加载插件
-        List<File> pluginPaths = discoverPlugins();
-        for (File pluginPath : pluginPaths) {
-            try {
-                log.info("加载插件: {}", pluginPath.getName());
-                Plugin plugin = pluginManager.installPlugin(pluginPath);
-                if (plugin != null) {
-                    loadedPlugins.put(plugin.getId(), plugin);
-                    eventBus.publish(eventBus.createEvent(
-                            PluginEvent.EventType.PLUGIN_INSTALLED, plugin.getId()));
-                    log.info("插件加载成功: {} ({})", plugin.getName(), plugin.getId());
+        // 主框架（SpringBootPluginStarter）已在 ApplicationStartedEvent 时自动加载插件，直接同步状态
+        List<PluginInfo> existing = pluginManager.getPlugins();
+        if (!existing.isEmpty()) {
+            for (PluginInfo pluginInfo : existing) {
+                loadedPlugins.put(pluginInfo.getPluginId(), pluginInfo);
+                eventBus.publish(eventBus.createEvent(
+                        PluginEvent.EventType.PLUGIN_INSTALLED, pluginInfo.getPluginId()));
+            }
+            log.info("Brick BootKit 已同步 {} 个插件", existing.size());
+            return;
+        }
+
+        // 兼容旧配置 brick-bootkit.plugin-path：主框架未加载时手动兜底
+        if (properties.isAutoDiscover()) {
+            List<File> pluginPaths = discoverPlugins();
+            for (File pluginPath : pluginPaths) {
+                try {
+                    PluginInfo pluginInfo = pluginManager.install(pluginPath.toPath());
+                    if (pluginInfo != null) {
+                        loadedPlugins.put(pluginInfo.getPluginId(), pluginInfo);
+                        eventBus.publish(eventBus.createEvent(
+                                PluginEvent.EventType.PLUGIN_INSTALLED, pluginInfo.getPluginId()));
+                        log.info("插件加载成功: {} ({})", pluginInfo.getPluginDescriptor().getName(), pluginInfo.getPluginId());
+                    }
+                } catch (Exception e) {
+                    log.error("插件加载失败: {}", pluginPath.getName(), e);
                 }
-            } catch (Exception e) {
-                log.error("插件加载失败: {}", pluginPath.getName(), e);
+            }
+            for (PluginInfo pluginInfo : loadedPlugins.values()) {
+                try {
+                    pluginManager.start(pluginInfo.getPluginId());
+                    log.info("插件启动成功: {}", pluginInfo.getPluginId());
+                } catch (Exception e) {
+                    log.error("插件启动失败: {}", pluginInfo.getPluginId(), e);
+                }
             }
         }
-
-        // 启动插件
-        for (Plugin plugin : loadedPlugins.values()) {
-            try {
-                pluginManager.startPlugin(plugin.getId());
-                log.info("插件启动成功: {}", plugin.getId());
-            } catch (Exception e) {
-                log.error("插件启动失败: {}", plugin.getId(), e);
-            }
-        }
-
-
-        log.info("Brick BootKit Spring Boot Starter 初始化完成，已加载 {} 个插件", loadedPlugins.size());
+        log.info("Brick BootKit Spring Boot Starter 初始化完成，共加载 {} 个插件", loadedPlugins.size());
     }
 
     /**
@@ -96,22 +121,35 @@ public class BrickBootkitAutoConfiguration implements ApplicationRunner {
      */
     public void shutdown() {
         log.info("Brick BootKit 正在关闭...");
-        for (Plugin plugin : new ArrayList<>(loadedPlugins.values())) {
-            try {
-                pluginManager.stopPlugin(plugin.getId());
-                plugin.uninstall();
-            } catch (Exception e) {
-                log.warn("插件关闭失败: {}", plugin.getId(), e);
+        PluginManager pluginManager = pluginManagerProvider.getIfAvailable();
+        if (pluginManager != null) {
+            for (PluginInfo pluginInfo : new ArrayList<>(loadedPlugins.values())) {
+                try {
+                    pluginManager.stop(pluginInfo.getPluginId());
+                } catch (Exception e) {
+                    log.warn("插件关闭失败: {}", pluginInfo.getPluginId(), e);
+                }
             }
         }
         loadedPlugins.clear();
         if (eventBus != null) {
             eventBus.shutdown();
         }
-        if (pluginManager != null) {
-            pluginManager.shutdown();
-        }
         log.info("Brick BootKit 关闭完成");
+    }
+
+    /**
+     * 获取已加载插件
+     */
+    public Map<String, PluginInfo> getLoadedPlugins() {
+        return Collections.unmodifiableMap(loadedPlugins);
+    }
+
+    /**
+     * 获取 EventBus
+     */
+    public PluginEventBus getEventBus() {
+        return eventBus;
     }
 
     /**
@@ -137,19 +175,5 @@ public class BrickBootkitAutoConfiguration implements ApplicationRunner {
         }
 
         return plugins;
-    }
-
-    /**
-     * 获取已加载插件
-     */
-    public Map<String, Plugin> getLoadedPlugins() {
-        return Collections.unmodifiableMap(loadedPlugins);
-    }
-
-    /**
-     * 获取 EventBus
-     */
-    public PluginEventBus getEventBus() {
-        return eventBus;
     }
 }

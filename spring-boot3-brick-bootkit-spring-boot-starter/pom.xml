@@ -33,12 +33,13 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Brick BootKit Core & SDK -->
+        <!-- Brick BootKit 主框架（真实运行时，传递依赖 core/loader/bootstrap 等） -->
         <dependency>
             <groupId>com.zqzqq</groupId>
-            <artifactId>spring-boot3-brick-bootkit-core</artifactId>
+            <artifactId>spring-boot3-brick-bootkit</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Brick BootKit SDK（插件侧注解与事件装配工具） -->
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-sdk</artifactId>
