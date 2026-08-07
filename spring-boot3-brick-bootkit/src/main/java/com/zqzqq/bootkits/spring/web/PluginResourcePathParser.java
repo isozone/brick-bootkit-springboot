@@ -41,7 +41,7 @@ public final class PluginResourcePathParser {
     /**
      * 解析请求路径
      * @param requestPath Spring 传入的已去掉 context-path 的请求路径
-     * @return 解析结果, 永不为 null
+     * @return 解析结果, 永不为 null; 当无法解析出 pluginId 时 pluginId 为空串
      */
     public ParseResult parse(String requestPath) {
         // 归一化: 去掉连续分隔符与首尾分隔符
@@ -54,6 +54,11 @@ public final class PluginResourcePathParser {
             }
         }
         requestPath = UrlUtils.format(requestPath);
+
+        // 防御: 路径为空时返回空 pluginId, 调用方据此走 chain 兜底
+        if (requestPath.isEmpty()) {
+            return new ParseResult("", indexPageName);
+        }
 
         int startOffset = requestPath.indexOf("/");
         String pluginId;

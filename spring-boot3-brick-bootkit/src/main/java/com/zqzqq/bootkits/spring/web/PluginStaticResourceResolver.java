@@ -73,10 +73,11 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         PluginResourcePathParser.ParseResult parsed = pathParser.parse(requestPath);
         String pluginId = parsed.getPluginId();
         String partialPath = parsed.getPartialPath();
-        // pathParser 内部已经 format 过, 这里 requestPath 取解析后的 pluginId/partialPath 重建
-        requestPath = (partialPath == null || partialPath.isEmpty())
-                ? pluginId
-                : pluginId + UrlUtils.PATH_SEPARATOR + partialPath;
+
+        // 空路径或无法解析出 pluginId: 直接交由 chain 兜底, 不污染缓存
+        if (pluginId == null || pluginId.isEmpty()) {
+            return chain.resolveResource(request, requestPath, locations);
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("插件静态资源解析: requestPath=[{}], pluginId=[{}], partialPath=[{}]",
@@ -93,9 +94,14 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
             return chain.resolveResource(request, requestPath, locations);
         }
 
-        String key = computeKey(request, requestPath);
-        // null-sentinel: 缓存命中(含 null 标记)直接返回, 避免 404 反复扫描
+        // 缓存 key 用归一化后的 pluginId/partialPath, 保证 put/get 一致
+        String normalizedPath = pluginId + UrlUtils.PATH_SEPARATOR + partialPath;
+        String key = computeKey(request, normalizedPath);
+        // null-sentinel: 缓存命中直接返回; 命中 null-sentinel 返回 null 避免 404 反复扫描
         Resource resource = pluginResource.getCacheResource(key);
+        if(PluginStaticResource.isNullSentinel(resource)){
+            return null;
+        }
         if(resource != null){
             return resource;
         }
@@ -135,13 +141,8 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
         if(resource != null){
             return resource;
         }
-
         // 从外部文件路径获取资源?
-        resource = resolveFilePath(pluginResource, partialPath);
-        if(resource != null){
-            return resource;
-        }
-        return resource;
+        return resolveFilePath(pluginResource, partialPath);
     }
 
     /**
@@ -399,12 +400,23 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
 
         /**
          * null-sentinel: 标记某个 key 已经被解析过但未找到资源 (404),
-         * 避免后续重复扫描。与真正的 null 区分开。
+         * 避免 404 反复扫描。与真正的 Resource 区分开。
          */
-        private static final Resource NULL_RESOURCE = new org.springframework.core.io.ByteArrayResource(new byte[0], "plugin-null-sentinel");
+        private static final Resource NULL_SENTINEL =
+                new org.springframework.core.io.ByteArrayResource(new byte[0], "plugin-null-sentinel");
 
+        /**
+         * 取缓存。返回值语义:
+         *  - NULL_SENTINEL: 该 key 之前解析过但未找到 (404), 调用方应返回 null
+         *  - 其他非 null: 命中真实资源
+         *  - null: 该 key 从未解析过
+         */
         Resource getCacheResource(String key){
             return cacheResourceMaps.get(key);
+        }
+
+        static boolean isNullSentinel(Resource resource) {
+            return resource == NULL_SENTINEL;
         }
 
         void putCacheResource(String key, Resource resource){
@@ -413,7 +425,7 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
             }
             if(resource == null){
                 // 缓存 null-sentinel, 防止 404 反复扫描
-                cacheResourceMaps.put(key, NULL_RESOURCE);
+                cacheResourceMaps.put(key, NULL_SENTINEL);
             } else {
                 cacheResourceMaps.put(key, resource);
             }
