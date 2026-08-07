@@ -78,6 +78,12 @@ export const MENU_CONFIG = {
       path: '/plugins-web/performance'
     },
     {
+      key: 'cluster',
+      label: '集群管理',
+      icon: 'ServerOutline',
+      path: '/plugins-web/cluster'
+    },
+    {
       key: 'monitor',
       label: '系统监控',
       icon: 'StatsChartOutline',
@@ -170,7 +176,14 @@ export const API_PATHS = {
   PERFORMANCE_SCORES: '/plugins-web/api/performance/scores',
   PERFORMANCE_QUOTA: '/plugins-web/api/performance/quota',
   PERFORMANCE_BASELINE_COMPARE: '/plugins-web/api/performance/baseline/compare',
-  PERFORMANCE_BASELINE: '/plugins-web/api/performance/baseline'
+  PERFORMANCE_BASELINE: '/plugins-web/api/performance/baseline',
+
+  // === 集群管理相关接口 ===
+  CLUSTER_OVERVIEW: '/plugins-web/api/cluster/overview',
+  CLUSTER_NODES: '/plugins-web/api/cluster/nodes',
+  CLUSTER_NODES_CURRENT: '/plugins-web/api/cluster/nodes/current',
+  CLUSTER_PLUGIN_STATES: '/plugins-web/api/cluster/plugins/states',
+  CLUSTER_PLUGIN_SYNC: '/plugins-web/api/cluster/plugins/sync'
 }
 
 // 状态常量

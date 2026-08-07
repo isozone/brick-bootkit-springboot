@@ -72,6 +72,12 @@ const routes = [
     meta: { title: '性能分析' }
   },
   {
+    path: '/plugins-web/cluster',
+    name: 'Cluster',
+    component: () => import('@/views/cluster/index.vue'),
+    meta: { title: '集群管理' }
+  },
+  {
     path: '/plugins-web/plugins/upload',
     name: 'PluginUpload',
     component: () => import('@/views/plugins/upload.vue'),

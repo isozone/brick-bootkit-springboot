@@ -369,4 +369,23 @@ export const performanceApi = {
   getBaseline: (pluginId) => service.get(`${API_PATHS.PERFORMANCE_BASELINE}/${pluginId}`)
 }
 
+// ==================== 集群管理相关 API ====================
+
+export const clusterApi = {
+  // 获取集群总览
+  getOverview: () => service.get(API_PATHS.CLUSTER_OVERVIEW),
+
+  // 获取所有在线节点
+  getNodes: () => service.get(API_PATHS.CLUSTER_NODES),
+
+  // 获取当前节点信息
+  getCurrentNode: () => service.get(API_PATHS.CLUSTER_NODES_CURRENT),
+
+  // 获取集群插件状态列表
+  getPluginStates: () => service.get(API_PATHS.CLUSTER_PLUGIN_STATES),
+
+  // 手动同步本节点插件状态到集群
+  syncPluginStates: () => service.post(API_PATHS.CLUSTER_PLUGIN_SYNC)
+}
+
 export default service
