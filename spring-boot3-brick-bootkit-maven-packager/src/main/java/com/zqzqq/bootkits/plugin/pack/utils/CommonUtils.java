@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
 public class CommonUtils {
 
     private static final Logger log = LoggerFactory.getLogger(CommonUtils.class);
-    public final static String PLUGIN_FRAMEWORK_GROUP_ID = "com.zqzqq.bootkits";
+    public final static String PLUGIN_FRAMEWORK_GROUP_ID = "com.zqzqq";
     public final static String PLUGIN_FRAMEWORK_ARTIFACT_ID = "spring-boot3-brick-bootkit";
 
     public final static String PLUGIN_FRAMEWORK_LOADER_ARTIFACT_ID = "spring-boot3-brick-bootkit-loader";

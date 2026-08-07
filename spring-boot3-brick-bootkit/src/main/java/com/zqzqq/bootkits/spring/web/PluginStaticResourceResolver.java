@@ -63,12 +63,21 @@ public class PluginStaticResourceResolver extends AbstractResourceResolver {
     protected Resource resolveResourceInternal(HttpServletRequest request,
                                                String requestPath, List<? extends Resource> locations,
                                                ResourceResolverChain chain) {
-        if(request != null){
-            String requestUri = request.getRequestURI();
-            String formatUri = UrlUtils.format(requestUri);
-            // fix https://gitee.com/starblues/springboot-plugin-framework-parent/issues/I53T9W
-            requestPath = UrlUtils.format(formatUri.replaceFirst(config.getPathPrefix(), ""));
+        // 入参 requestPath 是 Spring 解析后的路径, 已去掉 context-path, 格式形如
+        // "plugins/plugin1/index.html"。直接基于该入参去除 pathPrefix 前缀即可,
+        // 不应再通过 request.getRequestURI() 重新解析, 否则在主服务配置了
+        // server.servlet.context-path 时会得到错误的 requestPath。
+        // fix https://gitee.com/starblues/springboot-plugin-framework-parent/issues/I53T9W
+        requestPath = UrlUtils.format(requestPath);
+        String pathPrefix = config.getPathPrefix();
+        if (pathPrefix != null && !pathPrefix.isEmpty()) {
+            int prefixIndex = requestPath.indexOf(pathPrefix);
+            if (prefixIndex == 0) {
+                requestPath = requestPath.substring(pathPrefix.length());
+            }
         }
+        requestPath = UrlUtils.format(requestPath);
+
         int startOffset = requestPath.indexOf("/");
         String pluginId = null;
         String partialPath = null;

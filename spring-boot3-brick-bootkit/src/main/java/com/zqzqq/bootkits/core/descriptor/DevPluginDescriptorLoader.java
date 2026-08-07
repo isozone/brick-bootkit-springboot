@@ -20,6 +20,7 @@ import com.zqzqq.bootkits.common.PackageStructure;
 import com.zqzqq.bootkits.common.PackageType;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
 import com.zqzqq.bootkits.utils.FilesUtils;
+import com.zqzqq.bootkits.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,9 +101,14 @@ public class DevPluginDescriptorLoader extends AbstractPluginDescriptorLoader{
         final DefaultInsidePluginDescriptor descriptor = super.create(pluginMeta, path);
         descriptor.setType(PluginType.DEV);
 
-        // 在 dev 模式下，使用 "classes" 作为 pluginClassPath（目录相对路径）
-        // 这样 addDirPluginClasspath 才能正确构建类目录路径
-        descriptor.setPluginClassPath("classes");
+        // dev 模式下 pluginClassPath 直接沿用 super.create 从 plugin.system.path 读取的值
+        // (例如 "target/classes")。此前在此处硬编码 "classes", 在主服务配置
+        // plugin.pluginPath 指向插件根目录时, PluginResourceLoaderFactoryProxy.addDirPluginClasspath
+        // 会把 insidePluginPath 与 "classes" 拼成不存在的路径, 导致 "插件xxx未发现Classpath" 启动失败。
+        String pluginClassPath = descriptor.getPluginClassPath();
+        if (ObjectUtils.isEmpty(pluginClassPath)) {
+            descriptor.setPluginClassPath(PackageStructure.CLASSES_NAME);
+        }
 
         return descriptor;
     }
