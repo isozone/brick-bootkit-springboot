@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <brick-bootkit.version>4.0.8</brick-bootkit.version>
+        <brick-bootkit.version>4.0.9</brick-bootkit.version>
     </properties>
 
     <dependencies>

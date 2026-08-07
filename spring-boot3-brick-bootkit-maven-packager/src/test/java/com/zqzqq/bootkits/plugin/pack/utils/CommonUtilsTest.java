@@ -51,7 +51,7 @@ class CommonUtilsTest {
         return new DefaultArtifact(
                 groupId,
                 artifactId,
-                VersionRange.createFromVersion("4.0.8"),
+                VersionRange.createFromVersion("4.0.9"),
                 "compile",
                 "jar",
                 null,
