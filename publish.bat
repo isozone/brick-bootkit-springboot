@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions DisableDelayedExpansion
+setlocal EnableExtensions EnableDelayedExpansion
 
 rem publish.bat - Publish Brick BootKit to Maven Central (Sonatype Central Portal).
 rem Usage:
@@ -7,10 +7,12 @@ rem   publish.bat          Run real release deploy.
 rem   publish.bat --check  Validate release profile only; no version change, no deploy.
 rem   publish.bat --version 4.1.0   Pin a specific release version.
 
-cd /d "%~dp0" || exit /b 1
+cd /d "%~dp0"
+if errorlevel 1 exit /b 1
 
 set "CHECK_ONLY=0"
 set "PIN_VERSION="
+
 :parse
 if "%~1"=="" goto parsed
 if /I "%~1"=="--check" (
@@ -28,20 +30,11 @@ shift /1
 goto parse
 :parsed
 
-rem ===== Maven settings / Central 账号 =====
-rem central-publishing-maven-plugin 使用 settings.xml 中 serverId=central 的 username/password。
-rem 可通过环境变量 MAVEN_SETTINGS / CENTRAL_USERNAME / CENTRAL_PASSWORD / GPG_KEYNAME 注入。
-set "MAVEN_SETTINGS=%MAVEN_SETTINGS%"
-if not defined MAVEN_SETTINGS if exist "%USERPROFILE%\Desktop\settings.xml" set "MAVEN_SETTINGS=%USERPROFILE%\Desktop\settings.xml"
-
-set "MVN_BASE=mvn"
-if defined MAVEN_SETTINGS (
-    if not exist "%MAVEN_SETTINGS%" (
-        echo ERROR: MAVEN_SETTINGS 指定的文件不存在: %MAVEN_SETTINGS%
-        exit /b 1
-    )
-    set "MVN_BASE=mvn -s "%MAVEN_SETTINGS%""
-)
+rem ===== Maven settings / Central account =====
+rem CRITICAL: cmd must use "call mvn" - direct external exe call terminates the whole bat script.
+rem settings path contains spaces (D:\Program Files\...), store in var then pass -s "%VAR%" to avoid nested quote issues.
+set "MVN_SETTINGS=%MAVEN_SETTINGS%"
+if not defined MVN_SETTINGS if exist "%USERPROFILE%\Desktop\settings.xml" set "MVN_SETTINGS=%USERPROFILE%\Desktop\settings.xml"
 
 set "_U="
 if defined CENTRAL_USERNAME set "_U=-Dcentral.username=%CENTRAL_USERNAME%"
@@ -50,33 +43,38 @@ if defined CENTRAL_PASSWORD set "_P=-Dcentral.password=%CENTRAL_PASSWORD%"
 set "_K="
 if defined GPG_KEYNAME set "_K=-Dgpg.keyname=%GPG_KEYNAME%"
 
-rem ===== 工具检测 =====
+rem ===== Tool detection =====
 where mvn >nul 2>nul
 if errorlevel 1 (
-    echo ERROR: mvn 不在 PATH.
+    echo ERROR: mvn is not in PATH.
     exit /b 1
 )
 where gpg >nul 2>nul
 if errorlevel 1 (
-    echo WARN: gpg 不在 PATH, 真实发布签名会失败.
+    echo WARN: gpg is not in PATH. Real release signing may fail.
 )
 
-rem ===== 版本号管理 =====
-rem 优先级: --version > 根 pom 当前版本 bump > .publish-version bump
-rem 本项目根 pom 使用固定版本号 (非 ${revision}), 直接读取 <version> 行。
+rem ===== Version management =====
 set "VERSION_FILE=.publish-version"
-set "LAST="
-for /f "tokens=* delims=" %%V in ('grep -m1 "<version>" pom.xml') do (
-    for /f "tokens=2 delims=<>" %%A in ("%%V") do set "POM_VERSION=%%A"
+set "POM_VERSION="
+for /f "delims=" %%V in ('findstr /C:"<version>" pom.xml') do (
+    if not defined POM_VERSION set "POM_VERSION=%%V"
 )
-if not defined POM_VERSION set "POM_VERSION=0.0.0"
+if not defined POM_VERSION (
+    echo ERROR: cannot read version from pom.xml
+    exit /b 1
+)
+set "POM_VERSION=%POM_VERSION:*<version>=%"
+set "POM_VERSION=%POM_VERSION:</version>=%"
 set "POM_RELEASE=%POM_VERSION:-SNAPSHOT=%"
 
-if exist "%VERSION_FILE%" set /p "LAST=" < "%VERSION_FILE%"
+set "LAST="
+if exist "%VERSION_FILE%" (
+    for /f "delims=" %%L in (%VERSION_FILE%) do set "LAST=%%L"
+)
 if not defined LAST set "LAST=0.0.0"
 set "LAST=%LAST:-SNAPSHOT=%"
 
-rem 取 LAST 与 POM_RELEASE 中较大者作为基准
 call :semver_num "%LAST%" LAST_N
 call :semver_num "%POM_RELEASE%" POM_N
 if !LAST_N! GTR !POM_N! (
@@ -86,17 +84,14 @@ if !LAST_N! GTR !POM_N! (
 )
 
 if defined PIN_VERSION (
-    call :validate "%PIN_VERSION%" || exit /b 1
+    call :validate "%PIN_VERSION%"
+    if errorlevel 1 exit /b 1
     set "NEW_VERSION=%PIN_VERSION%"
 ) else (
     call :bump "%BASE%" NEW_VERSION
 )
 
-for /f "tokens=1,2,3 delims=." %%A in ("%NEW_VERSION%") do (
-    set "MAJOR=%%A"
-    set "MINOR=%%B"
-    set "PATCH=%%C"
-)
+call :split "%NEW_VERSION%" MAJOR MINOR PATCH
 
 echo ==================================================
 echo  Brick BootKit Maven Central publish
@@ -106,9 +101,16 @@ echo  Base version : %BASE%
 echo  New version  : %NEW_VERSION%
 echo ==================================================
 
+rem All mvn calls must use "call mvn" - otherwise cmd direct external exe call terminates the whole bat.
+rem Two explicit branches for settings to avoid nested if quote issues.
+
 if "%CHECK_ONLY%"=="1" (
     echo CHECK ONLY: validating Maven release profile. No deploy will be executed.
-    call %MVN_BASE% -q -P release -DskipTests -Dgpg.skip=true validate
+    if defined MVN_SETTINGS (
+        call mvn -s "%MVN_SETTINGS%" -B -P release -DskipTests -Dgpg.skip=true validate
+    ) else (
+        call mvn -B -P release -DskipTests -Dgpg.skip=true validate
+    )
     if errorlevel 1 (
         echo ERROR: Maven release profile validation failed.
         exit /b 1
@@ -117,17 +119,29 @@ if "%CHECK_ONLY%"=="1" (
     exit /b 0
 )
 
-rem ===== 设置本次发布版本号 (跨模块同步) =====
+rem ===== Set release version across all modules =====
+rem CRITICAL: cmd eats the .9 in -DnewVersion=4.0.9 as path extension, turning it into -DnewVersion=4.0.
+rem Must quote the whole arg: "-DnewVersion=%NEW_VERSION%" so the dot is preserved.
+rem Same for -SNAPSHOT suffix: "-DnewVersion=%NEW_VERSION%-SNAPSHOT" or -SNAPSHOT gets executed as a command.
 echo Setting release version: %NEW_VERSION%
-call %MVN_BASE% -q versions:set -DnewVersion=%NEW_VERSION% -DprocessAllModules=true -DgenerateBackupPoms=false
+if defined MVN_SETTINGS (
+    call mvn -s "%MVN_SETTINGS%" -B versions:set "-DnewVersion=%NEW_VERSION%" -DprocessAllModules=true -DgenerateBackupPoms=false
+) else (
+    call mvn -B versions:set "-DnewVersion=%NEW_VERSION%" -DprocessAllModules=true -DgenerateBackupPoms=false
+)
 if errorlevel 1 (
     echo ERROR: Failed to set release version.
     exit /b 1
 )
+echo Release version set OK: %NEW_VERSION%
 
-rem ===== 构建 + 发布到 Maven Central =====
+rem ===== Build + deploy to Maven Central =====
 echo Building and deploying to Central Portal...
-call %MVN_BASE% clean deploy -P release -DskipTests -Dgpg.passphraseServerId=gpg %_U% %_P% %_K%
+if defined MVN_SETTINGS (
+    call mvn -s "%MVN_SETTINGS%" -B clean deploy -P release -DskipTests -Dgpg.passphraseServerId=gpg %_U% %_P% %_K%
+) else (
+    call mvn -B clean deploy -P release -DskipTests -Dgpg.passphraseServerId=gpg %_U% %_P% %_K%
+)
 if errorlevel 1 (
     echo ERROR: Build or deploy failed. POM version is still %NEW_VERSION%; fix the error before retrying or rollback manually.
     exit /b 1
@@ -140,9 +154,13 @@ echo  Publish completed. Version: %NEW_VERSION%
 echo  Maven Central sync usually takes 30 minutes to 2 hours.
 echo ==================================================
 
-rem ===== 回滚 pom 版本为 -SNAPSHOT =====
+rem ===== Roll POM version back to -SNAPSHOT =====
 echo Rolling POM version back to development snapshot: %NEW_VERSION%-SNAPSHOT
-call %MVN_BASE% -q versions:set -DnewVersion=%NEW_VERSION%-SNAPSHOT -DprocessAllModules=true -DgenerateBackupPoms=false
+if defined MVN_SETTINGS (
+    call mvn -s "%MVN_SETTINGS%" -B versions:set "-DnewVersion=%NEW_VERSION%-SNAPSHOT" -DprocessAllModules=true -DgenerateBackupPoms=false
+) else (
+    call mvn -B versions:set "-DnewVersion=%NEW_VERSION%-SNAPSHOT" -DprocessAllModules=true -DgenerateBackupPoms=false
+)
 if errorlevel 1 (
     echo WARN: Failed to roll POM version back to snapshot. Please run versions:set manually.
     exit /b 1
@@ -154,32 +172,35 @@ exit /b 0
 
 rem ===== helpers =====
 :semver_num
-rem %1 = x.y.z, 返回 %2 = xNNNNNN (大整数便于比较)
-setlocal EnableDelayedExpansion
 set "_v=%~1"
 set "_v=!_v:-SNAPSHOT=!"
 for /f "tokens=1,2,3 delims=." %%A in ("!_v!") do (
     set /a "_n=%%A*1000000+%%B*1000+%%C"
 )
-endlocal & set "%~2=%_n%"
+set "%~2=!_n!"
 goto :eof
 
 :bump
-rem %1 = x.y.z, 返回 %2 = x.y.(z+1)
-setlocal EnableDelayedExpansion
 set "_v=%~1"
 for /f "tokens=1,2,3 delims=." %%A in ("!_v!") do (
     set /a "_p=%%C+1"
-    set "_out=%%A.%%B.!_p!"
+    set "%~2=%%A.%%B.!_p!"
 )
-endlocal & set "%~2=%_out%"
+goto :eof
+
+:split
+set "_v=%~1"
+for /f "tokens=1,2,3 delims=." %%A in ("!_v!") do (
+    set "%~2=%%A"
+    set "%~3=%%B"
+    set "%~4=%%C"
+)
 goto :eof
 
 :validate
-rem %1 = 待校验版本, 返回 errorlevel 0/1
-echo %~1| findstr /R "^[0-9]+\.[0-9]+\.[0-9]+$" >nul
+echo %~1| findstr /R "^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" >nul
 if errorlevel 1 (
-    echo ERROR: 无效版本号: %~1
+    echo ERROR: Invalid version: %~1
     exit /b 1
 )
 exit /b 0
