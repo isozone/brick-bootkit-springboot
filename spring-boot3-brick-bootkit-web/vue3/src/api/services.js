@@ -388,4 +388,63 @@ export const clusterApi = {
   syncPluginStates: () => service.post(API_PATHS.CLUSTER_PLUGIN_SYNC)
 }
 
+// ==================== 依赖分析相关 API ====================
+
+export const dependencyApi = {
+  // 获取插件依赖图
+  getGraph: () => service.get(API_PATHS.DEPENDENCY_GRAPH),
+
+  // 获取指定插件依赖详情
+  getDetail: (pluginId) => service.get(`${API_PATHS.DEPENDENCY_DETAIL}/${pluginId}`),
+
+  // 获取插件依赖解析结果
+  resolve: (pluginId) => service.get(`${API_PATHS.DEPENDENCY_RESOLVE}/${pluginId}/resolve`),
+
+  // 检查插件兼容性
+  compatibility: (pluginId) => service.get(`${API_PATHS.DEPENDENCY_COMPATIBILITY}/${pluginId}/compatibility`),
+
+  // 升级影响面分析
+  impact: (pluginId) => service.get(`${API_PATHS.DEPENDENCY_IMPACT}/${pluginId}/impact`),
+
+  // 获取版本兼容性矩阵
+  getMatrix: () => service.get(API_PATHS.DEPENDENCY_MATRIX)
+}
+
+// ==================== 灰度发布相关 API ====================
+
+export const rolloutApi = {
+  // 获取灰度发布配置
+  getConfig: () => service.get(API_PATHS.ROLLOUT_CONFIG),
+
+  // 获取灰度探针列表
+  getProbes: () => service.get(API_PATHS.ROLLOUT_PROBES),
+
+  // 模拟灰度决策
+  check: (pluginId) => service.post(`${API_PATHS.ROLLOUT_CHECK}/${pluginId}`)
+}
+
+// ==================== 事件总线相关 API ====================
+
+export const eventbusApi = {
+  // 获取事件统计
+  getStats: () => service.get(API_PATHS.EVENTBUS_STATS),
+
+  // 获取事件类型列表
+  getTypes: () => service.get(API_PATHS.EVENTBUS_TYPES),
+
+  // 获取最近事件流
+  getRecent: (limit = 50) => service.get(API_PATHS.EVENTBUS_RECENT, { params: { limit } })
+}
+
+// ==================== 日志查看相关 API ====================
+
+export const logsApi = {
+  // 获取当前日志文件路径
+  getLogFile: () => service.get(API_PATHS.LOGS_FILE),
+
+  // 读取最近日志（可按关键字过滤）
+  getLogs: (keyword = '', lines = 200) =>
+    service.get(API_PATHS.LOGS_LIST, { params: { keyword, lines } })
+}
+
 export default service

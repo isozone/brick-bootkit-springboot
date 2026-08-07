@@ -2,8 +2,16 @@ package com.zqzqq.bootkits.integration.doctor;
 
 import com.zqzqq.bootkits.core.PluginInfo;
 import com.zqzqq.bootkits.core.PluginManager;
+import com.zqzqq.bootkits.core.communication.PluginServiceRegistry;
+import com.zqzqq.bootkits.core.config.PluginConfigurationManager;
+import com.zqzqq.bootkits.core.dependency.PluginDependencyManager;
+import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
+import com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer;
+import com.zqzqq.bootkits.core.security.PluginSecurityManager;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
+import com.zqzqq.bootkits.integration.cluster.ClusterNodeRegistry;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbe;
 import com.zqzqq.bootkits.utils.FilesUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.util.StringUtils;
@@ -27,11 +35,41 @@ public class PluginDoctorService {
 
     private final IntegrationConfiguration configuration;
     private final ObjectProvider<PluginManager> pluginManagerProvider;
+    private final ObjectProvider<PluginSecurityManager> securityManagerProvider;
+    private final ObjectProvider<PluginServiceRegistry> serviceRegistryProvider;
+    private final ObjectProvider<PluginConfigurationManager> configurationManagerProvider;
+    private final ObjectProvider<PluginEventBus> eventBusProvider;
+    private final ObjectProvider<PluginDependencyManager> dependencyManagerProvider;
+    private final ObjectProvider<PluginPerformanceAnalyzer> performanceAnalyzerProvider;
+    private final ObjectProvider<ClusterNodeRegistry> clusterNodeRegistryProvider;
+    private final List<PluginRolloutProbe> rolloutProbes;
 
     public PluginDoctorService(IntegrationConfiguration configuration,
                                ObjectProvider<PluginManager> pluginManagerProvider) {
+        this(configuration, pluginManagerProvider,
+                null, null, null, null, null, null, null, Collections.emptyList());
+    }
+
+    public PluginDoctorService(IntegrationConfiguration configuration,
+                               ObjectProvider<PluginManager> pluginManagerProvider,
+                               ObjectProvider<PluginSecurityManager> securityManagerProvider,
+                               ObjectProvider<PluginServiceRegistry> serviceRegistryProvider,
+                               ObjectProvider<PluginConfigurationManager> configurationManagerProvider,
+                               ObjectProvider<PluginEventBus> eventBusProvider,
+                               ObjectProvider<PluginDependencyManager> dependencyManagerProvider,
+                               ObjectProvider<PluginPerformanceAnalyzer> performanceAnalyzerProvider,
+                               ObjectProvider<ClusterNodeRegistry> clusterNodeRegistryProvider,
+                               List<PluginRolloutProbe> rolloutProbes) {
         this.configuration = configuration;
         this.pluginManagerProvider = pluginManagerProvider;
+        this.securityManagerProvider = securityManagerProvider;
+        this.serviceRegistryProvider = serviceRegistryProvider;
+        this.configurationManagerProvider = configurationManagerProvider;
+        this.eventBusProvider = eventBusProvider;
+        this.dependencyManagerProvider = dependencyManagerProvider;
+        this.performanceAnalyzerProvider = performanceAnalyzerProvider;
+        this.clusterNodeRegistryProvider = clusterNodeRegistryProvider;
+        this.rolloutProbes = rolloutProbes == null ? Collections.emptyList() : rolloutProbes;
     }
 
     public PluginDoctorReport diagnose() {
@@ -119,9 +157,94 @@ public class PluginDoctorService {
             }
         }
 
+        // ===== 新增能力自检维度 =====
+
+        if (securityManagerProvider != null && securityManagerProvider.getIfAvailable() != null) {
+            items.add(item("SECURITY_CENTER_READY", 0, STATUS_OK,
+                    "插件安全中心已启用",
+                    "安全准入检查已在插件安装阶段生效",
+                    "/capability-apis",
+                    "security"));
+        }
+
+        if (serviceRegistryProvider != null && serviceRegistryProvider.getIfAvailable() != null) {
+            items.add(item("SERVICE_REGISTRY_READY", 0, STATUS_OK,
+                    "插件服务注册中心已启用",
+                    "插件可通过 @PluginService 注册并发现服务",
+                    "/capability-apis",
+                    "registry"));
+        }
+
+        if (configurationManagerProvider != null && configurationManagerProvider.getIfAvailable() != null) {
+            items.add(item("CONFIG_MANAGER_READY", 0, STATUS_OK,
+                    "插件配置热更新已启用",
+                    "支持配置热更新、版本管理与回滚",
+                    "/capability-apis",
+                    "configuration"));
+        }
+
+        if (eventBusProvider != null && eventBusProvider.getIfAvailable() != null) {
+            items.add(item("EVENT_BUS_READY", 0, STATUS_OK,
+                    "插件事件总线已启用",
+                    "支持插件间事件发布与订阅",
+                    "/capability-apis",
+                    "eventbus"));
+        }
+
+        if (dependencyManagerProvider != null && dependencyManagerProvider.getIfAvailable() != null) {
+            items.add(item("DEPENDENCY_ANALYSIS_READY", 0, STATUS_OK,
+                    "插件依赖分析已启用",
+                    "支持依赖图、兼容性与升级影响面分析",
+                    "/capability-apis",
+                    "dependency"));
+        }
+
+        if (performanceAnalyzerProvider != null && performanceAnalyzerProvider.getIfAvailable() != null) {
+            items.add(item("PERFORMANCE_ANALYSIS_READY", 0, STATUS_OK,
+                    "插件性能分析与资源隔离已启用",
+                    "支持性能评分、资源占用监控与配额管理",
+                    "/capability-apis",
+                    "performance"));
+        }
+
+        boolean clusterEnabled = Boolean.TRUE.equals(configuration.clusterEnabled());
+        if (clusterEnabled) {
+            if (clusterNodeRegistryProvider != null && clusterNodeRegistryProvider.getIfAvailable() != null) {
+                items.add(item("CLUSTER_READY", 0, STATUS_OK,
+                        "集群模式已启用，节点注册与插件状态同步就绪",
+                        "Web 控制台「集群管理」页面可查看节点与插件状态",
+                        "/capability-apis",
+                        "cluster"));
+            } else {
+                items.add(item("CLUSTER_NODE_REGISTRY_MISSING", 0, STATUS_WARN,
+                        "集群模式已启用，但节点注册服务未装配",
+                        "确认主框架已自动装配 ClusterNodeRegistry，或检查 plugin.clusterEnabled 配置",
+                        "/capability-apis",
+                        "cluster"));
+                warningCount++;
+            }
+        }
+
+        if (configuration.pluginRolloutMode() != null
+                && configuration.pluginRolloutMode().name().equalsIgnoreCase("GRAY")) {
+            if (rolloutProbes.isEmpty()) {
+                items.add(item("ROLLOUT_GRAY_NO_PROBE", 0, STATUS_WARN,
+                        "灰度发布模式已启用，但未注册任何 PluginRolloutProbe",
+                        "灰度模式下建议注入至少一个灰度探针，否则所有升级都将直接通过",
+                        "/capability-apis",
+                        "rollout"));
+                warningCount++;
+            } else {
+                items.add(item("ROLLOUT_GRAY_READY", 0, STATUS_OK,
+                        "灰度发布已启用，已注册 " + rolloutProbes.size() + " 个灰度探针",
+                        "升级时会依次执行探针校验",
+                        "/capability-apis",
+                        "rollout"));
+            }
+        }
+
         String overallStatus = errorCount > 0 ? STATUS_ERROR : (warningCount > 0 ? STATUS_WARN : STATUS_OK);
         String summary = buildSummary(overallStatus, errorCount, warningCount, pluginCount, startedPluginCount);
-
         return new PluginDoctorReport(
                 System.currentTimeMillis(),
                 enabled,

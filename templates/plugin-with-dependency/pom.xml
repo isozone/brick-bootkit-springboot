@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>brick-bootkit-plugin-with-dependency</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>brick-bootkit-plugin-with-dependency</name>
+    <description>Plugin template with plugin-to-plugin dependency for Brick BootKit</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <brick-bootkit.version>4.0.9</brick-bootkit.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-bootstrap</artifactId>
+            <version>${brick-bootkit.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit</artifactId>
+            <version>${brick-bootkit.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.zqzqq</groupId>
+                <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
+                <version>${brick-bootkit.version}</version>
+                <configuration>
+                    <mode>prod</mode>
+                    <pluginInfo>
+                        <id>plugin-with-dependency</id>
+                        <bootstrapClass>com.example.dependencyplugin.TemplateDependencyPluginBootstrap</bootstrapClass>
+                        <version>1.0.0</version>
+                        <provider>template</provider>
+                        <description>Plugin with plugin-to-plugin dependency</description>
+                        <!-- 声明依赖的宿主插件：安装本插件前需先安装 minimal-plugin -->
+                        <pluginDependencies>
+                            <dependency>
+                                <pluginId>minimal-plugin</pluginId>
+                                <version>1.0.0</version>
+                                <optional>false</optional>
+                            </dependency>
+                        </pluginDependencies>
+                    </pluginInfo>
+                    <prodConfig>
+                        <packageType>jar</packageType>
+                    </prodConfig>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-meta</goal>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -78,6 +78,30 @@ const routes = [
     meta: { title: '集群管理' }
   },
   {
+    path: '/plugins-web/dependency',
+    name: 'Dependency',
+    component: () => import('@/views/dependency/index.vue'),
+    meta: { title: '依赖分析' }
+  },
+  {
+    path: '/plugins-web/rollout',
+    name: 'Rollout',
+    component: () => import('@/views/rollout/index.vue'),
+    meta: { title: '灰度发布' }
+  },
+  {
+    path: '/plugins-web/eventbus',
+    name: 'EventBus',
+    component: () => import('@/views/eventbus/index.vue'),
+    meta: { title: '事件总线' }
+  },
+  {
+    path: '/plugins-web/logs',
+    name: 'Logs',
+    component: () => import('@/views/logs/index.vue'),
+    meta: { title: '插件日志' }
+  },
+  {
     path: '/plugins-web/plugins/upload',
     name: 'PluginUpload',
     component: () => import('@/views/plugins/upload.vue'),

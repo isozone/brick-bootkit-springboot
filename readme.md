@@ -460,6 +460,14 @@ GET /plugins-web/api/doctor
 - 系统监控（内存、CPU、线程）
 - API 文档（Knife4j）
 - 插件日志查看
+- 插件安全中心（扫描/策略/权限）
+- 服务注册中心（跨插件服务发现）
+- 插件配置热更新（版本管理/回滚）
+- 性能分析与资源隔离（评分/配额）
+- 集群管理（节点/插件状态同步）
+- 依赖分析（依赖图/兼容性/影响面）
+- 灰度发布（配置/探针/决策模拟）
+- 事件总线（统计/事件流）
 
 #### 7. Maven Packager 模块（打包工具层）
 **职责**：提供 Maven 插件，支持插件的打包和构建
@@ -1549,3 +1557,84 @@ plugin:
 - 新增配置 `plugin.web.auth.mode=disabled|delegate|strict`（默认 `delegate`）。
 - `strict` 模式要求主应用提供 `PluginWebAuthorizer`，否则启动失败。
 - 新增能力查询接口：`GET /plugins/auth/capabilities`。
+
+---
+
+## 2026-08 增强能力（新增）
+
+以下能力均已接入主链路与 Web 控制台，默认向后兼容。
+
+### 1) 插件安全中心
+- 安装阶段自动执行安全准入检查（`PluginSecurityAdmissionCheck`，接入 Admission Pipeline）：
+  - 代码扫描（危险/可疑模式）
+  - 权限与安全策略校验
+  - 文件系统/网络访问检查
+- 1-2 个违规 -> WARN；3 个及以上违规 -> REJECT（`enforce` 模式阻断安装）。
+- 新增 Web 页面「安全中心」与 API：
+  - `GET /plugins-web/api/security/scan/{pluginId}`：按插件 ID 扫描
+  - `GET /plugins-web/api/security/scan?path=`：按路径扫描
+  - `GET/POST /plugins-web/api/security/policy`：策略查看/设置
+  - `POST /plugins-web/api/security/permissions/grant|revoke`：权限授予/撤销
+- 沙箱策略（`PluginSandbox`）与安全策略联动。
+
+### 2) 插件服务注册中心
+- 新增 `PluginServiceRegistry` Bean（默认 `DefaultPluginServiceRegistry`）。
+- 插件可通过 `@PluginService` 注解注册服务，支持跨插件服务发现与依赖检查。
+- 新增 Web 页面「服务注册中心」与 API：
+  - `GET /plugins-web/api/registry/statistics`：注册中心统计
+  - `GET /plugins-web/api/registry/services`：按插件分组的服务列表
+  - `GET /plugins-web/api/registry/services/{pluginId}`：指定插件服务
+  - `GET /plugins-web/api/registry/plugins`：已注册插件 ID
+
+### 3) 插件配置热更新
+- 新增 `PluginConfigurationManager` Bean，支持配置热更新、版本管理与回滚。
+- 新增 Web 页面「插件配置」与 API：
+  - `GET /plugins-web/api/configurations`：所有插件配置
+  - `PUT /plugins-web/api/configurations/{pluginId}`：热更新配置
+  - `GET /plugins-web/api/configurations/{pluginId}/versions`：版本历史
+  - `POST /plugins-web/api/configurations/{pluginId}/rollback`：回滚到指定版本
+
+### 4) 性能分析与资源隔离
+- 新增 `QuotaManager` / `PluginResourceMonitor` / `PluginResourceIsolation` / `PluginPerformanceAnalyzer` Bean。
+- 新增 Web 页面「性能分析」与 API：
+  - `GET /plugins-web/api/performance/analyze/{pluginId}`：性能分析
+  - `GET /plugins-web/api/performance/usage`：资源占用
+  - `GET/POST /plugins-web/api/performance/quota/{pluginId}`：配额查看/设置
+  - `GET /plugins-web/api/performance/scores`：全部插件性能评分
+
+### 5) 集群管理
+- 新增 Redis 分布式锁 `RedisClusterLockProvider`（引入 `spring-boot-starter-data-redis` 后自动启用，否则回退文件锁）。
+- 新增集群节点注册与插件状态同步（`ClusterNodeRegistry` / `PluginClusterStateSync` / `ClusterLifecycleExtension`）。
+- 新增 Web 页面「集群管理」与 API：
+  - `GET /plugins-web/api/cluster/overview`：集群总览（节点 + 插件状态）
+  - `GET /plugins-web/api/cluster/nodes`：在线节点列表
+  - `POST /plugins-web/api/cluster/plugins/sync`：同步本节点插件状态
+
+### 6) 插件依赖分析
+- 新增 `PluginDependencyManager` Bean，基于真实插件描述符构建依赖图。
+- 新增 Web 页面「依赖分析」与 API：
+  - `GET /plugins-web/api/dependency/graph`：依赖图（节点 + 边）
+  - `GET /plugins-web/api/dependency/{pluginId}`：依赖详情
+  - `GET /plugins-web/api/dependency/{pluginId}/compatibility`：兼容性检查
+  - `GET /plugins-web/api/dependency/{pluginId}/impact`：升级影响面分析
+  - `GET /plugins-web/api/dependency/matrix`：版本兼容性矩阵
+
+### 7) 灰度发布 UI
+- 灰度机制（`plugin.rolloutMode=gray` + `PluginRolloutProbe`）已接入 Web 控制台。
+- 新增 Web 页面「灰度发布」与 API：
+  - `GET /plugins-web/api/rollout/config`：灰度配置
+  - `GET /plugins-web/api/rollout/probes`：已注册探针列表
+  - `POST /plugins-web/api/rollout/check/{pluginId}`：模拟灰度决策
+
+### 8) 事件总线可视化
+- 新增 `PluginEventBus` Bean（core 模块），支持插件间异步通信。
+- 新增 Web 页面「事件总线」与 API：
+  - `GET /plugins-web/api/eventbus/stats`：事件统计
+  - `GET /plugins-web/api/eventbus/types`：事件类型列表
+  - `GET /plugins-web/api/eventbus/recent`：最近事件流（环形缓冲最近 200 条）
+
+### 9) 统一 Spring Boot Starter（已落地）
+- `spring-boot3-brick-bootkit-spring-boot-starter` 已统一依赖主框架（`spring-boot3-brick-bootkit`），
+  不再使用 core 模块弃用的简化版 PluginManager；插件生命周期由主框架自动装配负责。
+- 新增 `PluginEventBus` Bean 与 `brick-bootkit.*` 配置兜底（`brick-bootkit.enabled` / `plugin-path` / `autoDiscover`）。
+- Actuator 健康检查（`PluginHealthIndicator`）与指标（`PluginMetricsConfiguration`）基于真实运行时。 

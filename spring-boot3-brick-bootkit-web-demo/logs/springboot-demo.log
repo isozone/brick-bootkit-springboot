@@ -1,0 +1,300 @@
+2026-08-08 00:07:13 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 33217 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:07:13 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:07:13 [Thread-0] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: java.lang.IllegalStateException: Error processing condition on com.zqzqq.bootkits.integration.ExtendPointConfiguration.createPluginUser
+2026-08-08 00:07:13 [Thread-0] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-08-08 00:07:13 [Thread-0] ERROR o.s.boot.SpringApplication - Application run failed
+java.lang.IllegalStateException: Error processing condition on com.zqzqq.bootkits.integration.ExtendPointConfiguration.createPluginUser
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60)
+	at org.springframework.context.annotation.ConditionEvaluator.shouldSkip(ConditionEvaluator.java:99)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:183)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:144)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:120)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:430)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:290)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:349)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:118)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:791)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:609)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at com.zqzqq.bootkits.web.demo.DemoApplication.run(DemoApplication.java:34)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:72)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:43)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.toLaunch(AbstractMainLauncher.java:64)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.run(AbstractMainLauncher.java:49)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:50)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:30)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap.main(SpringMainBootstrap.java:109)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap$Runner.run(SpringMainBootstrap.java:80)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: java.lang.IllegalStateException: @ConditionalOnMissingBean did not specify a bean using type, name or annotation and the attempt to deduce the bean's type failed
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.validate(OnBeanCondition.java:630)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.<init>(OnBeanCondition.java:577)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchOutcome(OnBeanCondition.java:142)
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:47)
+	... 32 common frames omitted
+Caused by: org.springframework.boot.autoconfigure.condition.OnBeanCondition$BeanTypeDeductionException: Failed to deduce bean type for com.zqzqq.bootkits.integration.ExtendPointConfiguration.createPluginUser
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanTypeForBeanMethod(OnBeanCondition.java:659)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanType(OnBeanCondition.java:649)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.<init>(OnBeanCondition.java:570)
+	... 34 common frames omitted
+Caused by: java.lang.IllegalStateException: Failed to introspect Class [com.zqzqq.bootkits.integration.ExtendPointConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@7a8c5397]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:483)
+	at org.springframework.util.ReflectionUtils.findMethod(ReflectionUtils.java:238)
+	at org.springframework.util.ReflectionUtils.findMethod(ReflectionUtils.java:218)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.findBeanMethod(OnBeanCondition.java:688)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.getMethodReturnType(OnBeanCondition.java:683)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.getReturnType(OnBeanCondition.java:667)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanTypeForBeanMethod(OnBeanCondition.java:656)
+	... 36 common frames omitted
+Caused by: java.lang.NoClassDefFoundError: org/springframework/data/redis/core/StringRedisTemplate
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3010)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2329)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:465)
+	... 42 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.data.redis.core.StringRedisTemplate
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:580)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:490)
+	... 46 common frames omitted
+2026-08-08 00:07:13 [Thread-0] ERROR c.z.b.l.launcher.SpringMainBootstrap - Failed to run method in launch thread
+java.lang.reflect.InvocationTargetException: null
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap$Runner.run(SpringMainBootstrap.java:80)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: java.lang.reflect.InvocationTargetException: null
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:72)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:43)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.toLaunch(AbstractMainLauncher.java:64)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.run(AbstractMainLauncher.java:49)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:50)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:30)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap.main(SpringMainBootstrap.java:109)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	... 5 common frames omitted
+Caused by: java.lang.IllegalStateException: Error processing condition on com.zqzqq.bootkits.integration.ExtendPointConfiguration.createPluginUser
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60)
+	at org.springframework.context.annotation.ConditionEvaluator.shouldSkip(ConditionEvaluator.java:99)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:183)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:144)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:120)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:430)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:290)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:349)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:118)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:791)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:609)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at com.zqzqq.bootkits.web.demo.DemoApplication.run(DemoApplication.java:34)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	... 16 common frames omitted
+Caused by: java.lang.IllegalStateException: @ConditionalOnMissingBean did not specify a bean using type, name or annotation and the attempt to deduce the bean's type failed
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.validate(OnBeanCondition.java:630)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.<init>(OnBeanCondition.java:577)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchOutcome(OnBeanCondition.java:142)
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:47)
+	... 32 common frames omitted
+Caused by: org.springframework.boot.autoconfigure.condition.OnBeanCondition$BeanTypeDeductionException: Failed to deduce bean type for com.zqzqq.bootkits.integration.ExtendPointConfiguration.createPluginUser
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanTypeForBeanMethod(OnBeanCondition.java:659)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanType(OnBeanCondition.java:649)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.<init>(OnBeanCondition.java:570)
+	... 34 common frames omitted
+Caused by: java.lang.IllegalStateException: Failed to introspect Class [com.zqzqq.bootkits.integration.ExtendPointConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@7a8c5397]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:483)
+	at org.springframework.util.ReflectionUtils.findMethod(ReflectionUtils.java:238)
+	at org.springframework.util.ReflectionUtils.findMethod(ReflectionUtils.java:218)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.findBeanMethod(OnBeanCondition.java:688)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.getMethodReturnType(OnBeanCondition.java:683)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.getReturnType(OnBeanCondition.java:667)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition$Spec.deducedBeanTypeForBeanMethod(OnBeanCondition.java:656)
+	... 36 common frames omitted
+Caused by: java.lang.NoClassDefFoundError: org/springframework/data/redis/core/StringRedisTemplate
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3010)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2329)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:465)
+	... 42 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.data.redis.core.StringRedisTemplate
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:580)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:490)
+	... 46 common frames omitted
+2026-08-08 00:11:03 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 33545 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:11:03 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:11:03 [Thread-0] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid bean definition with name 'pluginConfigurationManager' defined in class path resource [com/zqzqq/bootkits/core/config/PluginConfigurationAutoConfiguration.class]: Cannot register bean definition [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=pluginConfigurationAutoConfiguration; factoryMethodName=pluginConfigurationManager; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [com/zqzqq/bootkits/core/config/PluginConfigurationAutoConfiguration.class]] for bean 'pluginConfigurationManager' since there is already [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=extendPointConfiguration; factoryMethodName=pluginConfigurationManager; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [com/zqzqq/bootkits/integration/ExtendPointConfiguration.class]] bound.
+2026-08-08 00:11:03 [Thread-0] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-08-08 00:11:03 [Thread-0] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The bean 'pluginConfigurationManager', defined in class path resource [com/zqzqq/bootkits/core/config/PluginConfigurationAutoConfiguration.class], could not be registered. A bean with that name has already been defined in class path resource [com/zqzqq/bootkits/integration/ExtendPointConfiguration.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+
+2026-08-08 00:11:03 [Thread-0] ERROR c.z.b.l.launcher.SpringMainBootstrap - Failed to run method in launch thread
+java.lang.reflect.InvocationTargetException: null
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap$Runner.run(SpringMainBootstrap.java:80)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: java.lang.reflect.InvocationTargetException: null
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.runMethod(MethodRunner.java:68)
+	at com.zqzqq.bootkits.loader.launcher.runner.MethodRunner.run(MethodRunner.java:51)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:72)
+	at com.zqzqq.bootkits.loader.launcher.isolation.IsolationBaseLauncher.launch(IsolationBaseLauncher.java:43)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.toLaunch(AbstractMainLauncher.java:64)
+	at com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher.run(AbstractMainLauncher.java:49)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:50)
+	at com.zqzqq.bootkits.loader.launcher.DevLauncher.run(DevLauncher.java:30)
+	at com.zqzqq.bootkits.loader.launcher.SpringMainBootstrap.main(SpringMainBootstrap.java:109)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	... 5 common frames omitted
+Caused by: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid bean definition with name 'pluginConfigurationManager' defined in class path resource [com/zqzqq/bootkits/core/config/PluginConfigurationAutoConfiguration.class]: Cannot register bean definition [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=pluginConfigurationAutoConfiguration; factoryMethodName=pluginConfigurationManager; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [com/zqzqq/bootkits/core/config/PluginConfigurationAutoConfiguration.class]] for bean 'pluginConfigurationManager' since there is already [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=extendPointConfiguration; factoryMethodName=pluginConfigurationManager; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [com/zqzqq/bootkits/integration/ExtendPointConfiguration.class]] bound.
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.registerBeanDefinition(DefaultListableBeanFactory.java:1257)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:297)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:144)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:120)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:430)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:290)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:349)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:118)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:791)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:609)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at com.zqzqq.bootkits.web.demo.DemoApplication.run(DemoApplication.java:34)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	... 16 common frames omitted
+2026-08-08 00:13:42 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 33689 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:13:42 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:13:42 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-08-08 00:13:42 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:13:42 [Thread-0] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-08-08 00:13:42 [Thread-0] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-08 00:13:43 [Thread-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-08-08 00:13:43 [Thread-0] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 627 ms
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.c.BrickWebAutoConfiguration - Brick Web 配置已从 IntegrationConfiguration 合并缺省值
+2026-08-08 00:13:43 [Thread-0] WARN  c.z.b.w.a.PluginWebAuthorizationService - Plugin web authorization is running in delegate mode with fallback authorizer (deny all). Provide a custom PluginWebAuthorizer bean in host application before exposing plugin web endpoints.
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史文件不存在，跳过加载
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务初始化完成，历史文件路径: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/upload-history/upload-history.json
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.s.c.ScriptStorageAutoConfiguration - Initializing FileScriptStorage with data-path: ./scripts-data
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.s.s.impl.FileScriptStorage - FileScriptStorage initialized at: ./scripts-data
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - Initializing ScriptManager...
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - ScriptManager initialized successfully
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - web-console
+2026-08-08 00:13:43 [Thread-0] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-08-08 00:13:43 [Thread-0] WARN  o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.i.c.ClusterLifecycleExtension - 集群插件状态同步扩展已初始化
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationAutoConfiguration - Initializing Plugin Configuration Manager with properties: com.zqzqq.bootkits.core.config.PluginConfigurationProperties@3d1db568
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Configuration file watcher started
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Created configuration directory: config/plugins
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager initialized with hot reload: true
+2026-08-08 00:13:43 [Thread-0] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-08-08 00:13:43 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:13:43 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Started SpringMainBootstrap in 1.569 seconds (process running for 1.714)
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin environment: prod
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin development mode: isolation
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Begin load plugins from:
+./plugins
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.s.w.PluginStaticResourceConfig - 插件静态资源配置: /plugins/{{pluginId}}/*
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 开始扫描插件目录，共 1 个根目录
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 扫描插件目录: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins, 是否存在: true
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/demoTestUploadPlus-0.0.3-repackage.jar
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 在目录 /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins 中发现 2 个插件
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 插件扫描完成，共发现 2 个插件
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 扫描到 2 个插件路径，开始加载...
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 成功加载插件: demoTestUploadPlus (./plugins/demoTestUploadPlus-0.0.3-repackage.jar)
+2026-08-08 00:13:43 [Thread-0] WARN  c.z.b.c.d.ComposeDescriptorLoader - 所有插件描述加载器都无法加载: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:13:43 [Thread-0] WARN  c.z.b.core.DefaultPluginManager - 跳过非插件目录或插件描述符加载失败: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.b.ConfigurePluginEnvironment - Plugin[demoTestUploadPlus@0.0.3]  No active profile set, falling back to default profiles : default
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.b.p.w.PluginControllerProcessor - 插件[demoTestUploadPlus]注册接口数量: 1
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 插件启动成功: demoTestUploadPlus, startedPlugins 大小: 1
+2026-08-08 00:13:43 [Thread-0] INFO  c.z.b.i.d.PluginDoctorStartupReporter - Plugin doctor summary: doctor=OK, errors=0, warnings=0, plugins=1, started=1
+2026-08-08 00:18:23 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Starting SpringMainBootstrap using Java 25 with PID 34014 (/Users/vim/.m2/repository/com/zqzqq/spring-boot3-brick-bootkit-loader/4.0.9/spring-boot3-brick-bootkit-loader-4.0.9.jar started by vim in /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo)
+2026-08-08 00:18:23 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - No active profile set, falling back to 1 default profile: "default"
+2026-08-08 00:18:23 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-08-08 00:18:23 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:18:23 [Thread-0] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-08-08 00:18:23 [Thread-0] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-08 00:18:23 [Thread-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-08-08 00:18:23 [Thread-0] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 775 ms
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.c.BrickWebAutoConfiguration - Brick Web 配置已从 IntegrationConfiguration 合并缺省值
+2026-08-08 00:18:24 [Thread-0] WARN  c.z.b.w.a.PluginWebAuthorizationService - Plugin web authorization is running in delegate mode with fallback authorizer (deny all). Provide a custom PluginWebAuthorizer bean in host application before exposing plugin web endpoints.
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史文件不存在，跳过加载
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.service.UploadHistoryService - 上传历史服务初始化完成，历史文件路径: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/upload-history/upload-history.json
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.s.c.ScriptStorageAutoConfiguration - Initializing FileScriptStorage with data-path: ./scripts-data
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.s.s.impl.FileScriptStorage - FileScriptStorage initialized at: ./scripts-data
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - Initializing ScriptManager...
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.w.s.config.ScriptManagerConfig - ScriptManager initialized successfully
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - system
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.eventbus.PluginEventBus - web-console
+2026-08-08 00:18:24 [Thread-0] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-08-08 00:18:24 [Thread-0] WARN  o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.i.c.ClusterLifecycleExtension - 集群插件状态同步扩展已初始化
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.c.i.PluginResourceIsolation - system
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationAutoConfiguration - Initializing Plugin Configuration Manager with properties: com.zqzqq.bootkits.core.config.PluginConfigurationProperties@34de658
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Configuration file watcher started
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Loaded 0 plugin configurations
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.c.c.PluginConfigurationManager - Plugin configuration manager initialized with hot reload: true
+2026-08-08 00:18:24 [Thread-0] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-08-08 00:18:24 [Thread-0] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-08-08 00:18:24 [Thread-0] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.l.launcher.SpringMainBootstrap - Started SpringMainBootstrap in 2.029 seconds (process running for 2.211)
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin environment: prod
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Plugin development mode: isolation
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.i.o.DefaultPluginOperator - Begin load plugins from:
+./plugins
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.s.w.PluginStaticResourceConfig - 插件静态资源配置: /plugins/{{pluginId}}/*
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 开始扫描插件目录，共 1 个根目录
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 扫描插件目录: /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins, 是否存在: true
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/demoTestUploadPlus-0.0.3-repackage.jar
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 发现插件: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 在目录 /Users/vim/Desktop/codes/brick-bootkit-springboot/spring-boot3-brick-bootkit-web-demo/./plugins 中发现 2 个插件
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.scanner.BasePluginScanner - 插件扫描完成，共发现 2 个插件
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 扫描到 2 个插件路径，开始加载...
+2026-08-08 00:18:24 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 成功加载插件: demoTestUploadPlus (./plugins/demoTestUploadPlus-0.0.3-repackage.jar)
+2026-08-08 00:18:24 [Thread-0] WARN  c.z.b.c.d.ComposeDescriptorLoader - 所有插件描述加载器都无法加载: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:18:24 [Thread-0] WARN  c.z.b.core.DefaultPluginManager - 跳过非插件目录或插件描述符加载失败: ./plugins/springboot-monitor-plus-0.0.1-SNAPSHOT.jar
+2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.b.ConfigurePluginEnvironment - Plugin[demoTestUploadPlus@0.0.3]  No active profile set, falling back to default profiles : default
+2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.b.p.w.PluginControllerProcessor - 插件[demoTestUploadPlus]注册接口数量: 1
+2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.core.DefaultPluginManager - 插件启动成功: demoTestUploadPlus, startedPlugins 大小: 1
+2026-08-08 00:18:25 [Thread-0] INFO  c.z.b.i.d.PluginDoctorStartupReporter - Plugin doctor summary: doctor=OK, errors=0, warnings=0, plugins=1, started=1

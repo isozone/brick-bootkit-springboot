@@ -1,9 +1,15 @@
 # templates
 
-这个目录提供两套最小模板：
+这个目录提供多套模板：
 
+**正向模板（可直接复制使用）**
 - `host-minimal`：标准 Spring Boot 宿主最小接入模板
 - `plugin-minimal`：最小插件工程模板
+- `host-cluster`：集群模式宿主模板（Redis 分布式锁 + 节点注册 + 插件状态同步）
+- `plugin-with-dependency`：带插件间依赖声明的插件模板（配合依赖分析）
+- `plugin-capability-demo`：新能力演示插件（服务注册中心 + 事件总线 + 配置热更新 + 安全扫描串联）
+
+**故障模板（用于培训/演示/排障验证）**
 - `host-broken-main-package`：故意演示 `plugin.mainPackage` 缺失时的错误模板
 - `host-broken-plugin-path`：故意演示插件目录配置错误时的模板
 - `plugin-broken-packaging`：故意演示插件未按框架要求打包时的模板

@@ -84,6 +84,30 @@ export const MENU_CONFIG = {
       path: '/plugins-web/cluster'
     },
     {
+      key: 'dependency',
+      label: '依赖分析',
+      icon: 'GitBranchOutline',
+      path: '/plugins-web/dependency'
+    },
+    {
+      key: 'rollout',
+      label: '灰度发布',
+      icon: 'RocketOutline',
+      path: '/plugins-web/rollout'
+    },
+    {
+      key: 'eventbus',
+      label: '事件总线',
+      icon: 'PulseOutline',
+      path: '/plugins-web/eventbus'
+    },
+    {
+      key: 'logs',
+      label: '插件日志',
+      icon: 'DocumentTextOutline',
+      path: '/plugins-web/logs'
+    },
+    {
       key: 'monitor',
       label: '系统监控',
       icon: 'StatsChartOutline',
@@ -183,7 +207,29 @@ export const API_PATHS = {
   CLUSTER_NODES: '/plugins-web/api/cluster/nodes',
   CLUSTER_NODES_CURRENT: '/plugins-web/api/cluster/nodes/current',
   CLUSTER_PLUGIN_STATES: '/plugins-web/api/cluster/plugins/states',
-  CLUSTER_PLUGIN_SYNC: '/plugins-web/api/cluster/plugins/sync'
+  CLUSTER_PLUGIN_SYNC: '/plugins-web/api/cluster/plugins/sync',
+
+  // === 依赖分析相关接口 ===
+  DEPENDENCY_GRAPH: '/plugins-web/api/dependency/graph',
+  DEPENDENCY_DETAIL: '/plugins-web/api/dependency',
+  DEPENDENCY_RESOLVE: '/plugins-web/api/dependency',
+  DEPENDENCY_COMPATIBILITY: '/plugins-web/api/dependency',
+  DEPENDENCY_IMPACT: '/plugins-web/api/dependency',
+  DEPENDENCY_MATRIX: '/plugins-web/api/dependency/matrix',
+
+  // === 灰度发布相关接口 ===
+  ROLLOUT_CONFIG: '/plugins-web/api/rollout/config',
+  ROLLOUT_PROBES: '/plugins-web/api/rollout/probes',
+  ROLLOUT_CHECK: '/plugins-web/api/rollout/check',
+
+  // === 事件总线相关接口 ===
+  EVENTBUS_STATS: '/plugins-web/api/eventbus/stats',
+  EVENTBUS_TYPES: '/plugins-web/api/eventbus/types',
+  EVENTBUS_RECENT: '/plugins-web/api/eventbus/recent',
+
+  // === 日志查看相关接口 ===
+  LOGS_FILE: '/plugins-web/api/logs/file',
+  LOGS_LIST: '/plugins-web/api/logs'
 }
 
 // 状态常量

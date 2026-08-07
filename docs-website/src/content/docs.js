@@ -938,6 +938,81 @@ GET /plugins-web/api/monitor/thread-pools`
     ]
   },
   {
+    id: 'capability-apis',
+    path: '/capability-apis',
+    title: '增强能力 API（2026-08）',
+    lead: '安全中心、服务注册中心、配置热更新、性能分析、集群管理、依赖分析、灰度发布、事件总线等能力已接入 Web 控制台。',
+    code: {
+      language: 'text',
+      filename: 'Capability controllers routes',
+      content: String.raw`# 安全中心
+GET    /plugins-web/api/security/scan/{pluginId}
+GET    /plugins-web/api/security/scan?path=
+GET    /plugins-web/api/security/policy/{pluginId}
+POST   /plugins-web/api/security/policy
+POST   /plugins-web/api/security/permissions/grant
+POST   /plugins-web/api/security/permissions/revoke
+GET    /plugins-web/api/security/permissions/{pluginId}
+
+# 服务注册中心
+GET    /plugins-web/api/registry/statistics
+GET    /plugins-web/api/registry/services
+GET    /plugins-web/api/registry/services/{pluginId}
+GET    /plugins-web/api/registry/plugins
+
+# 配置热更新
+GET    /plugins-web/api/configurations
+GET    /plugins-web/api/configurations/{pluginId}
+PUT    /plugins-web/api/configurations/{pluginId}
+GET    /plugins-web/api/configurations/{pluginId}/versions
+POST   /plugins-web/api/configurations/{pluginId}/rollback
+DELETE /plugins-web/api/configurations/{pluginId}
+
+# 性能分析与资源隔离
+GET    /plugins-web/api/performance/analyze/{pluginId}
+GET    /plugins-web/api/performance/usage
+GET    /plugins-web/api/performance/summary
+GET    /plugins-web/api/performance/scores
+GET    /plugins-web/api/performance/quota/{pluginId}
+POST   /plugins-web/api/performance/quota/{pluginId}
+
+# 集群管理
+GET    /plugins-web/api/cluster/overview
+GET    /plugins-web/api/cluster/nodes
+GET    /plugins-web/api/cluster/nodes/current
+GET    /plugins-web/api/cluster/plugins/states
+POST   /plugins-web/api/cluster/plugins/sync
+
+# 依赖分析
+GET    /plugins-web/api/dependency/graph
+GET    /plugins-web/api/dependency/{pluginId}
+GET    /plugins-web/api/dependency/{pluginId}/resolve
+GET    /plugins-web/api/dependency/{pluginId}/compatibility
+GET    /plugins-web/api/dependency/{pluginId}/impact
+GET    /plugins-web/api/dependency/matrix
+
+# 灰度发布
+GET    /plugins-web/api/rollout/config
+GET    /plugins-web/api/rollout/probes
+POST   /plugins-web/api/rollout/check/{pluginId}
+
+# 事件总线
+GET    /plugins-web/api/eventbus/stats
+GET    /plugins-web/api/eventbus/types
+GET    /plugins-web/api/eventbus/recent?limit=50`
+    },
+    sources: [
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/SecurityController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RegistryController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ConfigurationController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PerformanceController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ClusterController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DependencyController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RolloutController.java',
+      'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/EventBusController.java'
+    ]
+  },
+  {
     id: 'plugin-lifecycle',
     path: '/plugin-lifecycle',
     title: '生命周期扩展',

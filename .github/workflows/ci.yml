@@ -70,6 +70,31 @@ jobs:
         working-directory: docs-website
         run: npm run build
 
+  web-console-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: spring-boot3-brick-bootkit-web/vue3/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: spring-boot3-brick-bootkit-web/vue3
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: spring-boot3-brick-bootkit-web/vue3
+        run: npm run build
+
+      - name: Ensure Frontend Build Output Is Committed
+        run: git diff --exit-code -- spring-boot3-brick-bootkit-web/src/main/resources/static/plugins-web
+
   unit-tests-stable:
     runs-on: ubuntu-latest
     timeout-minutes: 20

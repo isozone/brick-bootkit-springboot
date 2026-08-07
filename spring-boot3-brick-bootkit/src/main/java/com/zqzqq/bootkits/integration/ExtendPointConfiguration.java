@@ -26,12 +26,12 @@ import com.zqzqq.bootkits.core.config.PluginConfigurationManager;
 import com.zqzqq.bootkits.core.config.PluginConfigurationProperties;
 import com.zqzqq.bootkits.core.descriptor.decrypt.DefaultPluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
+import com.zqzqq.bootkits.core.dependency.PluginDependencyManager;
+import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
 import com.zqzqq.bootkits.core.isolation.PluginResourceIsolation;
 import com.zqzqq.bootkits.core.isolation.PluginResourceMonitor;
 import com.zqzqq.bootkits.core.isolation.QuotaManager;
 import com.zqzqq.bootkits.core.launcher.plugin.DefaultMainResourcePatternDefiner;
-import com.zqzqq.bootkits.core.lock.ClusterLockProvider;
-import com.zqzqq.bootkits.core.lock.RedisClusterLockProvider;
 import com.zqzqq.bootkits.core.performance.PerformanceThresholds;
 import com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer;
 import com.zqzqq.bootkits.core.sandbox.PluginSandbox;
@@ -45,12 +45,13 @@ import com.zqzqq.bootkits.integration.doctor.PluginDoctorStartupReporter;
 import com.zqzqq.bootkits.integration.operator.DefaultPluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperatorWrapper;
+import com.zqzqq.bootkits.integration.registry.ServiceRegistryLifecycleExtension;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbe;
 import com.zqzqq.bootkits.integration.security.PluginSecurityAdmissionCheck;
 import com.zqzqq.bootkits.integration.user.DefaultPluginUser;
 import com.zqzqq.bootkits.integration.user.PluginUser;
 import com.zqzqq.bootkits.spring.extract.ExtractFactory;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.beans.factory.ObjectProvider;
@@ -58,7 +59,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -157,8 +157,25 @@ public class ExtendPointConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PluginDoctorService pluginDoctorService(ObjectProvider<com.zqzqq.bootkits.core.PluginManager> pluginManagerProvider) {
-        return new PluginDoctorService(configuration, pluginManagerProvider);
+    public PluginDoctorService pluginDoctorService(ObjectProvider<com.zqzqq.bootkits.core.PluginManager> pluginManagerProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.security.PluginSecurityManager> securityManagerProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.communication.PluginServiceRegistry> serviceRegistryProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.config.PluginConfigurationManager> configurationManagerProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.eventbus.PluginEventBus> eventBusProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.dependency.PluginDependencyManager> dependencyManagerProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer> performanceAnalyzerProvider,
+                                                   ObjectProvider<com.zqzqq.bootkits.integration.cluster.ClusterNodeRegistry> clusterNodeRegistryProvider,
+                                                   List<PluginRolloutProbe> rolloutProbes) {
+        return new PluginDoctorService(configuration,
+                pluginManagerProvider,
+                securityManagerProvider,
+                serviceRegistryProvider,
+                configurationManagerProvider,
+                eventBusProvider,
+                dependencyManagerProvider,
+                performanceAnalyzerProvider,
+                clusterNodeRegistryProvider,
+                rolloutProbes);
     }
 
     @Bean
@@ -201,14 +218,21 @@ public class ExtendPointConfiguration {
         return new DefaultPluginServiceRegistry();
     }
 
-    // ==================== 插件配置热更新 ====================
-
+    /**
+     * 服务注册自动接线扩展：插件启动时自动扫描 @PluginService / @BrickService 注解的 Bean
+     * 并注册到服务注册中心；插件停止时自动注销。
+     */
     @Bean
     @ConditionalOnMissingBean
-    public PluginConfigurationManager pluginConfigurationManager(ApplicationEventPublisher eventPublisher,
-                                                                 PluginConfigurationProperties properties) {
-        return new PluginConfigurationManager(eventPublisher, properties);
+    public ServiceRegistryLifecycleExtension serviceRegistryLifecycleExtension(
+            ObjectProvider<PluginServiceRegistry> pluginServiceRegistryProvider) {
+        return new ServiceRegistryLifecycleExtension(pluginServiceRegistryProvider);
     }
+
+    // ==================== 插件配置热更新 ====================
+    // 说明：PluginConfigurationManager 由 core 模块的 PluginConfigurationAutoConfiguration 注册，
+    // 此处仅保留配置属性绑定（@EnableConfigurationProperties），不重复注册 Bean，
+    // 避免 BeanDefinitionOverrideException。
 
     // ==================== 插件性能分析与资源隔离 ====================
 
@@ -237,18 +261,20 @@ public class ExtendPointConfiguration {
         return new PluginPerformanceAnalyzer(PerformanceThresholds.defaultThresholds());
     }
 
-    // ==================== 集群管理（Redis 分布式锁） ====================
+    // ==================== 插件依赖分析 ====================
 
-    /**
-     * 当容器中存在 StringRedisTemplate（宿主引入了 spring-boot-starter-data-redis 并配置了连接）
-     * 且未自定义 ClusterLockProvider 时，注册 Redis 分布式锁实现。
-     * 否则回退到默认的文件锁实现（FileClusterLockProvider）。
-     */
     @Bean
-    @ConditionalOnBean(StringRedisTemplate.class)
     @ConditionalOnMissingBean
-    public ClusterLockProvider redisClusterLockProvider(StringRedisTemplate redisTemplate) {
-        return new RedisClusterLockProvider(redisTemplate);
+    public PluginDependencyManager pluginDependencyManager() {
+        return new PluginDependencyManager();
+    }
+
+    // ==================== 插件事件总线 ====================
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PluginEventBus pluginEventBus() {
+        return new PluginEventBus();
     }
 
     // ==================== 集群节点注册与插件状态同步 ====================

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>brick-bootkit-host-cluster</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>brick-bootkit-host-cluster</name>
+    <description>Cluster host template for Brick BootKit (Redis lock + node registry)</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <brick-bootkit.version>4.0.9</brick-bootkit.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 集群分布式锁：引入 Redis 后，框架自动启用 RedisClusterLockProvider；
+             不引入则回退到共享目录文件锁 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-web</artifactId>
+            <version>${brick-bootkit.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

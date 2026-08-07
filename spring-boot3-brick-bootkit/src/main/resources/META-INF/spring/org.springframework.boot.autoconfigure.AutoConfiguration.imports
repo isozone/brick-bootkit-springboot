@@ -1,1 +1,2 @@
 com.zqzqq.bootkits.integration.SpringBootPluginStarter
+com.zqzqq.bootkits.integration.cluster.RedisClusterLockConfiguration

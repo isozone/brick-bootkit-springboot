@@ -44,7 +44,7 @@
 import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NMenu, NButton, NIcon, NTooltip } from 'naive-ui'
-import { LayersOutline, MenuOutline, ChevronBackOutline, ChevronForwardOutline, HomeOutline, CodeSlashOutline, CubeOutline, StatsChartOutline, ShieldCheckmarkOutline, GitNetworkOutline, SettingsOutline, SpeedometerOutline, ServerOutline } from '@vicons/ionicons5'
+import { LayersOutline, MenuOutline, ChevronBackOutline, ChevronForwardOutline, HomeOutline, CodeSlashOutline, CubeOutline, StatsChartOutline, ShieldCheckmarkOutline, GitNetworkOutline, SettingsOutline, SpeedometerOutline, ServerOutline, GitBranchOutline, RocketOutline, PulseOutline, DocumentTextOutline } from '@vicons/ionicons5'
 import { MENU_CONFIG } from '@/constants'
 
 defineProps({
@@ -128,7 +128,11 @@ const getIcon = (iconName) => {
     GitNetworkOutline,
     SettingsOutline,
     SpeedometerOutline,
-    ServerOutline
+    ServerOutline,
+    GitBranchOutline,
+    RocketOutline,
+    PulseOutline,
+    DocumentTextOutline
   }
   return icons[iconName] || HomeOutline
 }

@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+plugin:
+  enable: true
+  runMode: dev
+  pluginPath:
+    - ./plugins
+  web:
+    enabled: true
+    enable-ui: true
+
+  # ===== 集群配置 =====
+  clusterEnabled: true
+  # 多实例共享同一目录（或挂载的共享卷），用于节点注册与插件状态同步
+  clusterSharedPath: ./cluster-shared
+  clusterLockTimeoutMs: 30000
+
+spring:
+  data:
+    redis:
+      # 若使用 Redis 分布式锁，配置 Redis 连接；不配置则回退文件锁
+      host: localhost
+      port: 6379
