@@ -36,5 +36,14 @@ export default defineConfig({
     outDir: '../src/main/resources/static/plugins-web',  // 输出到 Spring Boot static 目录
     assetsDir: 'assets',
     sourcemap: false
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    include: ['src/**/*.test.js'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/utils/**', 'src/api/**', 'src/constants/**']
+    }
   }
 })

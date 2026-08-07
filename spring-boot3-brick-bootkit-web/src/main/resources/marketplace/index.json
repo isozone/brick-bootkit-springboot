@@ -1,0 +1,18 @@
+[
+  {
+    "pluginId": "demoTestUploadPlus",
+    "name": "Demo Test Upload Plus",
+    "version": "0.0.3",
+    "description": "演示插件：展示插件上传、接口注册与生命周期管理。",
+    "downloadUrl": "https://github.com/v18268185209/brick-bootkit-springboot/releases/download/demo/demoTestUploadPlus-0.0.3-repackage.jar",
+    "sizeBytes": 0
+  },
+  {
+    "pluginId": "capability-demo-plugin",
+    "name": "Capability Demo Plugin",
+    "version": "1.0.0",
+    "description": "新能力演示插件：串联服务注册中心、事件总线、配置热更新与安全扫描。",
+    "downloadUrl": "https://github.com/v18268185209/brick-bootkit-springboot/releases/download/demo/capability-demo-plugin-1.0.0.jar",
+    "sizeBytes": 0
+  }
+]

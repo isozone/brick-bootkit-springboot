@@ -447,4 +447,15 @@ export const logsApi = {
     service.get(API_PATHS.LOGS_LIST, { params: { keyword, lines } })
 }
 
+// ==================== 插件市场相关 API ====================
+
+export const marketplaceApi = {
+  // 获取插件市场清单
+  getList: () => service.get(API_PATHS.MARKETPLACE_LIST),
+
+  // 下载并安装市场插件
+  install: (pluginId, autoStart = true) =>
+    service.post(`${API_PATHS.MARKETPLACE_INSTALL}/${pluginId}`, { autoStart })
+}
+
 export default service

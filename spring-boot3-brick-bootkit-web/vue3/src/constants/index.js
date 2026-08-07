@@ -108,6 +108,12 @@ export const MENU_CONFIG = {
       path: '/plugins-web/logs'
     },
     {
+      key: 'marketplace',
+      label: '插件市场',
+      icon: 'StorefrontOutline',
+      path: '/plugins-web/marketplace'
+    },
+    {
       key: 'monitor',
       label: '系统监控',
       icon: 'StatsChartOutline',
@@ -229,7 +235,11 @@ export const API_PATHS = {
 
   // === 日志查看相关接口 ===
   LOGS_FILE: '/plugins-web/api/logs/file',
-  LOGS_LIST: '/plugins-web/api/logs'
+  LOGS_LIST: '/plugins-web/api/logs',
+
+  // === 插件市场相关接口 ===
+  MARKETPLACE_LIST: '/plugins-web/api/marketplace',
+  MARKETPLACE_INSTALL: '/plugins-web/api/marketplace/install'
 }
 
 // 状态常量

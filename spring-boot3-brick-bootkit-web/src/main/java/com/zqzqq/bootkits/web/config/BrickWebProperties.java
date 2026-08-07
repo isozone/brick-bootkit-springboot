@@ -60,6 +60,12 @@ public class BrickWebProperties {
     private List<String> pluginPaths;
     
     /**
+     * 插件市场索引 URL（JSON 数组，描述可下载插件）。
+     * 为空时回退到 classpath 下的 marketplace/index.json。
+     */
+    private String marketplaceIndexUrl;
+
+    /**
      * 插件上传临时目录（从 IntegrationConfiguration 自动获取）
      */
     private String uploadTempPath;

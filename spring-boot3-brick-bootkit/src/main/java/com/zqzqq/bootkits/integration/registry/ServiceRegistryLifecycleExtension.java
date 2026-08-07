@@ -38,9 +38,11 @@ public class ServiceRegistryLifecycleExtension implements PluginLifecycleExtensi
             "com.zqzqq.bootkits.sdk.annotation.BrickService";
 
     private final ObjectProvider<PluginServiceRegistry> registryProvider;
+    private final BrickServiceReferenceInjector serviceReferenceInjector;
 
     public ServiceRegistryLifecycleExtension(ObjectProvider<PluginServiceRegistry> registryProvider) {
         this.registryProvider = registryProvider;
+        this.serviceReferenceInjector = new BrickServiceReferenceInjector(registryProvider.getIfAvailable());
     }
 
     @Override
@@ -70,18 +72,21 @@ public class ServiceRegistryLifecycleExtension implements PluginLifecycleExtensi
         for (String beanName : beanFactory.getBeanDefinitionNames()) {
             try {
                 Object bean = beanFactory.getBean(beanName);
+                // 1. 注册本插件提供的服务（@PluginService / @BrickService）
                 ServiceAnnotationMeta meta = resolveServiceAnnotation(bean.getClass());
-                if (meta == null) {
-                    continue;
+                if (meta != null) {
+                    Class<?> interfaceClass = resolveInterfaceClass(bean.getClass(), meta);
+                    if (interfaceClass != null) {
+                        registry.registerService(pluginId, interfaceClass, bean, buildMetadata(meta));
+                        registered++;
+                    }
                 }
-                Class<?> interfaceClass = resolveInterfaceClass(bean.getClass(), meta);
-                if (interfaceClass == null) {
-                    continue;
+                // 2. 注入跨插件服务引用（@BrickServiceReference）
+                if (serviceReferenceInjector != null) {
+                    serviceReferenceInjector.injectReferences(bean, pluginId);
                 }
-                registry.registerService(pluginId, interfaceClass, bean, buildMetadata(meta));
-                registered++;
             } catch (Exception e) {
-                log.debug("插件服务注册跳过 bean: {}（原因: {}）", beanName, e.getMessage());
+                log.debug("插件服务注册/注入跳过 bean: {}（原因: {}）", beanName, e.getMessage());
             }
         }
 

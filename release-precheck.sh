@@ -63,7 +63,10 @@ for path in \
   "templates/plugin-minimal/pom.xml" \
   "templates/host-broken-main-package/README.md" \
   "templates/host-broken-plugin-path/README.md" \
-  "templates/plugin-broken-packaging/README.md"; do
+  "templates/plugin-broken-packaging/README.md" \
+  "templates/host-cluster/pom.xml" \
+  "templates/plugin-with-dependency/pom.xml" \
+  "templates/plugin-capability-demo/pom.xml"; do
   if [[ ! -f "$path" ]]; then
     fail "Missing required template file: $path"
   fi
@@ -82,6 +85,7 @@ for path in \
   "doc/2.SpringBoot项目快速接入指南.md" \
   "doc/3.兼容与支持矩阵.md" \
   "doc/4.发布与验收清单.md" \
+  "doc/5.API清单.md" \
   "doc/updates/4.0.6.md"; do
   if [[ ! -f "$path" ]]; then
     fail "Missing required documentation file: $path"
@@ -89,6 +93,87 @@ for path in \
 done
 if [[ $FAILED -eq 0 ]]; then
   pass "Key docs are present"
+fi
+
+print_step "Capability controllers presence (2026-08)"
+for path in \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/SecurityController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RegistryController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ConfigurationController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PerformanceController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ClusterController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DependencyController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RolloutController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/EventBusController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/LogController.java" \
+  "spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/MarketplaceController.java"; do
+  if [[ ! -f "$path" ]]; then
+    fail "Missing capability controller: $path"
+  fi
+done
+if [[ $FAILED -eq 0 ]]; then
+  pass "Capability controllers are present"
+fi
+
+print_step "Capability frontend pages presence (2026-08)"
+for path in \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/security/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/registry/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/config/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/performance/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/cluster/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/dependency/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/rollout/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/eventbus/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/logs/index.vue" \
+  "spring-boot3-brick-bootkit-web/vue3/src/views/marketplace/index.vue"; do
+  if [[ ! -f "$path" ]]; then
+    fail "Missing capability frontend page: $path"
+  fi
+done
+if [[ $FAILED -eq 0 ]]; then
+  pass "Capability frontend pages are present"
+fi
+
+print_step "Controller / Service unit tests presence"
+for path in \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/SecurityControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/RegistryControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/ConfigurationControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/PerformanceControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/ClusterControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/DependencyControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/RolloutControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/EventBusControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/LogControllerTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/SecurityWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/RegistryWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/ConfigurationWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/PerformanceWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/ClusterWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/DependencyWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/RolloutWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/EventBusWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/LogWebServiceTest.java" \
+  "spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/PluginMarketplaceServiceTest.java"; do
+  if [[ ! -f "$path" ]]; then
+    fail "Missing unit test: $path"
+  fi
+done
+if [[ $FAILED -eq 0 ]]; then
+  pass "Controller / Service unit tests are present"
+fi
+
+print_step "Frontend tests (vitest) presence"
+for path in \
+  "spring-boot3-brick-bootkit-web/vue3/src/utils/error-helper.test.js" \
+  "spring-boot3-brick-bootkit-web/vue3/src/utils/download-helper.test.js"; do
+  if [[ ! -f "$path" ]]; then
+    fail "Missing frontend test: $path"
+  fi
+done
+if [[ $FAILED -eq 0 ]]; then
+  pass "Frontend tests are present"
 fi
 
 print_step "Stable Java tests"

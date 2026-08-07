@@ -102,6 +102,12 @@ const routes = [
     meta: { title: '插件日志' }
   },
   {
+    path: '/plugins-web/marketplace',
+    name: 'Marketplace',
+    component: () => import('@/views/marketplace/index.vue'),
+    meta: { title: '插件市场' }
+  },
+  {
     path: '/plugins-web/plugins/upload',
     name: 'PluginUpload',
     component: () => import('@/views/plugins/upload.vue'),

@@ -48,7 +48,10 @@ $templateFiles = @(
     'templates/plugin-minimal/pom.xml',
     'templates/host-broken-main-package/README.md',
     'templates/host-broken-plugin-path/README.md',
-    'templates/plugin-broken-packaging/README.md'
+    'templates/plugin-broken-packaging/README.md',
+    'templates/host-cluster/pom.xml',
+    'templates/plugin-with-dependency/pom.xml',
+    'templates/plugin-capability-demo/pom.xml'
 )
 foreach ($path in $templateFiles) {
     if (-not (Test-Path $path)) {
@@ -69,6 +72,7 @@ $docFiles = @(
     'doc/2.SpringBoot项目快速接入指南.md',
     'doc/3.兼容与支持矩阵.md',
     'doc/4.发布与验收清单.md',
+    'doc/5.API清单.md',
     'doc/updates/4.0.6.md'
 )
 foreach ($path in $docFiles) {
@@ -78,6 +82,95 @@ foreach ($path in $docFiles) {
 }
 if (-not $failed) {
     Write-Pass "Key docs are present"
+}
+
+Write-Step "Capability controllers presence (2026-08)"
+$capabilityControllers = @(
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/SecurityController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RegistryController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ConfigurationController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/PerformanceController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/ClusterController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DependencyController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/RolloutController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/EventBusController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/LogController.java',
+    'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/MarketplaceController.java'
+)
+foreach ($path in $capabilityControllers) {
+    if (-not (Test-Path $path)) {
+        Write-Fail "Missing capability controller: $path"
+    }
+}
+if (-not $failed) {
+    Write-Pass "Capability controllers are present"
+}
+
+Write-Step "Capability frontend pages presence (2026-08)"
+$capabilityPages = @(
+    'spring-boot3-brick-bootkit-web/vue3/src/views/security/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/registry/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/config/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/performance/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/cluster/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/dependency/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/rollout/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/eventbus/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/logs/index.vue',
+    'spring-boot3-brick-bootkit-web/vue3/src/views/marketplace/index.vue'
+)
+foreach ($path in $capabilityPages) {
+    if (-not (Test-Path $path)) {
+        Write-Fail "Missing capability frontend page: $path"
+    }
+}
+if (-not $failed) {
+    Write-Pass "Capability frontend pages are present"
+}
+
+Write-Step "Controller / Service unit tests presence"
+$unitTests = @(
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/SecurityControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/RegistryControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/ConfigurationControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/PerformanceControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/ClusterControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/DependencyControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/RolloutControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/EventBusControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/controller/api/LogControllerTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/SecurityWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/RegistryWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/ConfigurationWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/PerformanceWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/ClusterWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/DependencyWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/RolloutWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/EventBusWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/LogWebServiceTest.java',
+    'spring-boot3-brick-bootkit-web/src/test/java/com/zqzqq/bootkits/web/service/PluginMarketplaceServiceTest.java'
+)
+foreach ($path in $unitTests) {
+    if (-not (Test-Path $path)) {
+        Write-Fail "Missing unit test: $path"
+    }
+}
+if (-not $failed) {
+    Write-Pass "Controller / Service unit tests are present"
+}
+
+Write-Step "Frontend tests (vitest) presence"
+$frontendTests = @(
+    'spring-boot3-brick-bootkit-web/vue3/src/utils/error-helper.test.js',
+    'spring-boot3-brick-bootkit-web/vue3/src/utils/download-helper.test.js'
+)
+foreach ($path in $frontendTests) {
+    if (-not (Test-Path $path)) {
+        Write-Fail "Missing frontend test: $path"
+    }
+}
+if (-not $failed) {
+    Write-Pass "Frontend tests are present"
 }
 
 Write-Step "Stable Java tests"

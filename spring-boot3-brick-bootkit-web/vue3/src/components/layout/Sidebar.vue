@@ -44,7 +44,8 @@
 import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NMenu, NButton, NIcon, NTooltip } from 'naive-ui'
-import { LayersOutline, MenuOutline, ChevronBackOutline, ChevronForwardOutline, HomeOutline, CodeSlashOutline, CubeOutline, StatsChartOutline, ShieldCheckmarkOutline, GitNetworkOutline, SettingsOutline, SpeedometerOutline, ServerOutline, GitBranchOutline, RocketOutline, PulseOutline, DocumentTextOutline } from '@vicons/ionicons5'
+import { useI18n } from 'vue-i18n'
+import { LayersOutline, MenuOutline, ChevronBackOutline, ChevronForwardOutline, HomeOutline, CodeSlashOutline, CubeOutline, StatsChartOutline, ShieldCheckmarkOutline, GitNetworkOutline, SettingsOutline, SpeedometerOutline, ServerOutline, GitBranchOutline, RocketOutline, PulseOutline, DocumentTextOutline, StorefrontOutline } from '@vicons/ionicons5'
 import { MENU_CONFIG } from '@/constants'
 
 defineProps({
@@ -58,6 +59,7 @@ defineEmits(['toggle'])
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const activeKey = computed(() => {
   const path = route.path
@@ -82,14 +84,14 @@ const activeKey = computed(() => {
 
 const menuOptions = MENU_CONFIG.sidebar.map(item => {
   const option = {
-    label: item.label,
+    label: t(`menu.${item.key}`, item.label),
     key: item.key,
     icon: () => h(NIcon, null, { default: () => h(getIcon(item.icon)) })
   }
 
   if (item.children) {
     option.children = item.children.map(child => ({
-      label: child.label,
+      label: t(`menu.${child.key}`, child.label),
       key: child.key,
       path: child.path
     }))
@@ -132,7 +134,8 @@ const getIcon = (iconName) => {
     GitBranchOutline,
     RocketOutline,
     PulseOutline,
-    DocumentTextOutline
+    DocumentTextOutline,
+    StorefrontOutline
   }
   return icons[iconName] || HomeOutline
 }
