@@ -6,6 +6,7 @@
 - `host-minimal`：标准 Spring Boot 宿主最小接入模板
 - `plugin-minimal`：最小插件工程模板
 - `host-cluster`：集群模式宿主模板（Redis 分布式锁 + 节点注册 + 插件状态同步）
+- `host-grayscale`：灰度发布宿主模板（rolloutMode=gray + 探针示例 + 失败回滚）
 - `plugin-with-dependency`：带插件间依赖声明的插件模板（配合依赖分析）
 - `plugin-capability-demo`：新能力演示插件（服务注册中心 + 事件总线 + 配置热更新 + 安全扫描串联）
 

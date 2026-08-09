@@ -88,6 +88,10 @@ jobs:
         working-directory: spring-boot3-brick-bootkit-web/vue3
         run: npm ci
 
+      - name: Run Frontend Unit Tests
+        working-directory: spring-boot3-brick-bootkit-web/vue3
+        run: npm test
+
       - name: Build Frontend
         working-directory: spring-boot3-brick-bootkit-web/vue3
         run: npm run build
@@ -112,7 +116,7 @@ jobs:
       - name: Run Unit Tests (Stable Modules)
         run: >
           bash mvnw -B -ntp
-          -pl spring-boot3-brick-bootkit-loader,spring-boot3-brick-bootkit-core,spring-boot3-brick-bootkit
+          -pl spring-boot3-brick-bootkit-loader,spring-boot3-brick-bootkit-core,spring-boot3-brick-bootkit,spring-boot3-brick-bootkit-web
           -am clean test
 
       - name: Upload Surefire Reports (On Failure)

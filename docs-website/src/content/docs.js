@@ -422,7 +422,8 @@ public class Application {
         bullets: [
           '降低第一次接入门槛',
           '打通 doctor、错误码、文档和模板',
-          '继续完善开源版稳定性和协作规范'
+          '已落地 9 项增强能力（安全/注册/配置/性能/集群/依赖/灰度/事件总线/日志/插件市场）',
+          '统一 Starter 真实运行时，补充 Controller/Service/组件/集成测试与前端国际化'
         ],
         sources: ['ROADMAP.md']
       },

@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">系统仪表盘</h1>
-        <p class="page-subtitle">实时监控系统状态和插件运行情况</p>
+        <h1 class="page-title">{{ $t('dashboard.title') }}</h1>
+        <p class="page-subtitle">{{ $t('dashboard.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

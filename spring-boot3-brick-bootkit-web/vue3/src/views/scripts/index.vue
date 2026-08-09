@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">脚本管理</h1>
-        <p class="page-subtitle">管理和执行各类脚本</p>
+        <h1 class="page-title">{{ $t('scripts.title') }}</h1>
+        <p class="page-subtitle">{{ $t('scripts.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="showCreateModal = true">

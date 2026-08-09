@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">安全中心</h1>
-        <p class="page-subtitle">插件安全扫描、策略与权限管理</p>
+        <h1 class="page-title">{{ $t('security.title') }}</h1>
+        <p class="page-subtitle">{{ $t('security.subtitle') }}</p>
       </div>
     </div>
 

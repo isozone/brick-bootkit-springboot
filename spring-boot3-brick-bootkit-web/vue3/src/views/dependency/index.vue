@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">依赖分析</h1>
-        <p class="page-subtitle">插件依赖关系、兼容性与升级影响面分析</p>
+        <h1 class="page-title">{{ $t('dependency.title') }}</h1>
+        <p class="page-subtitle">{{ $t('dependency.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

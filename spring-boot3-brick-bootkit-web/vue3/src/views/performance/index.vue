@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">性能分析</h1>
-        <p class="page-subtitle">插件性能评分、资源占用监控与配额管理</p>
+        <h1 class="page-title">{{ $t('performance.title') }}</h1>
+        <p class="page-subtitle">{{ $t('performance.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

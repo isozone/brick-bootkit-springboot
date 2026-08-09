@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">事件总线</h1>
-        <p class="page-subtitle">插件事件统计与实时事件流查看</p>
+        <h1 class="page-title">{{ $t('eventbus.title') }}</h1>
+        <p class="page-subtitle">{{ $t('eventbus.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

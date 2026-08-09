@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">灰度发布</h1>
-        <p class="page-subtitle">插件升级灰度策略配置、探针管理与决策模拟</p>
+        <h1 class="page-title">{{ $t('rollout.title') }}</h1>
+        <p class="page-subtitle">{{ $t('rollout.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

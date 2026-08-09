@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">服务注册中心</h1>
-        <p class="page-subtitle">查看插件间服务注册、发现与依赖关系</p>
+        <h1 class="page-title">{{ $t('registry.title') }}</h1>
+        <p class="page-subtitle">{{ $t('registry.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

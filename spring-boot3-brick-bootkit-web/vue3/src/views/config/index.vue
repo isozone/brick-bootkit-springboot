@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">插件配置</h1>
-        <p class="page-subtitle">查看与热更新插件配置，支持版本管理与回滚</p>
+        <h1 class="page-title">{{ $t('config.title') }}</h1>
+        <p class="page-subtitle">{{ $t('config.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="refreshData">

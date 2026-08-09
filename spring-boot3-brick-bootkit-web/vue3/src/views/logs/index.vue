@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">插件日志</h1>
-        <p class="page-subtitle">查看应用日志，支持按插件 ID 过滤</p>
+        <h1 class="page-title">{{ $t('logs.title') }}</h1>
+        <p class="page-subtitle">{{ $t('logs.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="loadLogs">

@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">集群管理</h1>
-        <p class="page-subtitle">集群节点状态、插件状态同步与分布式锁管理</p>
+        <h1 class="page-title">{{ $t('cluster.title') }}</h1>
+        <p class="page-subtitle">{{ $t('cluster.subtitle') }}</p>
       </div>
       <div class="header-actions">
         <n-button type="primary" @click="syncStates">

@@ -304,5 +304,19 @@ export default {
     systemMemory: '系统内存',
     systemInfo: '系统信息',
     threadInfo: '线程信息'
+  },
+  scripts: {
+    title: '脚本管理',
+    subtitle: '管理和执行各类脚本',
+    create: '新建脚本',
+    total: '脚本总数',
+    todayExecutions: '今日执行',
+    schedulerTasks: '调度任务',
+    templates: '模板数量',
+    noScripts: '暂无脚本',
+    editor: '脚本编辑器',
+    templatesTitle: '脚本模板',
+    schedulerTitle: '定时任务',
+    executionsTitle: '执行记录'
   }
 }

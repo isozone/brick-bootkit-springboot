@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+plugin:
+  enable: true
+  runMode: dev
+  pluginPath:
+    - ./plugins
+  web:
+    enabled: true
+    enable-ui: true
+
+  # ===== 灰度发布配置 =====
+  rolloutMode: gray
+  rolloutAutoStart: true
+  rolloutRollbackOnFailure: true

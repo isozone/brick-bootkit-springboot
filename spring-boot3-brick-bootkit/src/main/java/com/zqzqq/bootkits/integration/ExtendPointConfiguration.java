@@ -23,7 +23,6 @@ import com.zqzqq.bootkits.core.classloader.MainResourceMatcher;
 import com.zqzqq.bootkits.core.communication.DefaultPluginServiceRegistry;
 import com.zqzqq.bootkits.core.communication.PluginServiceRegistry;
 import com.zqzqq.bootkits.core.config.PluginConfigurationManager;
-import com.zqzqq.bootkits.core.config.PluginConfigurationProperties;
 import com.zqzqq.bootkits.core.descriptor.decrypt.DefaultPluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.descriptor.decrypt.PluginDescriptorDecrypt;
 import com.zqzqq.bootkits.core.dependency.PluginDependencyManager;
@@ -69,7 +68,6 @@ import java.util.List;
  * @version 3.0.3
  */
 @Configuration
-@EnableConfigurationProperties(PluginConfigurationProperties.class)
 public class ExtendPointConfiguration {
 
     private final GenericApplicationContext applicationContext;

@@ -304,5 +304,19 @@ export default {
     systemMemory: 'System Memory',
     systemInfo: 'System Info',
     threadInfo: 'Threads'
+  },
+  scripts: {
+    title: 'Scripts',
+    subtitle: 'Manage and execute scripts',
+    create: 'New Script',
+    total: 'Total Scripts',
+    todayExecutions: "Today's Executions",
+    schedulerTasks: 'Scheduler Tasks',
+    templates: 'Templates',
+    noScripts: 'No scripts',
+    editor: 'Script Editor',
+    templatesTitle: 'Script Templates',
+    schedulerTitle: 'Scheduler',
+    executionsTitle: 'Executions'
   }
 }
