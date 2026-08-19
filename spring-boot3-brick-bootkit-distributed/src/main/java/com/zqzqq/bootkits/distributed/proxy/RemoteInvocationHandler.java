@@ -95,6 +95,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         }
         ordered.addAll(unhealthy);
+        // [0, healthyGroupEnd) 为健康节点段；healthyGroupEnd==0 表示当前全部节点都不可用
+        final int healthyGroupEnd = ordered.size() - unhealthy.size();
 
         // 轮询起始下标，避免每次都打同一个节点
         int start = (int) (Math.floorMod(
@@ -102,8 +104,17 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 ordered.size()));
         int attempts = ordered.size();
         for (int i = 0; i < attempts; i++) {
-            RemoteServiceRegistration target = ordered.get(
-                    (start + i) % ordered.size());
+            int idx = (start + i) % ordered.size();
+            RemoteServiceRegistration target = ordered.get(idx);
+
+            // 存在健康节点时，遇到冷却期内的不健康节点一律跳过，不再发起网络调用、
+            // 也不再累计 failover——本轮已确定有可用副本，无需再去撞死节点。
+            // 仅当本轮没有任何健康节点（healthyGroupEnd==0）时，才会真去尝试死节点并快速失败。
+            if (healthyGroupEnd > 0
+                    && !clients.isHealthy(target.getHost(), target.getPort(), target.isTlsEnabled())) {
+                continue;
+            }
+
             try {
                 Object result = invokeRemote(target, method, args);
                 clients.markSuccess(target.getHost(), target.getPort(), target.isTlsEnabled());
