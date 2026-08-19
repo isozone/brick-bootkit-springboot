@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package brickbootkit.distributed;
+
+option java_multiple_files = true;
+option java_package = "com.zqzqq.bootkits.distributed.rpc.proto";
+option java_outer_classname = "PluginInvocationProto";
+
+// 插件泛化调用服务。
+// 宿主节点不本地加载远程插件，而是将方法调用序列化为 InvokeRequest，
+// 通过 gRPC 发送到持有该插件的执行节点，由执行节点在本地的插件 Spring 容器中
+// 查找目标服务实例并反射调用，最后把返回值序列化回传。
+service PluginInvocationService {
+  // 同步调用远端插件服务方法
+  rpc Invoke (InvokeRequest) returns (InvokeReply);
+}
+
+// 单次方法调用请求
+message InvokeRequest {
+  // 目标插件 ID
+  string pluginId = 1;
+  // 服务接口全限定类名
+  string serviceInterface = 2;
+  // 方法名
+  string methodName = 3;
+  // 参数类型全限定名列表
+  repeated string paramTypeNames = 4;
+  // 参数值（JSON 序列化），与 paramTypeNames 一一对应
+  repeated string paramValues = 5;
+  // 调用方元信息（traceId、超时等）
+  map<string, string> headers = 6;
+}
+
+// 调用响应
+message InvokeReply {
+  // 状态码：0=成功，非 0=失败
+  int32 status = 1;
+  // 返回值（JSON 序列化），void 方法为空
+  string returnValue = 2;
+  // 返回值类型（可选，用于反序列化）
+  string returnType = 3;
+  // 失败时的异常消息
+  string errorMessage = 4;
+  // 失败时的异常堆栈
+  string stackTrace = 5;
+  // 失败时的原始异常类型全限定名（尽力还原为业务异常）
+  string errorType = 6;
+}

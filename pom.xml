@@ -76,6 +76,7 @@
         <module>spring-boot3-brick-bootkit-sdk</module>
         <module>spring-boot3-brick-bootkit-spring-boot-starter</module>
         <module>spring-boot3-brick-bootkit-archetype</module>
+        <module>spring-boot3-brick-bootkit-distributed</module>
     </modules>
 
     <properties>
@@ -114,6 +115,10 @@
         <asm.version>9.6</asm.version>
         <aspectj.version>1.9.20</aspectj.version>
         <springdoc-openapi.version>1.8.0</springdoc-openapi.version>
+        <!-- 分布式插件模块（gRPC + Redis 服务目录） -->
+        <grpc.version>1.66.0</grpc.version>
+        <protobuf.version>3.25.5</protobuf.version>
+        <grpc-starter.version>3.1.0.RELEASE</grpc-starter.version>
     </properties>
 
     <dependencyManagement>
@@ -296,6 +301,43 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- gRPC 分布式插件通信 -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty-shaded</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-services</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
