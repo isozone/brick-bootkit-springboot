@@ -9,6 +9,7 @@ import com.zqzqq.bootkits.distributed.rpc.proto.PluginInvocationServiceGrpc;
 import com.zqzqq.bootkits.distributed.serialization.DistTrace;
 import com.zqzqq.bootkits.distributed.serialization.PayloadCodec;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,9 +120,15 @@ public class RemoteInvocationHandler implements InvocationHandler {
         try {
             reply = stub.invoke(request);
         } catch (StatusRuntimeException e) {
-            throw new RemoteNodeUnavailableException(target,
-                    "节点不可达: " + target.getHost() + ":" + target.getPort()
-                            + ", " + e.getStatus(), e);
+            // 仅把「节点本身不可达」识别为可 failover 的传输层故障；其余状态码
+            // （超时 DEADLINE_EXCEEDED、参数/鉴权类错误等）不代表节点宕机，
+            // 直接原样抛出，避免误关健康 channel 或把错误转发到其它节点。
+            if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
+                throw new RemoteNodeUnavailableException(target,
+                        "节点不可达: " + target.getHost() + ":" + target.getPort()
+                                + ", " + e.getStatus(), e);
+            }
+            throw e;
         }
 
         return handleReply(method, reply);
@@ -176,17 +183,43 @@ public class RemoteInvocationHandler implements InvocationHandler {
         if (message == null || message.isEmpty()) {
             message = "远端插件调用失败";
         }
-        // 优先尝试还原为业务可感知的异常；未知类型统一包装为 RuntimeException
+        // 优先还原为业务可感知的具体异常类型。要求：该异常类必须对宿主 classpath 可见
+        // （即双方共享契约中包含异常类），此时用 TCCL 精确加载并反射构造；
+        // 若不可见（插件 jar 内的私有异常类在宿主侧不存在），统一回退为 RuntimeException，
+        // 并在 message 中保留原始 errorType 与错误信息。
         try {
-            Class<?> type = Class.forName(reply.getErrorType());
-            if (Throwable.class.isAssignableFrom(type)) {
+            Class<?> type = resolveSharedExceptionClass(reply.getErrorType());
+            if (type != null && Throwable.class.isAssignableFrom(type)) {
                 java.lang.reflect.Constructor<?> ctor = type.getConstructor(String.class);
                 return (Throwable) ctor.newInstance(message);
             }
         } catch (Exception ignored) {
             // 无法还原具体异常类型，回退 RuntimeException
         }
-        return new RuntimeException("远端插件异常[" + serviceInterface.getName() + "." + reply.getErrorType() + "]: " + message);
+        return new RuntimeException("远端插件异常[" + serviceInterface.getName() + "@" + reply.getErrorType() + "]: " + message);
+    }
+
+    /**
+     * 在宿主侧解析共享产物异常类型：优先调用线程上下文类加载器，其次系统类加载器。
+     * 返回 null 表示该类型在宿主侧不可见（无法精确还原）。
+     */
+    private Class<?> resolveSharedExceptionClass(String errorType) {
+        if (errorType == null || errorType.isEmpty()) {
+            return null;
+        }
+        ClassLoader tcl = Thread.currentThread().getContextClassLoader();
+        if (tcl != null) {
+            try {
+                return Class.forName(errorType, false, tcl);
+            } catch (ClassNotFoundException ignored) {
+                // 继续尝试系统类加载器
+            }
+        }
+        try {
+            return Class.forName(errorType);
+        } catch (ClassNotFoundException ignored) {
+            return null;
+        }
     }
 
     private Object handleObjectMethod(Object proxy, Method method, Object[] args) {

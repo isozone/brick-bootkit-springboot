@@ -140,8 +140,10 @@ public class RedisServiceDirectory implements ServiceDirectory {
     @Override
     public void unregisterAllByNode(String nodeId) {
         try {
+            // 仅扫描本模块前缀下的服务 key（prefix:svc:*），避免在多应用共用同一 Redis
+            // 时，连带删除其他前缀应用的注册（旧实现用 "*:svc:*" 会越权）。
             Cursor<byte[]> cursor = redis.getConnectionFactory().getConnection()
-                    .scan(ScanOptions.scanOptions().match("*" + SVC_KEY_SUFFIX + "*").count(100).build());
+                    .scan(ScanOptions.scanOptions().match(prefix + SVC_KEY_SUFFIX + "*").count(100).build());
             while (cursor.hasNext()) {
                 String key = new String(cursor.next());
                 redis.opsForHash().entries(key).forEach((field, value) -> {

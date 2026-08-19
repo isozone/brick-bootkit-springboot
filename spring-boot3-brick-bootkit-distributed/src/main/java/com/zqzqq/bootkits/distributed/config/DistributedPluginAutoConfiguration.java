@@ -83,7 +83,10 @@ public class DistributedPluginAutoConfiguration {
     public GrpcClientProvider distributedGrpcClientProvider(DistributedPluginProperties properties) {
         return new GrpcClientProvider(
                 properties.getMaxInboundMessageSize(),
-                properties.getCallTimeoutMillis());
+                properties.getCallTimeoutMillis(),
+                properties.isTlsEnabled(),
+                properties.getTlsCaCertPath(),
+                properties.getAuthToken());
     }
 
     @Bean
@@ -139,9 +142,14 @@ public class DistributedPluginAutoConfiguration {
             DistributedPluginProperties properties,
             PluginInvocationServiceImpl invocationService) {
         GrpcServerBootstrap bootstrap = new GrpcServerBootstrap(
+                properties.getHost(),
                 properties.getPort(),
                 properties.getMaxInboundMessageSize(),
-                invocationService);
+                invocationService,
+                properties.isTlsEnabled(),
+                properties.getTlsCertChainPath(),
+                properties.getTlsPrivateKeyPath(),
+                properties.getAuthToken());
         try {
             bootstrap.start();
         } catch (IOException e) {
@@ -158,7 +166,10 @@ public class DistributedPluginAutoConfiguration {
             PluginServiceRegistry registry,
             ServiceDirectory directory,
             DistributedPluginProperties properties) {
-        String host = ServiceRegistrationScheduler.resolveHost();
+        // 对外可达/监听地址：显式配置 host 则使用（多网卡场景建议如此），否则自动解析局域网 IPv4。
+        String host = (properties.getHost() != null && !properties.getHost().isEmpty())
+                ? properties.getHost()
+                : ServiceRegistrationScheduler.resolveHost();
         String nodeId = resolveNodeId(properties, host);
         ServiceRegistrationScheduler scheduler = new ServiceRegistrationScheduler(
                 registry,
