@@ -39,6 +39,16 @@ public class ServiceRegistrationScheduler {
                 return t;
             });
 
+    /**
+     * 记录本节点上一轮已注册的服务：复合键 serviceInterface@pluginId@nodeId。
+     * 用于 diff：仅注销「上一轮存在、本轮已消失」的服务，避免每周期对整片目录
+     * 做全量 SCAN + 删后再建，也避免由此带来的短暂缺失窗口。
+     * <p>注意必须用「接口+插件+节点」三元复合键：同一插件可提供多个接口，各自是
+     * Redis 中不同的 key（svc:IfaceA / svc:IfaceB），字段虽都是 pluginId@nodeId，
+     * 但对应不同服务，若只按 pluginId@nodeId 记录会导致卸载时漏删。
+     */
+    private final java.util.Set<String> previouslyRegistered = new java.util.HashSet<>();
+
     public ServiceRegistrationScheduler(PluginServiceRegistry localRegistry,
                                         ServiceDirectory directory,
                                         String nodeId,
@@ -78,21 +88,63 @@ public class ServiceRegistrationScheduler {
 
     /**
      * 同步全部本地插件服务到 Redis 目录。
+     * <p>
+     * 每周期对当前仍在服务的字段做<b>就地 upsert</b>（HSET 覆盖，同时刷新 {@code registeredAt}
+     * 以满足目录的新鲜度过滤），仅对「上一轮注册过、本轮已消失」的服务做定点注销。
+     * 相比旧实现「先 unregisterAllByNode(全量SCAN) 再 registerAll」，避免：
+     * <ul>
+     *   <li>每次心跳都对整片前缀做 SCAN + 重建，Redis 写放大；</li>
+     *   <li>删后再建的短暂窗口内，宿主查询会暂时看不到本节点服务。</li>
+     * </ul>
      */
     public synchronized void syncAllServices() {
         try {
             List<RemoteServiceRegistration> regs = collectLocalServices();
-            if (regs.isEmpty()) {
-                directory.unregisterAllByNode(nodeId);
-                return;
+            // 计算本轮服务复合键 serviceInterface@pluginId@nodeId，用于 diff
+            java.util.Set<String> current = new java.util.HashSet<>();
+            for (RemoteServiceRegistration reg : regs) {
+                directory.register(reg); // HSET 就地覆盖，幂等且刷新 registeredAt
+                current.add(compositeKey(reg));
             }
-            // 先注销本节点旧记录，再注册当前快照，保证目录与本地状态一致
-            directory.unregisterAllByNode(nodeId);
-            directory.registerAll(regs);
+            // 注销上一轮有、本轮已消失的服务（定点删除，避免全量 SCAN）
+            for (String key : previouslyRegistered) {
+                if (!current.contains(key)) {
+                    directory.unregister(parseServiceInterface(key),
+                            parsePluginId(key), parseNodeId(key));
+                }
+            }
+            previouslyRegistered.clear();
+            previouslyRegistered.addAll(current);
             log.debug("已同步 {} 个远端服务注册", regs.size());
         } catch (Exception e) {
             log.warn("同步本地插件服务到 Redis 目录失败", e);
         }
+    }
+
+    /**
+     * 立即触发一次本地服务同步（供「本地插件注册/注销时主动推送目录变更」，把远端
+     * 发现延迟从「最多一个心跳周期(默认10s)」压缩到「亚秒级」，近似注册中心 watch）。
+     * 幂等：diff 式同步，频繁调用仅做就地 upsert + 定点注销，开销小。
+     */
+    public synchronized void resyncNow() {
+        syncAllServices();
+    }
+
+    private static String compositeKey(RemoteServiceRegistration reg) {
+        return reg.getServiceInterface() + "@" + reg.getPluginId() + "@" + reg.getNodeId();
+    }
+
+    private static String parseServiceInterface(String key) {
+        return key.substring(0, key.indexOf('@'));
+    }
+
+    private static String parsePluginId(String key) {
+        String rest = key.substring(key.indexOf('@') + 1);
+        return rest.substring(0, rest.indexOf('@'));
+    }
+
+    private static String parseNodeId(String key) {
+        return key.substring(key.lastIndexOf('@') + 1);
     }
 
     private List<RemoteServiceRegistration> collectLocalServices() {

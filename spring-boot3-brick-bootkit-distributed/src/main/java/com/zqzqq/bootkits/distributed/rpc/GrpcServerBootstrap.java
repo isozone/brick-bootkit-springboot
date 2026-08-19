@@ -37,12 +37,25 @@ public class GrpcServerBootstrap {
     private final String authToken;
     private final PluginInvocationServiceImpl invocationService;
 
+    /** 优雅停机时长（秒）：等待在途 gRPC 调用排空后再强制关闭，避免升级/关停时丢调用。 */
+    private final long gracefulShutdownSeconds;
+
+    /**
+     * 服务端 keepAlive 配置（毫秒，<=0 表示不显式设置，沿用 netty/gRPC 默认值）。
+     * 用于与客户端 keepAlive 配合，告知服务端「允许客户端在没有活跃调用时也发 ping」
+     * （{@code permitKeepAliveWithoutCalls}），并设置 ping 的最小间隔
+     * （{@code permitKeepAliveTime}，低于此值会被服务端拒绝导致连接关闭，防御恶意客户端）。
+     */
+    private final long keepAliveTimeMillis;
+    private final long permitKeepAliveTimeMillis;
+    private final boolean permitKeepAliveWithoutCalls;
+
     private Server server;
 
     public GrpcServerBootstrap(int port,
                                int maxInboundMessageSize,
                                PluginInvocationServiceImpl invocationService) {
-        this("", port, maxInboundMessageSize, invocationService, false, "", "", "");
+        this("", port, maxInboundMessageSize, invocationService, false, "", "", "", 10L);
     }
 
     public GrpcServerBootstrap(String host,
@@ -53,6 +66,43 @@ public class GrpcServerBootstrap {
                                String certChainPath,
                                String privateKeyPath,
                                String authToken) {
+        this(host, port, maxInboundMessageSize, invocationService, tlsEnabled,
+                certChainPath, privateKeyPath, authToken, 10L);
+    }
+
+    public GrpcServerBootstrap(String host,
+                               int port,
+                               int maxInboundMessageSize,
+                               PluginInvocationServiceImpl invocationService,
+                               boolean tlsEnabled,
+                               String certChainPath,
+                               String privateKeyPath,
+                               String authToken,
+                               long gracefulShutdownSeconds) {
+        this(host, port, maxInboundMessageSize, invocationService, tlsEnabled,
+                certChainPath, privateKeyPath, authToken, gracefulShutdownSeconds,
+                60_000L, 30_000L, true);
+    }
+
+    /**
+     * 全参构造（含 keepAlive）。供自动配置注入，让服务端 keepAlive 可调。
+     *
+     * @param keepAliveTimeMillis        服务端发起 keepAlive ping 间隔；<=0 不设置
+     * @param permitKeepAliveTimeMillis  允许客户端 ping 的最小间隔；<=0 不设置
+     * @param permitKeepAliveWithoutCalls 是否允许客户端在无活跃调用时也 ping
+     */
+    public GrpcServerBootstrap(String host,
+                               int port,
+                               int maxInboundMessageSize,
+                               PluginInvocationServiceImpl invocationService,
+                               boolean tlsEnabled,
+                               String certChainPath,
+                               String privateKeyPath,
+                               String authToken,
+                               long gracefulShutdownSeconds,
+                               long keepAliveTimeMillis,
+                               long permitKeepAliveTimeMillis,
+                               boolean permitKeepAliveWithoutCalls) {
         this.host = host;
         this.port = port;
         this.maxInboundMessageSize = maxInboundMessageSize;
@@ -61,6 +111,10 @@ public class GrpcServerBootstrap {
         this.certChainPath = certChainPath;
         this.privateKeyPath = privateKeyPath;
         this.authToken = authToken;
+        this.gracefulShutdownSeconds = Math.max(1L, gracefulShutdownSeconds);
+        this.keepAliveTimeMillis = keepAliveTimeMillis;
+        this.permitKeepAliveTimeMillis = permitKeepAliveTimeMillis;
+        this.permitKeepAliveWithoutCalls = permitKeepAliveWithoutCalls;
     }
 
     /**
@@ -75,6 +129,16 @@ public class GrpcServerBootstrap {
                 ? NettyServerBuilder.forAddress(new InetSocketAddress(host, port))
                 : NettyServerBuilder.forPort(port);
         builder.maxInboundMessageSize(maxInboundMessageSize);
+
+        // keepAlive：与客户端配合，避免跨 NAT/公网时长连接被中间设备静默断开。
+        // permitKeepAliveTime 用于防御恶意客户端高频 ping（默认 30s，低于该值会被服务端拒绝）。
+        if (keepAliveTimeMillis > 0) {
+            builder.keepAliveTime(keepAliveTimeMillis, TimeUnit.MILLISECONDS);
+        }
+        if (permitKeepAliveTimeMillis > 0) {
+            builder.permitKeepAliveTime(permitKeepAliveTimeMillis, TimeUnit.MILLISECONDS);
+        }
+        builder.permitKeepAliveWithoutCalls(permitKeepAliveWithoutCalls);
 
         // 鉴权拦截器（token 为空时不启用）
         io.grpc.ServerInterceptor auth = AuthInterceptors.server(authToken);
@@ -112,7 +176,13 @@ public class GrpcServerBootstrap {
             return;
         }
         try {
-            server.shutdown().awaitTermination(3, TimeUnit.SECONDS);
+            log.info("开始优雅停机 gRPC 服务，等待在途调用排空，最长 {}s ...", gracefulShutdownSeconds);
+            boolean drained = server.shutdown().awaitTermination(gracefulShutdownSeconds, TimeUnit.SECONDS);
+            if (!drained) {
+                log.warn("优雅停机超时（{}s），强制关闭仍在途的调用", gracefulShutdownSeconds);
+                server.shutdownNow();
+                server.awaitTermination(2, TimeUnit.SECONDS);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             server.shutdownNow();
@@ -129,5 +199,17 @@ public class GrpcServerBootstrap {
      */
     public int getPort() {
         return port;
+    }
+
+    public long getKeepAliveTimeMillis() {
+        return keepAliveTimeMillis;
+    }
+
+    public long getPermitKeepAliveTimeMillis() {
+        return permitKeepAliveTimeMillis;
+    }
+
+    public boolean isPermitKeepAliveWithoutCalls() {
+        return permitKeepAliveWithoutCalls;
     }
 }

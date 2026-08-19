@@ -2,6 +2,9 @@ package com.zqzqq.bootkits.distributed.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 分布式插件模块配置。
  * <p>
@@ -109,6 +112,54 @@ public class DistributedPluginProperties {
      * Redis 恢复后自动切回实时目录。设为 0 可关闭兜底缓存（严格实时语义）。默认 30 秒。
      */
     private long registryCacheTtlMillis = 30_000L;
+
+    /**
+     * 按方法维度覆盖调用超时（毫秒）。
+     * <p>
+     * Map 的 key 优先用「接口全限定名.方法名」，其次「方法名」；命中则覆盖全局
+     * {@link #callTimeoutMillis}。用于对个别重/慢方法单独放宽或收紧超时，避免一刀切。
+     * 例：{@code plugin.distributed.method-timeouts.com.example.UserService.getUserName=8000}
+     */
+    private Map<String, Long> methodTimeouts = new HashMap<>();
+
+    /**
+     * 远端传输层不可达（UNAVAILABLE）时的<b>有限次自动重试</b>次数（默认 0，不重试）。
+     * <p>
+     * 仅对「所有副本在当前轮均不可达」的场景生效：在抛错前，将整组候选副本重试
+     * 至多该次数（间隔一个 base 退避节拍），用于吸收瞬时网络抖动。注意：自动重试
+     * 对幂等方法安全，对非幂等(如写操作)可能造成重复执行，请按业务谨慎开启。
+     */
+    private int maxFailoverRetries = 0;
+
+    /**
+     * WORKER 节点 gRPC 服务优雅停机时长（秒）：关停时等待在途调用排空后再强制关闭，
+     * 避免升级/关停期间丢调用。默认 10 秒。
+     */
+    private long gracefulShutdownSeconds = 10L;
+
+    /**
+     * gRPC 客户端 keepAlive ping 间隔（毫秒，默认 60000）。跨 NAT/公网/容器网络时长连接
+     * 可能被中间设备静默断开，开启 keepAlive 让 gRPC 在空闲期主动探测、尽早发现死连接，
+     * 避免首次真实调用吃一次完整超时。设为 <=0 关闭（保留旧版语义）。
+     */
+    private long keepAliveTimeMillis = 60_000L;
+
+    /**
+     * gRPC 客户端 keepAlive ping 等待 ACK 超时（毫秒，默认 20000）。仅 keepAliveTimeMillis>0 时生效。
+     */
+    private long keepAliveTimeoutMillis = 20_000L;
+
+    /**
+     * 客户端是否在<b>无活跃调用</b>时也发 keepAlive ping（默认 true）。
+     * 保活长连接，避免反复重建；与服务端 {@code permitKeepAliveWithoutCalls} 配合生效。
+     */
+    private boolean keepAliveWithoutCalls = true;
+
+    /**
+     * 服务端允许客户端 keepAlive ping 的最小间隔（毫秒，默认 30000）。
+     * 低于该值的客户端 ping 会被服务端拒绝并关闭连接，用于防御恶意/失控客户端的高频 ping。
+     */
+    private long permitKeepAliveTimeMillis = 30_000L;
 
     public boolean isEnabled() {
         return enabled;
@@ -236,6 +287,62 @@ public class DistributedPluginProperties {
 
     public void setRegistryCacheTtlMillis(long registryCacheTtlMillis) {
         this.registryCacheTtlMillis = registryCacheTtlMillis;
+    }
+
+    public Map<String, Long> getMethodTimeouts() {
+        return methodTimeouts;
+    }
+
+    public void setMethodTimeouts(Map<String, Long> methodTimeouts) {
+        this.methodTimeouts = methodTimeouts != null ? methodTimeouts : new HashMap<>();
+    }
+
+    public int getMaxFailoverRetries() {
+        return maxFailoverRetries;
+    }
+
+    public void setMaxFailoverRetries(int maxFailoverRetries) {
+        this.maxFailoverRetries = maxFailoverRetries;
+    }
+
+    public long getGracefulShutdownSeconds() {
+        return gracefulShutdownSeconds;
+    }
+
+    public void setGracefulShutdownSeconds(long gracefulShutdownSeconds) {
+        this.gracefulShutdownSeconds = gracefulShutdownSeconds;
+    }
+
+    public long getKeepAliveTimeMillis() {
+        return keepAliveTimeMillis;
+    }
+
+    public void setKeepAliveTimeMillis(long keepAliveTimeMillis) {
+        this.keepAliveTimeMillis = keepAliveTimeMillis;
+    }
+
+    public long getKeepAliveTimeoutMillis() {
+        return keepAliveTimeoutMillis;
+    }
+
+    public void setKeepAliveTimeoutMillis(long keepAliveTimeoutMillis) {
+        this.keepAliveTimeoutMillis = keepAliveTimeoutMillis;
+    }
+
+    public boolean isKeepAliveWithoutCalls() {
+        return keepAliveWithoutCalls;
+    }
+
+    public void setKeepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
+        this.keepAliveWithoutCalls = keepAliveWithoutCalls;
+    }
+
+    public long getPermitKeepAliveTimeMillis() {
+        return permitKeepAliveTimeMillis;
+    }
+
+    public void setPermitKeepAliveTimeMillis(long permitKeepAliveTimeMillis) {
+        this.permitKeepAliveTimeMillis = permitKeepAliveTimeMillis;
     }
 
     /**

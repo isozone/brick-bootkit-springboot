@@ -15,10 +15,30 @@ public final class RemoteServiceProxyFactory {
 
     private final ServiceDirectory directory;
     private final GrpcClientProvider clients;
+    private final com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics;
+    private final java.util.Map<String, Long> methodTimeouts;
+    private final int maxRetries;
 
     public RemoteServiceProxyFactory(ServiceDirectory directory, GrpcClientProvider clients) {
+        this(directory, clients, null, java.util.Collections.emptyMap(), 0);
+    }
+
+    public RemoteServiceProxyFactory(ServiceDirectory directory,
+                                     GrpcClientProvider clients,
+                                     com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics) {
+        this(directory, clients, metrics, java.util.Collections.emptyMap(), 0);
+    }
+
+    public RemoteServiceProxyFactory(ServiceDirectory directory,
+                                     GrpcClientProvider clients,
+                                     com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics,
+                                     java.util.Map<String, Long> methodTimeouts,
+                                     int maxRetries) {
         this.directory = directory;
         this.clients = clients;
+        this.metrics = metrics != null ? metrics : (clients != null ? clients.metrics() : null);
+        this.methodTimeouts = methodTimeouts != null ? methodTimeouts : java.util.Collections.emptyMap();
+        this.maxRetries = Math.max(0, maxRetries);
     }
 
     /**
@@ -34,7 +54,8 @@ public final class RemoteServiceProxyFactory {
         return (T) Proxy.newProxyInstance(
                 serviceInterface.getClassLoader(),
                 new Class<?>[]{serviceInterface},
-                new RemoteInvocationHandler(pluginId, serviceInterface, directory, clients)
+                new RemoteInvocationHandler(pluginId, serviceInterface, directory, clients, metrics,
+                        methodTimeouts, maxRetries)
         );
     }
 }

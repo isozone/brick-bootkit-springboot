@@ -1,5 +1,7 @@
 package com.zqzqq.bootkits.web.controller.api;
 
+import com.zqzqq.bootkits.distributed.metrics.DistributedStatusProvider;
+import com.zqzqq.bootkits.distributed.metrics.DistributedStatusProvider.DistributedStatus;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
 import com.zqzqq.bootkits.web.auth.PluginWebPermission;
 import com.zqzqq.bootkits.web.dto.ApiResult;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,11 +31,14 @@ public class MonitorController {
 
     private final ObjectProvider<MonitorWebService> monitorWebServiceProvider;
     private final PluginWebAuthorizationService authorizationService;
+    private final ObjectProvider<DistributedStatusProvider> distributedStatusProvider;
 
     public MonitorController(ObjectProvider<MonitorWebService> monitorWebServiceProvider,
-                             PluginWebAuthorizationService authorizationService) {
+                             PluginWebAuthorizationService authorizationService,
+                             ObjectProvider<DistributedStatusProvider> distributedStatusProvider) {
         this.monitorWebServiceProvider = monitorWebServiceProvider;
         this.authorizationService = authorizationService;
+        this.distributedStatusProvider = distributedStatusProvider;
     }
 
     private void authorize() {
@@ -119,5 +125,51 @@ public class MonitorController {
     public ApiResult<List<MonitorOverviewDTO.ThreadPoolInfo>> threadPools() {
         authorize();
         return ApiResult.success(monitorWebServiceProvider.getObject().getThreadPools());
+    }
+
+    // ==================== 分布式插件模块状态（可选） ====================
+
+    /**
+     * 分布式插件模块运行时状态：failover 计数 / 节点健康 / Redis 目录兜底命中 / 调用耗时 等。
+     * <p>
+     * 仅当宿主启用 {@code plugin.distributed.enabled=true} 时，Spring 容器才会存在
+     * {@link DistributedStatusProvider} Bean，本端点返回实时状态快照；
+     * 未启用分布式模块时返回 {@code disabled=true}，便于运维一眼区分「模块未启用」与「指标全零」。
+     *
+     * @since 4.0.9 分布式可观测性（方向一）
+     */
+    @GetMapping("/distributed")
+    @Operation(summary = "获取分布式插件模块运行时状态",
+               description = "返回 failover 计数、节点健康、Redis 目录兜底命中、远端调用耗时等指标。"
+                       + "未启用分布式模块时返回 disabled=true。")
+    public ApiResult<Map<String, Object>> distributed() {
+        authorize();
+        DistributedStatusProvider provider = distributedStatusProvider.getIfAvailable();
+        Map<String, Object> payload = new LinkedHashMap<>();
+        if (provider == null) {
+            payload.put("disabled", true);
+            payload.put("message", "plugin.distributed.enabled=false 或分布式模块未引入；本端点仅在该模块启用时返回状态。");
+            return ApiResult.success(payload);
+        }
+        payload.put("disabled", false);
+        payload.put("healthy", provider.isHealthy());
+        DistributedStatus status = provider.status();
+        payload.put("role", status.getRole());
+        payload.put("nodeId", status.getNodeId());
+        payload.put("remoteCalls", status.getRemoteCallCount());
+        payload.put("remoteCallSuccess", status.getRemoteCallSuccessCount());
+        payload.put("errorRate", status.getErrorRate());
+        payload.put("failoverCount", status.getFailoverCount());
+        payload.put("circuitBreakerTripped", status.getCircuitBreakerTrippedCount());
+        payload.put("avgCallMillis", status.getAvgRemoteCallMillis());
+        payload.put("activeChannels", status.getActiveChannels());
+        payload.put("registryLookupSuccess", status.getRegistryLookupSuccessCount());
+        payload.put("registryFallbackUsed", status.getRegistryFallbackUsedCount());
+        payload.put("registryFallbackHit", status.getRegistryFallbackHitCount());
+        payload.put("registryFallbackMiss", status.getRegistryFallbackMissCount());
+        payload.put("registryAvailability", status.getRegistryAvailability());
+        payload.put("registeredServiceInterfaces", status.getServiceInterfaces());
+        payload.put("nodes", status.getNodes());
+        return ApiResult.success(payload);
     }
 }

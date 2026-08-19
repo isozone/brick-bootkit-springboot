@@ -77,6 +77,46 @@ class OptimizationIntegrationTest {
                 .hasRootCauseMessage("root cause: null value");
     }
 
+    // ==================== 1.5 业务异常错误响应携带节点信息与耗时（方向三） ====================
+
+    @Test
+    void shouldEnrichBusinessExceptionWithNodeInfoAndElapsed() throws Exception {
+        int port = findFreePort();
+        PluginServiceRegistry registry = mock(PluginServiceRegistry.class);
+        // 远端正常响应（节点健康）但业务侧抛错——验证错误响应附上节点 + 单次 + 总耗时
+        when(registry.getService(eq(PLUGIN_ID), eq(UserService.class)))
+                .thenThrow(new IllegalStateException("business boom"));
+
+        server = new GrpcServerBootstrap(port, 16 * 1024 * 1024,
+                new PluginInvocationServiceImpl(registry));
+        server.start();
+
+        clientProvider = new GrpcClientProvider(16 * 1024 * 1024, 5000L);
+        RemoteServiceProxyFactory factory =
+                new RemoteServiceProxyFactory(directoryStub(HOST, port, false), clientProvider);
+        UserService proxy = factory.createProxy(PLUGIN_ID, UserService.class);
+
+        // 通过 assertThatThrownBy 拿到原异常，再额外断言 suppressed 链里的节点上下文
+        Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(() -> proxy.getUserName(1L));
+        assertThat(thrown)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("business boom")
+                // 不触发 failover——节点本身健康，不应切换副本
+                .hasMessageNotContaining("所有执行节点均不可用");
+
+        // 业务异常 suppressed 链里应携带 RemoteInvocationContext（节点 + 耗时）
+        assertThat(thrown.getSuppressed()).hasSize(1);
+        Throwable ctx = thrown.getSuppressed()[0];
+        assertThat(ctx).isInstanceOf(
+                com.zqzqq.bootkits.distributed.proxy.RemoteInvocationHandler.RemoteInvocationContext.class);
+        assertThat(ctx).hasMessageContaining("from " + HOST + ":" + port)
+                .hasMessageContaining("node=")
+                .hasMessageContaining("total=");
+
+        // 同时 failover 不应被累计（业务异常路径不参与 failover）
+        assertThat(clientProvider.failoverCount()).isZero();
+    }
+
     // ==================== 2. 节点健康状态 + 快速失败 ====================
 
     @Test
@@ -122,6 +162,36 @@ class OptimizationIntegrationTest {
             assertThat(proxy.getUserName(100L + i)).startsWith("User-");
         }
         assertThat(clientProvider.failoverCount()).isEqualTo(failedOnce);
+    }
+
+    // ==================== 2.5 指数退避：连续失败窗口递增，成功即复位 ====================
+
+    @Test
+    void shouldExtendCooldownExponentiallyAndResetOnSuccess() {
+        GrpcClientProvider provider = new GrpcClientProvider(16 * 1024 * 1024, 5000L);
+        int port = findFreePort();
+        String h = "127.0.0.1";
+
+        // 初始：从未失败 → 健康
+        assertThat(provider.isHealthy(h, port, false)).isTrue();
+
+        // 第 1 次失败：进入基础冷却（2s 内视为不健康）
+        provider.markFailure(h, port, false);
+        assertThat(provider.isHealthy(h, port, false)).isFalse();
+        assertThat(provider.isInCooldown(h, port, false)).isTrue();
+
+        // 连续第 2、3 次失败：仍在冷却（模拟目录未剔除时的连续重试），
+        // 冷却窗口随失败次数递增——失败 3 次后的窗口应 >= 基础窗口
+        provider.markFailure(h, port, false);
+        provider.markFailure(h, port, false);
+        assertThat(provider.isHealthy(h, port, false)).isFalse();
+
+        // 成功调用后：清空健康记录，立即恢复健康（计数归零）
+        provider.markSuccess(h, port, false);
+        assertThat(provider.isHealthy(h, port, false)).isTrue();
+        assertThat(provider.isInCooldown(h, port, false)).isFalse();
+
+        provider.shutdownNow();
     }
 
     // ==================== 3. Redis 目录兜底缓存 ====================

@@ -2,6 +2,7 @@ package com.zqzqq.bootkits.distributed.registry;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zqzqq.bootkits.distributed.metrics.DistributedMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.Cursor;
@@ -44,6 +45,8 @@ public class RedisServiceDirectory implements ServiceDirectory {
     private final long heartbeatTtlSeconds;
     /** 本地兜底缓存有效期（毫秒）：Redis 故障时用不超过该生效期的 last-known-good 快照而非直接不可用。 */
     private final long localCacheTtlMillis;
+    /** 分布式指标（可为空，为空则不采集）。 */
+    private final DistributedMetrics metrics;
 
     /**
      * 本地兜底缓存：serviceInterface -> (快照时间戳, 节点快照)。
@@ -66,7 +69,7 @@ public class RedisServiceDirectory implements ServiceDirectory {
                                  ObjectMapper mapper,
                                  String prefix,
                                  long heartbeatTtlSeconds) {
-        this(redis, mapper, prefix, heartbeatTtlSeconds, 30_000L);
+        this(redis, mapper, prefix, heartbeatTtlSeconds, 30_000L, null);
     }
 
     public RedisServiceDirectory(StringRedisTemplate redis,
@@ -74,11 +77,21 @@ public class RedisServiceDirectory implements ServiceDirectory {
                                  String prefix,
                                  long heartbeatTtlSeconds,
                                  long localCacheTtlMillis) {
+        this(redis, mapper, prefix, heartbeatTtlSeconds, localCacheTtlMillis, null);
+    }
+
+    public RedisServiceDirectory(StringRedisTemplate redis,
+                                 ObjectMapper mapper,
+                                 String prefix,
+                                 long heartbeatTtlSeconds,
+                                 long localCacheTtlMillis,
+                                 DistributedMetrics metrics) {
         this.redis = redis;
         this.mapper = mapper != null ? mapper : new ObjectMapper();
         this.prefix = prefix;
         this.heartbeatTtlSeconds = heartbeatTtlSeconds;
         this.localCacheTtlMillis = localCacheTtlMillis;
+        this.metrics = metrics;
     }
 
     @Override
@@ -140,9 +153,15 @@ public class RedisServiceDirectory implements ServiceDirectory {
             }
             // 查询成功：刷新本地 last-known-good 快照，供 Redis 故障时降级
             refreshFallback(serviceInterface, result);
+            if (metrics != null) {
+                metrics.recordRegistryLookupSuccess();
+            }
         } catch (Exception e) {
             log.warn("查询远端服务失败，降级使用本地缓存: serviceInterface={}, err={}",
                     serviceInterface, e.getMessage());
+            if (metrics != null) {
+                metrics.recordRegistryFallbackUsed();
+            }
             return fallbackOf(serviceInterface);
         }
         return result;
@@ -262,11 +281,20 @@ public class RedisServiceDirectory implements ServiceDirectory {
     private List<RemoteServiceRegistration> fallbackOf(String serviceInterface) {
         CacheEntry entry = localFallback.get(serviceInterface);
         if (entry == null) {
+            if (metrics != null) {
+                metrics.recordRegistryFallbackMiss();
+            }
             return new ArrayList<>();
         }
         if (System.currentTimeMillis() - entry.capturedAt > localCacheTtlMillis) {
             // 缓存过期，仍视为不可用，避免返回长期陈旧(可能已全部下线)的节点
+            if (metrics != null) {
+                metrics.recordRegistryFallbackMiss();
+            }
             return new ArrayList<>();
+        }
+        if (metrics != null) {
+            metrics.recordRegistryFallbackHit();
         }
         return new ArrayList<>(entry.snapshot);
     }

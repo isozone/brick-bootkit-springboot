@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zqzqq.bootkits.core.communication.DefaultPluginServiceRegistry;
 import com.zqzqq.bootkits.core.communication.PluginServiceRegistry;
 import com.zqzqq.bootkits.distributed.DistributedServiceLocator;
+import com.zqzqq.bootkits.distributed.metrics.DistributedMetrics;
+import com.zqzqq.bootkits.distributed.metrics.DistributedStatusProvider;
 import com.zqzqq.bootkits.distributed.proxy.RemoteServiceProxyFactory;
 import com.zqzqq.bootkits.distributed.registry.DistributedPluginServiceRegistry;
 import com.zqzqq.bootkits.distributed.registry.RedisServiceDirectory;
@@ -18,6 +20,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -63,38 +67,100 @@ public class DistributedPluginAutoConfiguration {
 
     private GrpcServerBootstrap serverBootstrap;
     private ServiceRegistrationScheduler registrationScheduler;
+    private GrpcClientProvider clientProvider;
 
     // ==================== 服务目录 ====================
+
+    /** 分布式指标累加器：贯穿 调用侧/目录/健康 观测。 */
+    @Bean
+    @ConditionalOnMissingBean(DistributedMetrics.class)
+    public DistributedMetrics distributedMetrics() {
+        return new DistributedMetrics();
+    }
 
     @Bean
     public ServiceDirectory distributedServiceDirectory(
             StringRedisTemplate redis,
             ObjectProvider<ObjectMapper> mapperProvider,
-            DistributedPluginProperties properties) {
+            DistributedPluginProperties properties,
+            DistributedMetrics metrics) {
         ObjectMapper mapper = mapperProvider.getIfAvailable(ObjectMapper::new);
         return new RedisServiceDirectory(redis, mapper,
                 properties.getRegistryPrefix(),
                 properties.getHeartbeatTtlSeconds(),
-                properties.getRegistryCacheTtlMillis());
+                properties.getRegistryCacheTtlMillis(),
+                metrics);
     }
 
     // ==================== 调用方（宿主/HOST 与 WORKER 共用） ====================
 
     @Bean
-    public GrpcClientProvider distributedGrpcClientProvider(DistributedPluginProperties properties) {
-        return new GrpcClientProvider(
+    public GrpcClientProvider distributedGrpcClientProvider(DistributedPluginProperties properties,
+                                                            DistributedMetrics metrics) {
+        GrpcClientProvider provider = new GrpcClientProvider(
                 properties.getMaxInboundMessageSize(),
                 properties.getCallTimeoutMillis(),
                 properties.isTlsEnabled(),
                 properties.getTlsCaCertPath(),
-                properties.getAuthToken());
+                properties.getAuthToken(),
+                properties.getKeepAliveTimeMillis(),
+                properties.getKeepAliveTimeoutMillis(),
+                properties.isKeepAliveWithoutCalls(),
+                metrics);
+        // 记录到字段，便于 @PreDestroy 时关闭所有客户端 channel，避免 JVM 退出前资源泄漏。
+        this.clientProvider = provider;
+        return provider;
     }
 
     @Bean
     public RemoteServiceProxyFactory distributedRemoteServiceProxyFactory(
             ServiceDirectory directory,
-            GrpcClientProvider clientProvider) {
-        return new RemoteServiceProxyFactory(directory, clientProvider);
+            GrpcClientProvider clientProvider,
+            DistributedMetrics metrics,
+            DistributedPluginProperties properties) {
+        return new RemoteServiceProxyFactory(directory, clientProvider, metrics,
+                properties.getMethodTimeouts(), properties.getMaxFailoverRetries());
+    }
+
+    /**
+     * 分布式观测聚合器：对外提供一致的 {@link DistributedStatusProvider.DistributedStatus} 快照，
+     * 供 actuator 健康探针 / Micrometer 桥接 / web 管理端点按需采集。
+     */
+    @Bean
+    public DistributedStatusProvider distributedStatusProvider(
+            DistributedMetrics metrics,
+            GrpcClientProvider clientProvider,
+            ServiceDirectory directory,
+            DistributedPluginProperties properties) {
+        String role = properties.getRole() == null ? "HOST" : properties.getRole().name();
+        String nodeId = resolveNodeIdStatic(properties);
+        return new DistributedStatusProvider(metrics, clientProvider, directory, role, nodeId);
+    }
+
+    /**
+     * 可选 Micrometer 桥接：宿主引入 micrometer-core 时注册，把分布式指标暴露为
+     * {@code brick.distributed.*}，供 Prometheus / actuator 度量端点采集；
+     * 若宿主未提供任何 {@code MeterRegistry}，则不绑定（无指标出口，正常运行）。
+     */
+    @Bean
+    @ConditionalOnClass(name = "io.micrometer.core.instrument.MeterRegistry")
+    public com.zqzqq.bootkits.distributed.metrics.DistributedMetricsBinder distributedMetricsBinder(
+            DistributedMetrics metrics,
+            ObjectProvider<io.micrometer.core.instrument.MeterRegistry> registryProvider) {
+        io.micrometer.core.instrument.MeterRegistry registry = registryProvider.getIfAvailable();
+        return new com.zqzqq.bootkits.distributed.metrics.DistributedMetricsBinder(metrics, registry);
+    }
+
+    /**
+     * 可选 actuator 健康探针：宿主引入 Spring Boot Actuator 时注册
+     * {@code brick.distributed} 组件健康指标。缺失则自动跳过。
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
+    @ConditionalOnBean(DistributedStatusProvider.class)
+    public org.springframework.boot.actuate.health.HealthIndicator distributedHealthIndicator(
+            DistributedStatusProvider statusProvider) {
+        return new com.zqzqq.bootkits.distributed.metrics.DistributedHealthIndicator(statusProvider);
     }
 
     /**
@@ -150,7 +216,11 @@ public class DistributedPluginAutoConfiguration {
                 properties.isTlsEnabled(),
                 properties.getTlsCertChainPath(),
                 properties.getTlsPrivateKeyPath(),
-                properties.getAuthToken());
+                properties.getAuthToken(),
+                properties.getGracefulShutdownSeconds(),
+                properties.getKeepAliveTimeMillis(),
+                properties.getPermitKeepAliveTimeMillis(),
+                properties.isKeepAliveWithoutCalls());
         try {
             bootstrap.start();
         } catch (IOException e) {
@@ -181,6 +251,11 @@ public class DistributedPluginAutoConfiguration {
                 properties.isTlsEnabled(),
                 properties.getHeartbeatIntervalSeconds());
         scheduler.start();
+        // 热加载推送给目录：本地插件注册/注销时立即触发同步，把远端发现延迟从「最多一个
+        // 心跳周期」压缩到亚秒级，近似注册中心 watch。仅当 registry 是分布式门面时成立。
+        if (registry instanceof DistributedPluginServiceRegistry facade) {
+            facade.setCollectionChangeHandler(scheduler::resyncNow);
+        }
         this.registrationScheduler = scheduler;
         return scheduler;
     }
@@ -204,16 +279,30 @@ public class DistributedPluginAutoConfiguration {
         } catch (Exception ignored) {
             // 未启用集群，走 host:port 回退
         }
-        return host + ":" + properties.getPort();
+        return (host == null || host.isEmpty() ? "node" : host) + ":" + properties.getPort();
+    }
+
+    /** 状态展示用的节点 ID：不依赖 scheduler 已启动，host 可能为空时用仅配置/占位。 */
+    private static String resolveNodeIdStatic(DistributedPluginProperties properties) {
+        if (properties.getNodeId() != null && !properties.getNodeId().isEmpty()) {
+            return properties.getNodeId();
+        }
+        String host = properties.getHost();
+        return (host == null || host.isEmpty() ? "node" : host) + ":" + properties.getPort();
     }
 
     @PreDestroy
     public void destroy() {
+        // 关闭顺序：先停止注册（不再产生新调用）→ 关闭服务端（排空在途请求）→ 关闭客户端（释放连接池）。
+        // 这样能保证优雅停机期间宿主侧发起的在途调用有机会完成，不会被客户端 channel 提前关闭打断。
         if (registrationScheduler != null) {
             registrationScheduler.shutdown();
         }
         if (serverBootstrap != null) {
             serverBootstrap.shutdown();
+        }
+        if (clientProvider != null) {
+            clientProvider.close();
         }
     }
 }

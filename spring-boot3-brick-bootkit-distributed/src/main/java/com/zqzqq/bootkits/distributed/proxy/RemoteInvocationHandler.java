@@ -41,15 +41,44 @@ public class RemoteInvocationHandler implements InvocationHandler {
     private final Class<?> serviceInterface;
     private final ServiceDirectory directory;
     private final GrpcClientProvider clients;
+    private final com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics;
 
+    /** 按方法覆盖的超时（毫秒）：key 为「接口名.方法名」或「方法名」；命中则覆盖全局超时。 */
+    private final java.util.Map<String, Long> methodTimeouts;
+
+    /** 传输层不可达时的有限次整组重试次数（0=不重试）。 */
+    private final int maxRetries;
+
+    /** 兼容旧构造（无指标，自动从 clients 取）。 */
     public RemoteInvocationHandler(String pluginId,
                                    Class<?> serviceInterface,
                                    ServiceDirectory directory,
                                    GrpcClientProvider clients) {
+        this(pluginId, serviceInterface, directory, clients, null, java.util.Collections.emptyMap(), 0);
+    }
+
+    public RemoteInvocationHandler(String pluginId,
+                                   Class<?> serviceInterface,
+                                   ServiceDirectory directory,
+                                   GrpcClientProvider clients,
+                                   com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics) {
+        this(pluginId, serviceInterface, directory, clients, metrics, java.util.Collections.emptyMap(), 0);
+    }
+
+    public RemoteInvocationHandler(String pluginId,
+                                   Class<?> serviceInterface,
+                                   ServiceDirectory directory,
+                                   GrpcClientProvider clients,
+                                   com.zqzqq.bootkits.distributed.metrics.DistributedMetrics metrics,
+                                   java.util.Map<String, Long> methodTimeouts,
+                                   int maxRetries) {
         this.pluginId = pluginId;
         this.serviceInterface = serviceInterface;
         this.directory = directory;
         this.clients = clients;
+        this.metrics = metrics != null ? metrics : (clients != null ? clients.metrics() : null);
+        this.methodTimeouts = methodTimeouts != null ? methodTimeouts : java.util.Collections.emptyMap();
+        this.maxRetries = Math.max(0, maxRetries);
     }
 
     @Override
@@ -60,6 +89,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         // 每次调用实时查目录，收集该插件的全部可用节点，支持多副本 + 故障转移
+        long beginNanos = System.nanoTime();
+        if (metrics != null) {
+            metrics.recordRemoteCallBegin();
+        }
         List<RemoteServiceRegistration> nodes = directory.lookup(serviceInterface.getName());
         List<RemoteServiceRegistration> candidates = new ArrayList<>();
         for (RemoteServiceRegistration node : nodes) {
@@ -68,12 +101,19 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         }
         if (candidates.isEmpty()) {
+            recordCallEndUnavailable(beginNanos);
             throw new IllegalStateException(
                 "远端服务[" + pluginId + "." + serviceInterface.getName() + "]不可用，未在任何执行节点注册。"
                 + " 请确认对应插件已在某 WORKER 节点启动并完成注册。");
         }
 
-        return invokeRemoteWithFailover(candidates, method, args);
+        return invokeRemoteWithFailover(candidates, method, args, beginNanos);
+    }
+
+    private void recordCallEndUnavailable(long beginNanos) {
+        if (metrics != null) {
+            metrics.recordRemoteCallEnd(false, (System.nanoTime() - beginNanos) / 1_000_000L);
+        }
     }
 
     /**
@@ -82,7 +122,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
      */
     private Object invokeRemoteWithFailover(List<RemoteServiceRegistration> candidates,
                                             Method method,
-                                            Object[] args) throws Throwable {
+                                            Object[] args,
+                                            long beginNanos) throws Throwable {
         // 健康节点优先：把冷却期内被标记为不可用的节点排在末尾，存在健康节点时直接跳过，
         // 避免目录尚未剔除陈旧节点前，每次调用都对同一宕机节点发起网络超时。
         List<RemoteServiceRegistration> ordered = new ArrayList<>(candidates.size());
@@ -103,34 +144,110 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 ATOMIC.getAndIncrement(),
                 ordered.size()));
         int attempts = ordered.size();
-        for (int i = 0; i < attempts; i++) {
-            int idx = (start + i) % ordered.size();
-            RemoteServiceRegistration target = ordered.get(idx);
-
-            // 存在健康节点时，遇到冷却期内的不健康节点一律跳过，不再发起网络调用、
-            // 也不再累计 failover——本轮已确定有可用副本，无需再去撞死节点。
-            // 仅当本轮没有任何健康节点（healthyGroupEnd==0）时，才会真去尝试死节点并快速失败。
-            if (healthyGroupEnd > 0
-                    && !clients.isHealthy(target.getHost(), target.getPort(), target.isTlsEnabled())) {
-                continue;
+        // 传输层整体不可达时的有限次整组重试：仅在 maxRetries>0 时启用，
+        // 每次整组失败后短暂退避再重来，用于吸收瞬时网络抖动（默认关闭，保持单轮语义）。
+        int wholeGroupAttempts = maxRetries + 1;
+        // 是否本轮所有候选都被短路（冷却/熔断）跳过，未发起任何真实网络调用：
+        // 仅当整轮「真去撞了网络、全部 UNAVAILABLE」时，才认为「整组不可达」，可触发整组重试。
+        // 若本轮全是短路跳过（说明节点都在熔断窗口里、没必要反复退避），直接跳出，避免无谓退避。
+        java.util.List<String> attemptedNodes = new java.util.ArrayList<>();
+        boolean lastRoundHadAnyRealAttempt = false;
+        for (int round = 0; round < wholeGroupAttempts; round++) {
+            if (round > 0) {
+                backoffBeforeRetry(round);
             }
+            boolean anyRealAttempt = false;     // 本轮是否真去发了网络调用
+            boolean anyUnavailable = false;      // 本轮是否有节点返回 UNAVAILABLE
+            for (int i = 0; i < attempts; i++) {
+                int idx = (start + i) % ordered.size();
+                RemoteServiceRegistration target = ordered.get(idx);
+                // 每次节点尝试的起始纳秒，用于把单次节点耗时附到错误信息里，方便排障。
+                final long perNodeBeginNanos = System.nanoTime();
 
-            try {
-                Object result = invokeRemote(target, method, args);
-                clients.markSuccess(target.getHost(), target.getPort(), target.isTlsEnabled());
-                return result;
-            } catch (RemoteNodeUnavailableException e) {
-                // 节点传输层不可达：标记冷却（快速失败）、断开连接、累计 failover，尝试下一副本
-                clients.markFailure(target.getHost(), target.getPort(), target.isTlsEnabled());
-                clients.recordFailover();
-                clients.evict(target.getHost(), target.getPort());
-                log.warn("节点 {}:{} 不可用，切换到下一副本继续调用: {} (累计 failover={})",
-                        target.getHost(), target.getPort(), serviceInterface.getName(),
-                        clients.failoverCount());
+                // 存在健康节点时，遇到冷却期内的不健康节点一律跳过，不再发起网络调用、
+                // 也不再累计 failover——本轮已确定有可用副本，无需再去撞死节点。
+                // 仅当本轮没有任何健康节点（healthyGroupEnd==0）时，才会真去尝试死节点并快速失败。
+                if (healthyGroupEnd > 0
+                        && !clients.isHealthy(target.getHost(), target.getPort(), target.isTlsEnabled())) {
+                    continue;
+                }
+
+                // 熔断器：节点已 OPEN（连续失败≥阈值且在短路窗口内）时短路，不发真实网络调用、
+                // 直接快速跳过，避免在「全部节点都宕机」时反复发起无谓超时。记录 trip 指标。
+                if (!clients.allowAttempt(target.getHost(), target.getPort(), target.isTlsEnabled())) {
+                    clients.recordTrip(target.getHost(), target.getPort(), target.isTlsEnabled());
+                    // 短路视为一次「安全跳过」：不再 markFailure（否则会刷新 OPEN 窗口），
+                    // 但累计一次 failover 供观测，随后尝试下一副本。
+                    clients.recordFailover();
+                    continue;
+                }
+
+                try {
+                    anyRealAttempt = true;
+                    Object result = invokeRemote(target, method, args);
+                    clients.markSuccess(target.getHost(), target.getPort(), target.isTlsEnabled());
+                    if (metrics != null) {
+                        metrics.recordRemoteCallEnd(true, (System.nanoTime() - beginNanos) / 1_000_000L);
+                    }
+                    return result;
+                } catch (RemoteNodeUnavailableException e) {
+                    // 节点传输层不可达：标记冷却（快速失败）、断开连接、累计 failover，尝试下一副本
+                    anyUnavailable = true;
+                    clients.markFailure(target.getHost(), target.getPort(), target.isTlsEnabled());
+                    clients.recordFailover();
+                    clients.evict(target.getHost(), target.getPort());
+                    attemptedNodes.add(target.getHost() + ":" + target.getPort()
+                            + " (耗时=" + (System.nanoTime() - perNodeBeginNanos) / 1_000_000L + "ms)");
+                    log.warn("节点 {}:{} 不可用，切换到下一副本继续调用: {} (累计 failover={})",
+                            target.getHost(), target.getPort(), serviceInterface.getName(),
+                            clients.failoverCount());
+                } catch (RemoteBusinessException wrapper) {
+                    // 远端业务异常：节点本身是健康的（成功响应了），仅是业务侧抛错；
+                    // 不触发 failover，但要把节点信息与耗时附到异常里，方便调用方排障。
+                    long nodeElapsed = (System.nanoTime() - perNodeBeginNanos) / 1_000_000L;
+                    long totalElapsed = (System.nanoTime() - beginNanos) / 1_000_000L;
+                    if (metrics != null) {
+                        metrics.recordRemoteCallEnd(false, totalElapsed);
+                    }
+                    enrichBusinessException(wrapper, target, nodeElapsed, totalElapsed);
+                    throw wrapper.getRawThrowable();
+                }
+            }
+            lastRoundHadAnyRealAttempt = anyRealAttempt;
+            // 仅当本轮真去发了网络调用且有节点 UNAVAILABLE 时，才视为「整组不可达」并退避重试。
+            // 若本轮没有任何真实调用（全是短路跳过）或所有尝试都是非 UNAVAILABLE 错误，
+            // 说明重试也不会改善（节点仍在熔断窗口里），直接跳出避免无谓退避。
+            if (!(anyRealAttempt && anyUnavailable)) {
+                break;
             }
         }
+        // lastRoundHadAnyRealAttempt 目前仅供后续观测/调试扩展使用，避免被误判为未使用。
+        // 保留赋值以备在不修改控制流的前提下接入观测指标。
+        if (!lastRoundHadAnyRealAttempt && log.isDebugEnabled()) {
+            log.debug("整组重试轮次全部被短路跳过，未发起任何真实网络调用: {}",
+                    serviceInterface.getName());
+        }
+        if (metrics != null) {
+            metrics.recordRemoteCallEnd(false, (System.nanoTime() - beginNanos) / 1_000_000L);
+        }
+        long elapsed = (System.nanoTime() - beginNanos) / 1_000_000L;
         throw new IllegalStateException("远端服务[" + pluginId + "." + serviceInterface.getName()
-                + "]所有执行节点均不可用，已尝试 " + attempts + " 个节点。");
+                + "]所有执行节点均不可用，已尝试 " + attempts + " 个节点"
+                + (attemptedNodes.isEmpty() ? "" : "，故障节点=" + attemptedNodes)
+                + "，耗时=" + elapsed + "ms。");
+    }
+
+    /**
+     * 整组重试前的短暂退避：round 从 1 起，退避递增（如 20ms,40ms,...封顶 500ms）。
+     * 仅当启用 max-failover-retries 时调用；任一中断按被中断处理，不吞异常。
+     */
+    private void backoffBeforeRetry(int round) {
+        long wait = Math.min(500L, 20L * (1L << Math.min(round - 1, 4)));
+        try {
+            Thread.sleep(wait);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private Object invokeRemote(RemoteServiceRegistration target, Method method, Object[] args) throws Throwable {
@@ -141,7 +258,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
         InvokeRequest request = buildRequest(method, args);
 
-        long timeout = clients.getCallTimeoutMillis();
+        // 超时：优先按方法覆盖（接口名.方法名，其次方法名），否则用全局调用超时。
+        long timeout = resolveTimeout(method);
         if (timeout > 0) {
             stub = stub.withDeadlineAfter(timeout, TimeUnit.MILLISECONDS);
         }
@@ -162,6 +280,24 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         return handleReply(method, reply);
+    }
+
+    /**
+     * 解析本次调用的超时（毫秒）：优先方法级覆盖（连字符紧凑名），其次全局。
+     */
+    private long resolveTimeout(Method method) {
+        if (!methodTimeouts.isEmpty()) {
+            String fqn = serviceInterface.getName() + "." + method.getName();
+            Long byFqn = methodTimeouts.get(fqn);
+            if (byFqn != null) {
+                return byFqn;
+            }
+            Long byName = methodTimeouts.get(method.getName());
+            if (byName != null) {
+                return byName;
+            }
+        }
+        return clients.getCallTimeoutMillis();
     }
 
     private InvokeRequest buildRequest(Method method, Object[] args) {
@@ -194,8 +330,9 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
     private Object handleReply(Method method, InvokeReply reply) throws Throwable {
         if (reply.getStatus() != 0) {
-            // 远端抛出了业务异常，尽量在调用方侧还原
-            throw rebuildException(reply);
+            // 远端抛出了业务异常，尽量在调用方侧还原，并包装成 RemoteBusinessException
+            // 让外层能把「节点信息 + 单次耗时」附加到错误响应里（节点本身健康，只是业务侧出错）。
+            throw new RemoteBusinessException(rebuildException(reply));
         }
         Class<?> returnType = method.getReturnType();
         if (returnType == void.class || returnType == Void.class) {
@@ -206,6 +343,72 @@ public class RemoteInvocationHandler implements InvocationHandler {
             returnTypeName = returnType.getName();
         }
         return PayloadCodec.fromJson(reply.getReturnValue(), returnTypeName);
+    }
+
+    /**
+     * 把节点信息和耗时附加到业务异常（仅当该异常尚未带过该信息时）。
+     * <p>实现策略：用 {@link Throwable#addSuppressed} 挂一条 {@link RemoteInvocationContext}
+     * 到原始业务异常上——这样既不修改原异常类型（调用方仍可 {@code catch (IllegalStateException)}），
+     * 也不修改原 message（保持业务语义），还能让调用方通过 {@code getSuppressed()} 拿到节点 +
+     * 耗时上下文，方便排障与日志输出。
+     * <p>不用反射修改 {@code detailMessage}：JDK 17+ 对 {@code java.lang} 反射受模块化限制，
+     * 反射方案不稳定。
+     */
+    private static void enrichBusinessException(RemoteBusinessException wrapper,
+                                                RemoteServiceRegistration target,
+                                                long nodeElapsedMillis,
+                                                long totalElapsedMillis) {
+        Throwable raw = wrapper.getRawThrowable();
+        if (raw == null) {
+            return;
+        }
+        // 避免同一异常被重复挂多条同样的上下文（虽然本路径每次都是新异常，仍做幂等保护）
+        for (Throwable suppressed : raw.getSuppressed()) {
+            if (suppressed instanceof RemoteInvocationContext) {
+                return;
+            }
+        }
+        raw.addSuppressed(new RemoteInvocationContext(
+                target.getHost(), target.getPort(), nodeElapsedMillis, totalElapsedMillis));
+    }
+
+    /**
+     * 远端业务异常发生时挂在原异常 suppressed 链上的「调用上下文」，
+     * 携带节点 host:port + 单节点耗时 + 总耗时。供调用方通过
+     * {@code Throwable.getSuppressed()} 取出做日志/告警。
+     */
+    public static final class RemoteInvocationContext extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        private final String host;
+        private final int port;
+        private final long nodeElapsedMillis;
+        private final long totalElapsedMillis;
+
+        public RemoteInvocationContext(String host, int port,
+                                       long nodeElapsedMillis, long totalElapsedMillis) {
+            super("from " + host + ":" + port
+                    + " node=" + nodeElapsedMillis + "ms total=" + totalElapsedMillis + "ms");
+            this.host = host;
+            this.port = port;
+            this.nodeElapsedMillis = nodeElapsedMillis;
+            this.totalElapsedMillis = totalElapsedMillis;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public long getNodeElapsedMillis() {
+            return nodeElapsedMillis;
+        }
+
+        public long getTotalElapsedMillis() {
+            return totalElapsedMillis;
+        }
     }
 
     private Throwable rebuildException(InvokeReply reply) {
@@ -310,6 +513,26 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
         RemoteNodeUnavailableException(RemoteServiceRegistration target, String message, Throwable cause) {
             super(message == null ? ("node " + target.getHost() + ":" + target.getPort()) : message, cause);
+        }
+    }
+
+    /**
+     * 远端业务异常包装：远端节点本身健康（成功响应了，status!=0 仅是业务侧抛错），
+     * 通过这个内部包装类把 {@link #rebuildException} 还原出的精确业务异常类型带回
+     * {@link #invokeRemoteWithFailover}，由外层统一附上节点信息与耗时后再抛出。
+     * 不参与 failover——节点本身没问题，无需切换副本。
+     */
+    static final class RemoteBusinessException extends Exception {
+        private static final long serialVersionUID = 1L;
+        private final Throwable raw;
+
+        RemoteBusinessException(Throwable raw) {
+            super(raw == null ? "remote business error" : raw.getMessage(), raw);
+            this.raw = raw;
+        }
+
+        Throwable getRawThrowable() {
+            return raw;
         }
     }
 }

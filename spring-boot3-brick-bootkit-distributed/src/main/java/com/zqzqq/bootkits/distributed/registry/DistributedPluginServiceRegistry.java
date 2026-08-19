@@ -39,12 +39,36 @@ public class DistributedPluginServiceRegistry implements PluginServiceRegistry {
     private final ServiceDirectory directory;
     private final RemoteServiceProxyFactory remoteProxyFactory;
 
+    /**
+     * 本地插件服务集合变化时的回调（WORKER 场景用于触发注册调度器立即同步目录）。
+     * 供自动配置在创建调度器后注入（避免 Bean 循环依赖）；为空则不触发。
+     */
+    private volatile Runnable collectionChangeHandler;
+
     public DistributedPluginServiceRegistry(PluginServiceRegistry local,
                                             ServiceDirectory directory,
                                             RemoteServiceProxyFactory remoteProxyFactory) {
         this.local = local;
         this.directory = directory;
         this.remoteProxyFactory = remoteProxyFactory;
+    }
+
+    /**
+     * 注册本地服务集合变化回调（仅 WORKER 需要；由自动配置注入）。
+     */
+    public void setCollectionChangeHandler(Runnable handler) {
+        this.collectionChangeHandler = handler;
+    }
+
+    private void onCollectionChanged() {
+        Runnable handler = this.collectionChangeHandler;
+        if (handler != null) {
+            try {
+                handler.run();
+            } catch (Exception ignored) {
+                // 触发同步失败不影响本地注册主流程
+            }
+        }
     }
 
     // ==================== 注册类：委托本地 ====================
@@ -54,22 +78,28 @@ public class DistributedPluginServiceRegistry implements PluginServiceRegistry {
                                              Class<?> serviceInterface,
                                              Object serviceInstance,
                                              ServiceMetadata metadata) {
-        return local.registerService(pluginId, serviceInterface, serviceInstance, metadata);
+        ServiceDescriptor descriptor =
+                local.registerService(pluginId, serviceInterface, serviceInstance, metadata);
+        onCollectionChanged();
+        return descriptor;
     }
 
     @Override
     public void registerServices(String pluginId, List<ServiceRegistration> registrations) {
         local.registerServices(pluginId, registrations);
+        onCollectionChanged();
     }
 
     @Override
     public void unregisterAllServices(String pluginId) {
         local.unregisterAllServices(pluginId);
+        onCollectionChanged();
     }
 
     @Override
     public void unregisterService(String pluginId, Class<?> serviceInterface) {
         local.unregisterService(pluginId, serviceInterface);
+        onCollectionChanged();
     }
 
     @Override

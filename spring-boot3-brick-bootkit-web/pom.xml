@@ -49,6 +49,16 @@
             <artifactId>spring-boot3-brick-bootkit-scripts</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- Brick BootKit Distributed (可选：仅当启用分布式模块时才存在 DistributedStatusProvider)。
+             provided + optional：web 控制台不传递依赖；缺失时 /monitor/distributed 返回 disabled。 -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-distributed</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
         
         <!-- Micrometer (指标收集) -->
         <dependency>

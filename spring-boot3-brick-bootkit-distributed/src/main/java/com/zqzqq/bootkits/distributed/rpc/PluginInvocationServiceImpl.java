@@ -71,6 +71,16 @@ public class PluginInvocationServiceImpl extends PluginInvocationServiceGrpc.Plu
         String pluginId = request.getPluginId();
         String interfaceName = request.getServiceInterface();
 
+        // 防御性校验：拒绝空/异常请求体，避免空指针与恶意超大参数列表
+        if (pluginId == null || pluginId.isEmpty() || interfaceName == null || interfaceName.isEmpty()) {
+            return errorReply("非法请求参数：pluginId/serviceInterface 不能为空",
+                    "com.zqzqq.bootkits.core.communication.exception.InvalidServiceException");
+        }
+        if (request.getParamValuesCount() > 64) {
+            return errorReply("请求参数数量超过上限(64)：method=" + request.getMethodName(),
+                    "com.zqzqq.bootkits.core.communication.exception.InvalidServiceException");
+        }
+
         // 先定位该插件已加载的接口 Class（含其插件类加载器），确保插件专属
         // （仅存在于插件 jar、不在应用 classpath）的接口也能被正确解析，而不是
         // 硬编码从应用 classloader 用 Class.forName 加载（那会对共享接口失效）。
@@ -194,5 +204,16 @@ public class PluginInvocationServiceImpl extends PluginInvocationServiceGrpc.Plu
         java.io.StringWriter sw = new java.io.StringWriter();
         t.printStackTrace(new java.io.PrintWriter(sw));
         return sw.toString();
+    }
+
+    /**
+     * 构造一条「前置校验失败」的标准错误回复，避免在真正调用前触发异常链路。
+     */
+    private static InvokeReply errorReply(String message, String errorType) {
+        return InvokeReply.newBuilder()
+                .setStatus(-1)
+                .setErrorMessage(message)
+                .setErrorType(errorType)
+                .build();
     }
 }
