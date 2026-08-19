@@ -29,6 +29,7 @@ public class ServiceRegistrationScheduler {
     private final String nodeId;
     private final String host;
     private final int port;
+    private final boolean tlsEnabled;
     private final long intervalSeconds;
 
     private final ScheduledExecutorService executor =
@@ -43,13 +44,27 @@ public class ServiceRegistrationScheduler {
                                         String nodeId,
                                         String host,
                                         int port,
+                                        boolean tlsEnabled,
                                         long intervalSeconds) {
         this.localRegistry = localRegistry;
         this.directory = directory;
         this.nodeId = nodeId;
         this.host = host;
         this.port = port;
+        this.tlsEnabled = tlsEnabled;
         this.intervalSeconds = intervalSeconds;
+    }
+
+    /**
+     * 兼容构造：默认明文（不声明 TLS 标记）。
+     */
+    public ServiceRegistrationScheduler(PluginServiceRegistry localRegistry,
+                                        ServiceDirectory directory,
+                                        String nodeId,
+                                        String host,
+                                        int port,
+                                        long intervalSeconds) {
+        this(localRegistry, directory, nodeId, host, port, false, intervalSeconds);
     }
 
     /**
@@ -105,7 +120,8 @@ public class ServiceRegistrationScheduler {
                             nodeId,
                             host,
                             port,
-                            now));
+                            now,
+                            tlsEnabled));
                 }
             } catch (Exception e) {
                 log.warn("收集插件 {} 的服务注册信息失败", pluginId, e);

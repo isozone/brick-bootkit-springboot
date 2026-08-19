@@ -83,21 +83,39 @@ public class RemoteInvocationHandler implements InvocationHandler {
     private Object invokeRemoteWithFailover(List<RemoteServiceRegistration> candidates,
                                             Method method,
                                             Object[] args) throws Throwable {
-        // 轮询起始下标，避免每次都打第一个节点
+        // 健康节点优先：把冷却期内被标记为不可用的节点排在末尾，存在健康节点时直接跳过，
+        // 避免目录尚未剔除陈旧节点前，每次调用都对同一宕机节点发起网络超时。
+        List<RemoteServiceRegistration> ordered = new ArrayList<>(candidates.size());
+        List<RemoteServiceRegistration> unhealthy = new ArrayList<>();
+        for (RemoteServiceRegistration node : candidates) {
+            if (clients.isHealthy(node.getHost(), node.getPort(), node.isTlsEnabled())) {
+                ordered.add(node);
+            } else {
+                unhealthy.add(node);
+            }
+        }
+        ordered.addAll(unhealthy);
+
+        // 轮询起始下标，避免每次都打同一个节点
         int start = (int) (Math.floorMod(
                 ATOMIC.getAndIncrement(),
-                candidates.size()));
-        int attempts = candidates.size();
+                ordered.size()));
+        int attempts = ordered.size();
         for (int i = 0; i < attempts; i++) {
-            RemoteServiceRegistration target = candidates.get(
-                    (start + i) % candidates.size());
+            RemoteServiceRegistration target = ordered.get(
+                    (start + i) % ordered.size());
             try {
-                return invokeRemote(target, method, args);
+                Object result = invokeRemote(target, method, args);
+                clients.markSuccess(target.getHost(), target.getPort(), target.isTlsEnabled());
+                return result;
             } catch (RemoteNodeUnavailableException e) {
-                // 该节点不可用，记录并尝试下一个
+                // 节点传输层不可达：标记冷却（快速失败）、断开连接、累计 failover，尝试下一副本
+                clients.markFailure(target.getHost(), target.getPort(), target.isTlsEnabled());
+                clients.recordFailover();
                 clients.evict(target.getHost(), target.getPort());
-                log.warn("节点 {}:{} 不可用，切换到下一副本继续调用: {}",
-                        target.getHost(), target.getPort(), serviceInterface.getName());
+                log.warn("节点 {}:{} 不可用，切换到下一副本继续调用: {} (累计 failover={})",
+                        target.getHost(), target.getPort(), serviceInterface.getName(),
+                        clients.failoverCount());
             }
         }
         throw new IllegalStateException("远端服务[" + pluginId + "." + serviceInterface.getName()
@@ -105,7 +123,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
     }
 
     private Object invokeRemote(RemoteServiceRegistration target, Method method, Object[] args) throws Throwable {
-        ManagedChannel channel = clients.channel(target.getHost(), target.getPort());
+        // 按节点声明选择传输方式（明文 / TLS），支持混合部署灰度升级
+        ManagedChannel channel = clients.channel(target.getHost(), target.getPort(), target.isTlsEnabled());
         PluginInvocationServiceGrpc.PluginInvocationServiceBlockingStub stub =
                 PluginInvocationServiceGrpc.newBlockingStub(channel);
 
@@ -187,16 +206,51 @@ public class RemoteInvocationHandler implements InvocationHandler {
         // （即双方共享契约中包含异常类），此时用 TCCL 精确加载并反射构造；
         // 若不可见（插件 jar 内的私有异常类在宿主侧不存在），统一回退为 RuntimeException，
         // 并在 message 中保留原始 errorType 与错误信息。
+        Throwable cause = rebuildCause(reply);
         try {
             Class<?> type = resolveSharedExceptionClass(reply.getErrorType());
             if (type != null && Throwable.class.isAssignableFrom(type)) {
                 java.lang.reflect.Constructor<?> ctor = type.getConstructor(String.class);
-                return (Throwable) ctor.newInstance(message);
+                Throwable rebuilt = (Throwable) ctor.newInstance(message);
+                if (cause != null) {
+                    rebuilt.initCause(cause);
+                }
+                return rebuilt;
             }
         } catch (Exception ignored) {
             // 无法还原具体异常类型，回退 RuntimeException
         }
-        return new RuntimeException("远端插件异常[" + serviceInterface.getName() + "@" + reply.getErrorType() + "]: " + message);
+        RuntimeException fallback = new RuntimeException(
+                "远端插件异常[" + serviceInterface.getName() + "@" + reply.getErrorType() + "]: " + message);
+        if (cause != null) {
+            fallback.initCause(cause);
+        }
+        return fallback;
+    }
+
+    /**
+     * 还原远端异常的根因（cause）。根因类型对宿主可见则精确还原，否则用
+     * {@link RuntimeException} 包装其消息，确保根因信息不丢失、可被日志/告警追踪。
+     */
+    private Throwable rebuildCause(InvokeReply reply) {
+        String causeType = reply.getCauseErrorType();
+        String causeMsg = reply.getCauseErrorMessage();
+        if (causeType == null || causeType.isEmpty()) {
+            return null;
+        }
+        if (causeMsg == null || causeMsg.isEmpty()) {
+            causeMsg = causeType;
+        }
+        try {
+            Class<?> type = resolveSharedExceptionClass(causeType);
+            if (type != null && Throwable.class.isAssignableFrom(type)) {
+                java.lang.reflect.Constructor<?> ctor = type.getConstructor(String.class);
+                return (Throwable) ctor.newInstance(causeMsg);
+            }
+        } catch (Exception ignored) {
+            // 根因类型不可见或缺合适构造器，回退包装
+        }
+        return new RuntimeException("远端根因[" + causeType + "]: " + causeMsg);
     }
 
     /**

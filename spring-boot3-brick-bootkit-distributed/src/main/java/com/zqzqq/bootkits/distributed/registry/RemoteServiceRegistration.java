@@ -20,6 +20,7 @@ public final class RemoteServiceRegistration {
     private final String host;
     private final int port;
     private final long registeredAt;
+    private final boolean tlsEnabled;
 
     @JsonCreator
     public RemoteServiceRegistration(@JsonProperty("pluginId") String pluginId,
@@ -28,7 +29,8 @@ public final class RemoteServiceRegistration {
                                      @JsonProperty("nodeId") String nodeId,
                                      @JsonProperty("host") String host,
                                      @JsonProperty("port") int port,
-                                     @JsonProperty("registeredAt") long registeredAt) {
+                                     @JsonProperty("registeredAt") long registeredAt,
+                                     @JsonProperty("tlsEnabled") boolean tlsEnabled) {
         this.pluginId = pluginId;
         this.serviceInterface = serviceInterface;
         this.version = version;
@@ -36,6 +38,16 @@ public final class RemoteServiceRegistration {
         this.host = host;
         this.port = port;
         this.registeredAt = registeredAt;
+        this.tlsEnabled = tlsEnabled;
+    }
+
+    /**
+     * 兼容构造（未声明 TLS 标记，默认明文）。沿用旧签名的调用方（如部分测试）
+     * 不因新增字段而破坏。
+     */
+    public RemoteServiceRegistration(String pluginId, String serviceInterface, String version,
+                                     String nodeId, String host, int port, long registeredAt) {
+        this(pluginId, serviceInterface, version, nodeId, host, port, registeredAt, false);
     }
 
     public String getPluginId() {
@@ -67,13 +79,22 @@ public final class RemoteServiceRegistration {
     }
 
     /**
+     * 该节点是否以 TLS 方式暴露 gRPC 服务。
+     * <p>用于宿主在混合部署（部分节点 TLS、部分明文）时按节点选择传输方式，
+     * 支撑滚动升级灰度 TLS。</p>
+     */
+    public boolean isTlsEnabled() {
+        return tlsEnabled;
+    }
+
+    /**
      * 构造成 Redis Hash 表存储字段。
      * <p>
      * key = 服务接口名，field 采用复合键（pluginId + "@" + nodeId），
      * value = JSON 序列化字符串。
      */
     public String toRedisValue() {
-        StringBuilder sb = new StringBuilder(192);
+        StringBuilder sb = new StringBuilder(216);
         sb.append("{\"pluginId\":\"").append(escape(pluginId))
             .append("\",\"serviceInterface\":\"").append(escape(serviceInterface))
             .append("\",\"version\":\"").append(escape(version))
@@ -81,6 +102,7 @@ public final class RemoteServiceRegistration {
             .append("\",\"host\":\"").append(escape(host))
             .append("\",\"port\":").append(port)
             .append(",\"registeredAt\":").append(registeredAt)
+            .append(",\"tlsEnabled\":").append(tlsEnabled)
             .append('}');
         return sb.toString();
     }
@@ -119,6 +141,7 @@ public final class RemoteServiceRegistration {
                 + ", nodeId='" + nodeId + '\''
                 + ", host='" + host + '\''
                 + ", port=" + port
+                + ", tlsEnabled=" + tlsEnabled
                 + '}';
     }
 }

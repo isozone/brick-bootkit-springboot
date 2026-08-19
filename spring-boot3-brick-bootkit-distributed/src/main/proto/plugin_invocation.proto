@@ -45,4 +45,8 @@ message InvokeReply {
   string stackTrace = 5;
   // 失败时的原始异常类型全限定名（尽力还原为业务异常）
   string errorType = 6;
+  // 根因异常类型全限定名（跨节点执行时保留 cause 链，供宿主精确还原）
+  string causeErrorType = 7;
+  // 根因异常消息
+  string causeErrorMessage = 8;
 }

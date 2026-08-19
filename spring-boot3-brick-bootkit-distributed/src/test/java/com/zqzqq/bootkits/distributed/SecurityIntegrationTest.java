@@ -146,9 +146,11 @@ class SecurityIntegrationTest {
             }
 
             private RemoteServiceRegistration reg() {
+                // 该节点以 TLS 暴露 gRPC 服务，注册时必须声明 tlsEnabled=true，
+                // 宿主据此选择 TLS 传输（按节点协商，支持明文/TLS 混合部署）。
                 return new RemoteServiceRegistration(
                         PLUGIN_ID, UserService.class.getName(), "1.0.0",
-                        "node-secure", HOST, port, System.currentTimeMillis());
+                        "node-secure", HOST, port, System.currentTimeMillis(), true);
             }
 
             @Override

@@ -42,15 +42,43 @@ public class RedisServiceDirectory implements ServiceDirectory {
     private final ObjectMapper mapper;
     private final String prefix;
     private final long heartbeatTtlSeconds;
+    /** 本地兜底缓存有效期（毫秒）：Redis 故障时用不超过该生效期的 last-known-good 快照而非直接不可用。 */
+    private final long localCacheTtlMillis;
+
+    /**
+     * 本地兜底缓存：serviceInterface -> (快照时间戳, 节点快照)。
+     * Redis 不可用时降级返回，牺牲一致性换取可用性，Redis 恢复后自动切回实时目录。
+     */
+    private final java.util.Map<String, CacheEntry> localFallback =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static final class CacheEntry {
+        final long capturedAt;
+        final List<RemoteServiceRegistration> snapshot;
+
+        CacheEntry(long capturedAt, List<RemoteServiceRegistration> snapshot) {
+            this.capturedAt = capturedAt;
+            this.snapshot = snapshot;
+        }
+    }
 
     public RedisServiceDirectory(StringRedisTemplate redis,
                                  ObjectMapper mapper,
                                  String prefix,
                                  long heartbeatTtlSeconds) {
+        this(redis, mapper, prefix, heartbeatTtlSeconds, 30_000L);
+    }
+
+    public RedisServiceDirectory(StringRedisTemplate redis,
+                                 ObjectMapper mapper,
+                                 String prefix,
+                                 long heartbeatTtlSeconds,
+                                 long localCacheTtlMillis) {
         this.redis = redis;
         this.mapper = mapper != null ? mapper : new ObjectMapper();
         this.prefix = prefix;
         this.heartbeatTtlSeconds = heartbeatTtlSeconds;
+        this.localCacheTtlMillis = localCacheTtlMillis;
     }
 
     @Override
@@ -110,8 +138,12 @@ public class RedisServiceDirectory implements ServiceDirectory {
                 }
                 result.add(parsed);
             }
+            // 查询成功：刷新本地 last-known-good 快照，供 Redis 故障时降级
+            refreshFallback(serviceInterface, result);
         } catch (Exception e) {
-            log.warn("查询远端服务失败: serviceInterface={}", serviceInterface, e.getMessage());
+            log.warn("查询远端服务失败，降级使用本地缓存: serviceInterface={}, err={}",
+                    serviceInterface, e.getMessage());
+            return fallbackOf(serviceInterface);
         }
         return result;
     }
@@ -214,5 +246,28 @@ public class RedisServiceDirectory implements ServiceDirectory {
         } catch (Exception ignored) {
             // ignore
         }
+    }
+
+    /**
+     * 查询成功时，把结果作为 last-known-good 快照缓存。
+     */
+    private void refreshFallback(String serviceInterface, List<RemoteServiceRegistration> snapshot) {
+        localFallback.put(serviceInterface,
+                new CacheEntry(System.currentTimeMillis(), new ArrayList<>(snapshot)));
+    }
+
+    /**
+     * Redis 故障时的兜底：返回缓存快照（若仍在生效期内），否则返回空列表。
+     */
+    private List<RemoteServiceRegistration> fallbackOf(String serviceInterface) {
+        CacheEntry entry = localFallback.get(serviceInterface);
+        if (entry == null) {
+            return new ArrayList<>();
+        }
+        if (System.currentTimeMillis() - entry.capturedAt > localCacheTtlMillis) {
+            // 缓存过期，仍视为不可用，避免返回长期陈旧(可能已全部下线)的节点
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(entry.snapshot);
     }
 }

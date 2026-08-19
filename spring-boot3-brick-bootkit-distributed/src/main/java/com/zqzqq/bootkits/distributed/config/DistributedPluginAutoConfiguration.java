@@ -74,7 +74,8 @@ public class DistributedPluginAutoConfiguration {
         ObjectMapper mapper = mapperProvider.getIfAvailable(ObjectMapper::new);
         return new RedisServiceDirectory(redis, mapper,
                 properties.getRegistryPrefix(),
-                properties.getHeartbeatTtlSeconds());
+                properties.getHeartbeatTtlSeconds(),
+                properties.getRegistryCacheTtlMillis());
     }
 
     // ==================== 调用方（宿主/HOST 与 WORKER 共用） ====================
@@ -177,6 +178,7 @@ public class DistributedPluginAutoConfiguration {
                 nodeId,
                 host,
                 properties.getPort(),
+                properties.isTlsEnabled(),
                 properties.getHeartbeatIntervalSeconds());
         scheduler.start();
         this.registrationScheduler = scheduler;

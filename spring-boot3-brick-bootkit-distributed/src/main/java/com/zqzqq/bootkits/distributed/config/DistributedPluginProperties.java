@@ -68,9 +68,10 @@ public class DistributedPluginProperties {
     /**
      * 是否启用 gRPC TLS 加密传输。
      * <p>
-     * 必须<b>所有节点一致</b>：宿主与执行节点要么都启用、要么都明文。
-     * 启用时，执行节点需要 {@code tls-cert-chain} / {@code tls-private-key}，
-     * 宿主需要 {@code tls-ca-cert}（用于校验收到的 server 证书）。
+     * WORKER 节点的该标记会随注册写入 Redis 目录；HOST 按<b>每个节点</b>声明选择传输方式，
+     * 因此支持明文 / TLS 混合部署（滚动升级灰度 TLS）：只要所有 TLS 节点使用同一 CA，
+     * HOST 即可同时连通明文节点与 TLS 节点。启用时，执行节点需要 {@code tls-cert-chain} /
+     * {@code tls-private-key}，宿主需要 {@code tls-ca-cert}（用于校验收到的 server 证书）。
      * 生产跨网段/公网传输务必开启。
      */
     private boolean tlsEnabled = false;
@@ -100,6 +101,14 @@ public class DistributedPluginProperties {
      * 建议与 TLS 搭配使用，避免 token 明文传输。
      */
     private String authToken = "";
+
+    /**
+     * Redis 服务目录本地兜底缓存有效期（毫秒）。
+     * <p>
+     * Redis 故障时，装兜底使用不超过该生效期的 last-known-good 快照，保证高可用；
+     * Redis 恢复后自动切回实时目录。设为 0 可关闭兜底缓存（严格实时语义）。默认 30 秒。
+     */
+    private long registryCacheTtlMillis = 30_000L;
 
     public boolean isEnabled() {
         return enabled;
@@ -219,6 +228,14 @@ public class DistributedPluginProperties {
 
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
+    }
+
+    public long getRegistryCacheTtlMillis() {
+        return registryCacheTtlMillis;
+    }
+
+    public void setRegistryCacheTtlMillis(long registryCacheTtlMillis) {
+        this.registryCacheTtlMillis = registryCacheTtlMillis;
     }
 
     /**

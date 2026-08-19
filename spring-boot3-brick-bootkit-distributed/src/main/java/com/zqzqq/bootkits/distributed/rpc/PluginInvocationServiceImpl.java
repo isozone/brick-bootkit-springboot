@@ -47,12 +47,19 @@ public class PluginInvocationServiceImpl extends PluginInvocationServiceGrpc.Plu
         } catch (Throwable t) {
             log.error("执行远端插件调用失败: plugin={}, method={}",
                     request.getPluginId(), request.getMethodName(), t);
-            reply = InvokeReply.newBuilder()
+            InvokeReply.Builder rb = InvokeReply.newBuilder()
                     .setStatus(-1)
                     .setErrorMessage(t.getMessage() == null ? t.getClass().getName() : t.getMessage())
                     .setErrorType(t.getClass().getName())
-                    .setStackTrace(stackTraceOf(t))
-                    .build();
+                    .setStackTrace(stackTraceOf(t));
+            // 保留一层根因信息，宿主侧据此还原 cause 链，避免远端根因被拍平成一段 message
+            Throwable cause = t.getCause();
+            if (cause != null) {
+                rb.setCauseErrorType(cause.getClass().getName());
+                String causeMsg = cause.getMessage();
+                rb.setCauseErrorMessage(causeMsg == null ? cause.getClass().getName() : causeMsg);
+            }
+            reply = rb.build();
         } finally {
             DistTrace.put(null);
         }
