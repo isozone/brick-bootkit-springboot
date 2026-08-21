@@ -120,7 +120,7 @@ if "%CHECK_ONLY%"=="1" (
 )
 
 rem ===== Set release version across all modules =====
-rem CRITICAL: cmd eats the .9 in -DnewVersion=4.0.9 as path extension, turning it into -DnewVersion=4.0.
+rem CRITICAL: cmd eats the .10 in -DnewVersion=4.0.10 as path extension, turning it into -DnewVersion=4.0.
 rem Must quote the whole arg: "-DnewVersion=%NEW_VERSION%" so the dot is preserved.
 rem Same for -SNAPSHOT suffix: "-DnewVersion=%NEW_VERSION%-SNAPSHOT" or -SNAPSHOT gets executed as a command.
 echo Setting release version: %NEW_VERSION%

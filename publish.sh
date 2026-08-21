@@ -88,7 +88,7 @@ fi
 
 # ===== 版本号管理: 优先从根 pom.xml 当前版本推导, 结合 .publish-version 防止回退 =====
 # 规则:
-# 1. 根 pom.xml 当前版本为 4.0.9, 则本次发布 4.0.10;
+# 1. 根 pom.xml 当前版本为 4.0.10, 则本次发布 4.0.11;
 # 2. 如果 .publish-version 记录的发布版本更高, 则基于 .publish-version +1;
 # 3. 可用环境变量 PIN_VERSION 或 --version 参数手动指定本次发布版本。
 VERSION_FILE=".publish-version"
