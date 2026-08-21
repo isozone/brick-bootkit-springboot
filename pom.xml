@@ -84,7 +84,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <lombok.version>1.18.38</lombok.version>
-        <powermock.version>2.0.9</powermock.version>
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
         <junit.version>5.10.0</junit.version>
@@ -118,7 +117,6 @@
         <!-- 分布式插件模块（gRPC + Redis 服务目录） -->
         <grpc.version>1.66.0</grpc.version>
         <protobuf.version>3.25.5</protobuf.version>
-        <grpc-starter.version>3.1.0.RELEASE</grpc-starter.version>
     </properties>
 
     <dependencyManagement>
@@ -425,9 +423,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
-                <configuration>
-                    <skip>true</skip>  <!-- 添加这行 -->
-                </configuration>
 
                 <executions>
                     <execution>

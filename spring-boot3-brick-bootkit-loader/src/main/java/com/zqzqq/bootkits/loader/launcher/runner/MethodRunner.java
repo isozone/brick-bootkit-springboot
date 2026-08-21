@@ -16,7 +16,7 @@
 
 package com.zqzqq.bootkits.loader.launcher.runner;
 
-import com.zqzqq.bootkits.loader.utils.CompareClassTypeUtils;
+import com.zqzqq.bootkits.utils.CompareClassTypeUtils;
 import com.zqzqq.bootkits.loader.utils.ObjectUtils;
 
 import java.lang.reflect.Method;

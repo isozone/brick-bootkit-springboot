@@ -41,20 +41,20 @@
         <dependency>
             <groupId>com.zqzqq.webDemo</groupId>
             <artifactId>spring-boot3-brick-bootkit-web-demo</artifactId>
-            <version>4.0.10</version>
+            <version>4.0.11</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-core</artifactId>
-            <version>4.0.10</version>
+            <version>4.0.11</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-bootstrap</artifactId>
-            <version>4.0.10</version>
+            <version>4.0.11</version>
 
         </dependency>
 
@@ -96,7 +96,7 @@
             <plugin>
                 <groupId>com.zqzqq</groupId>
                 <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-                <version>4.0.10</version>
+                <version>4.0.11</version>
                 <configuration>
                     <!--                    dev / prod-->
                     <mode>prod</mode>

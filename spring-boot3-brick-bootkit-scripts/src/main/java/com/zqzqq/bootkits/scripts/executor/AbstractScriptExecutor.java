@@ -2,6 +2,9 @@ package com.zqzqq.bootkits.scripts.executor;
 
 import com.zqzqq.bootkits.scripts.core.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 4.0.1
  */
 public abstract class AbstractScriptExecutor implements ScriptExecutor {
+    
+    private static final Logger log = LoggerFactory.getLogger(AbstractScriptExecutor.class);
     
     protected static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     
@@ -60,7 +65,7 @@ public abstract class AbstractScriptExecutor implements ScriptExecutor {
                 OUTPUT_COLLECTOR_EXECUTOR.shutdownNow();
                 if (!OUTPUT_COLLECTOR_EXECUTOR.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                     // 线程池仍未完全关闭，记录警告日志
-                    System.err.println("OutputCollector executor did not terminate gracefully");
+                    log.error("OutputCollector executor did not terminate gracefully");
                 }
             }
         } catch (InterruptedException e) {

@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-green.svg)](https://spring.io/projects/spring-boot)
 [![JDK](https://img.shields.io/badge/JDK-17+-orange.svg)](https://openjdk.org/)
-[![Version](https://img.shields.io/badge/4.0.10-4.0.10-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
+[![Version](https://img.shields.io/badge/4.0.11-4.0.11-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
 [![Java](https://img.shields.io/badge/Java-17-yellow.svg)](https://openjdk.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.6+-red.svg)](https://maven.apache.org/)
 
@@ -634,7 +634,7 @@ GET /plugins-web/api/doctor
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.10</version>
+            <version>4.0.11</version>
             <configuration>
                 <mode>prod</mode>
                 <pluginInfo>
@@ -691,7 +691,7 @@ GET /plugins-web/api/doctor
 <dependency>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-    <version>4.0.10</version>
+    <version>4.0.11</version>
 </dependency>
 ```
 
@@ -934,14 +934,14 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit</artifactId>
-        <version>4.0.10</version>
+        <version>4.0.11</version>
     </dependency>
     
     <!-- Web 管理控制台（可选） -->
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-        <version>4.0.10</version>
+        <version>4.0.11</version>
     </dependency>
 </dependencies>
 ```
@@ -994,7 +994,7 @@ plugin:
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.10</version>
+            <version>4.0.11</version>
             <configuration>
                 <mode>prod</mode>
                 <pluginInfo>
@@ -1197,7 +1197,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <plugin>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-    <version>4.0.10</version>
+    <version>4.0.11</version>
     <configuration>
         <mode>prod</mode>
         <pluginInfo>
@@ -1226,7 +1226,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
-<version>4.0.10</version>
+<version>4.0.11</version>
 </dependency>
 
 ```
@@ -1237,7 +1237,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-<version>4.0.10</version>
+<version>4.0.11</version>
 </dependency>
 
 ```
@@ -1248,7 +1248,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <plugin>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-    <version>4.0.10</version>
+    <version>4.0.11</version>
     <configuration>
         <mode>prod</mode>
         <pluginInfo>
@@ -1419,7 +1419,7 @@ logging:
 5. 开启 Pull Request
 
 ### 更新
-- [4.0.10](./doc/updates/4.0.10.md) - 最新版本
+- [4.0.11](./doc/updates/4.0.11.md) - 最新版本
 - [4.0.9](./doc/updates/4.0.9.md)
 - [4.0.1](./doc/updates/4.0.1.md)
 
