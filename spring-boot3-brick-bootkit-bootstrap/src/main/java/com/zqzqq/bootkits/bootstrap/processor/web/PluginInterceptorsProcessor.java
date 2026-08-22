@@ -1,11 +1,11 @@
 /**
- * Copyright [2019-Present] [starBlues]
+ * Copyright 2019-Present starBlues and the brick-bootkit contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+
 package com.zqzqq.bootkits.bootstrap.processor.web;
 
 import com.zqzqq.bootkits.bootstrap.processor.ProcessorContext;
@@ -21,7 +23,7 @@ import com.zqzqq.bootkits.bootstrap.processor.ProcessorException;
 import com.zqzqq.bootkits.bootstrap.processor.SpringPluginProcessor;
 import com.zqzqq.bootkits.bootstrap.processor.interceptor.PluginInterceptorRegister;
 import com.zqzqq.bootkits.bootstrap.processor.interceptor.PluginInterceptorRegistry;
-import com.zqzqq.bootkits.bootstrap.utils.SpringBeanUtils;
+import com.zqzqq.bootkits.utils.SpringBeanUtils;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.spring.MainApplicationContext;
 import com.zqzqq.bootkits.utils.ClassUtils;
