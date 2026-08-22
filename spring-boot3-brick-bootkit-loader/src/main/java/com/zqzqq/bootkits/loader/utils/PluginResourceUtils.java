@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  * @since 3.0.0
  * @version 3.1.2
  */
-public class ResourceUtils {
+public class PluginResourceUtils {
 
     public static final String URL_PROTOCOL_FILE = "file";
     public static final String URL_PROTOCOL_JAR_FILE = "jar";
@@ -50,7 +50,7 @@ public class ResourceUtils {
 
     public static final String CLASS_FILE_EXTENSION = ".class";
 
-    private ResourceUtils(){}
+    private PluginResourceUtils(){}
 
     /**
      * 是否为jar文件

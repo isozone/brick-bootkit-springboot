@@ -22,7 +22,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.Resource;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResource;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
 import com.zqzqq.bootkits.utils.ObjectUtils;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
      * @return String
      */
     protected final String formatResourceName(String name) {
-        return ResourceUtils.formatStandardName(name);
+        return PluginResourceUtils.formatStandardName(name);
     }
 
     protected final InputStream openStream(Resource resource){
@@ -176,7 +176,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
             
             searched.add(baseUrl);
             
-            if (ResourceUtils.getExistUrl(baseUrl, name) != null) {
+            if (PluginResourceUtils.getExistUrl(baseUrl, name) != null) {
                 // 找到，将搜索过的URL按顺序放回热缓存
                 for (URL url : searched) {
                     hotUrls.addLast(url);
@@ -202,7 +202,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         List<URL> baseUrls = getBaseUrl();
         
         for (URL baseUrl : baseUrls) {
-            if (ResourceUtils.getExistUrl(baseUrl, name) != null) {
+            if (PluginResourceUtils.getExistUrl(baseUrl, name) != null) {
                 // 找到，添加到热缓存
                 hotUrls.addFirst(baseUrl);
                 return baseUrl;
@@ -219,7 +219,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
      * @return 创建的资源
      */
     private Resource createAndAddResource(String name, URL baseUrl) {
-        URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
+        URL existUrl = PluginResourceUtils.getExistUrl(baseUrl, name);
         try {
             Resource resource = new DefaultResource(name, baseUrl, existUrl);
             addResource(resource);
@@ -279,7 +279,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         }
 
         private Resource getResource(URL baseUrl){
-            URL existUrl = ResourceUtils.getExistUrl(baseUrl, name);
+            URL existUrl = PluginResourceUtils.getExistUrl(baseUrl, name);
             if(existUrl == null){
                 return null;
             }

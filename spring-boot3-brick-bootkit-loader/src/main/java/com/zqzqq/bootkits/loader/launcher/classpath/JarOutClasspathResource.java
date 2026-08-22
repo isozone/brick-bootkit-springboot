@@ -22,7 +22,7 @@ import com.zqzqq.bootkits.loader.archive.Archive;
 import com.zqzqq.bootkits.loader.archive.ExplodedArchive;
 import com.zqzqq.bootkits.loader.archive.JarFileArchive;
 import com.zqzqq.bootkits.utils.FilesUtils;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -112,7 +112,7 @@ public class JarOutClasspathResource implements ClasspathResource{
         File[] listFiles = rootFile.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return ResourceUtils.isJarFile(pathname);
+                return PluginResourceUtils.isJarFile(pathname);
             }
         });
         if(listFiles == null || listFiles.length == 0){

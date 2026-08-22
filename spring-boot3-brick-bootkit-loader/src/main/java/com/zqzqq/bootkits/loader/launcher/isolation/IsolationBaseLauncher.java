@@ -23,7 +23,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFacto
 import com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
 import com.zqzqq.bootkits.utils.ObjectUtils;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ public class IsolationBaseLauncher extends AbstractMainLauncher {
     @Override
     protected ClassLoader launch(ClassLoader classLoader, String... args) throws Exception {
         methodRunner.run(classLoader);
-        ResourceUtils.release(classLoader);
+        PluginResourceUtils.release(classLoader);
         return classLoader;
     }
 

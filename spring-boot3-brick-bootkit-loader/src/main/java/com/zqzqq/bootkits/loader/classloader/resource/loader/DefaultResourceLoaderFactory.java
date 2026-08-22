@@ -21,7 +21,7 @@ package com.zqzqq.bootkits.loader.classloader.resource.loader;
 import com.zqzqq.bootkits.loader.classloader.resource.Resource;
 import com.zqzqq.bootkits.loader.classloader.resource.storage.ResourceStorage;
 import com.zqzqq.bootkits.loader.launcher.isolation.ResourceLoaderFactoryGetter;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -77,15 +77,15 @@ public class DefaultResourceLoaderFactory implements ResourceLoaderFactory{
     @Override
     public void addResource(URL url) throws Exception{
         AbstractResourceLoader resourceLoader = null;
-        if(ResourceUtils.isJarFileUrl(url)) {
-            if(ResourceUtils.isJarProtocolUrl(url)){
+        if(PluginResourceUtils.isJarFileUrl(url)) {
+            if(PluginResourceUtils.isJarProtocolUrl(url)){
                 resourceLoader = new JarResourceLoader(url);
             } else {
                 resourceLoader = new JarResourceLoader(Paths.get(url.toURI()).toFile());
             }
-        } else if(ResourceUtils.isZipFileUrl(url)){
+        } else if(PluginResourceUtils.isZipFileUrl(url)){
             resourceLoader = new JarResourceLoader(Paths.get(url.toURI()).toFile());
-        } else if(ResourceUtils.isFileUrl(url)){
+        } else if(PluginResourceUtils.isFileUrl(url)){
             resourceLoader = new ClassPathLoader(url);
         }
         if(resourceLoader != null){

@@ -23,7 +23,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
 import com.zqzqq.bootkits.loader.utils.Assert;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,7 +324,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
             pluginClassCache.clear();
             
             // 释放资源加载工厂
-            ResourceUtils.release(resourceLoaderFactory);
+            PluginResourceUtils.release(resourceLoaderFactory);
         } catch (Exception e) {
             log.warn("Failed to release resources", e);
         }
@@ -503,7 +503,7 @@ protected Class<?> findClassFromLocal(String name) {
     }
 
     private String formatResourceName(String name) {
-        return ResourceUtils.formatStandardName(name);
+        return PluginResourceUtils.formatStandardName(name);
     }
 
     private String formatClassName(String className) {

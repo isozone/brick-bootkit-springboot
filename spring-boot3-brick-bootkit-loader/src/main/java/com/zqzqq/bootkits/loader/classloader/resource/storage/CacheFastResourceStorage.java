@@ -24,7 +24,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.cache.DefaultCacheExpirati
 import com.zqzqq.bootkits.loader.classloader.resource.cache.LRUMultiMapUnifiedListCache;
 import com.zqzqq.bootkits.loader.classloader.resource.cache.MultiCache;
 import com.zqzqq.bootkits.utils.ObjectUtils;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -160,7 +160,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
             if (resourceStorage != null) {
                 resourceStorage.clear(resource -> {
                     if (resource != null) {
-                        ResourceUtils.release(resource);
+                        PluginResourceUtils.release(resource);
                     }
                 });
             }
