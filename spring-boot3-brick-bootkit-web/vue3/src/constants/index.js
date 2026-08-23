@@ -237,6 +237,10 @@ export const API_PATHS = {
   // === 发布治理相关接口 ===
   RELEASES_LIST: '/plugins-web/api/releases',
 
+  // === 金丝雀路由相关接口 ===
+  CANARY_ROUTING: '/plugins-web/api/canary/routing',
+  CANARY_WEIGHT: '/plugins-web/api/canary/weight',
+
   // === 事件总线相关接口 ===
   EVENTBUS_STATS: '/plugins-web/api/eventbus/stats',
   EVENTBUS_TYPES: '/plugins-web/api/eventbus/types',

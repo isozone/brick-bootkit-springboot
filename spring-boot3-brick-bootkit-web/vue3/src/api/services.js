@@ -433,7 +433,21 @@ export const releaseApi = {
   get: (releaseId) => service.get(`${API_PATHS.RELEASES_LIST}/${releaseId}`),
 
   // 删除发布记录
-  remove: (releaseId) => service.delete(`${API_PATHS.RELEASES_LIST}/${releaseId}`)
+  remove: (releaseId) => service.delete(`${API_PATHS.RELEASES_LIST}/${releaseId}`),
+
+  // 集群发布聚合视图
+  cluster: () => service.get(API_PATHS.RELEASES_CLUSTER)
+}
+
+// ==================== 金丝雀路由相关 API ====================
+
+export const canaryApi = {
+  // 获取多版本服务路由权重分组
+  routing: () => service.get(API_PATHS.CANARY_ROUTING),
+
+  // 更新服务实现的分流权重
+  updateWeight: (pluginId, interfaceName, weight) =>
+    service.post(API_PATHS.CANARY_WEIGHT, { pluginId, interfaceName, weight })
 }
 
 // ==================== 事件总线相关 API ====================
