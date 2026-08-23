@@ -28,7 +28,7 @@ import com.zqzqq.bootkits.loader.classloader.GenericClassLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResourceLoaderFactory;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
 import com.zqzqq.bootkits.loader.launcher.LauncherContext;
-import com.zqzqq.bootkits.loader.utils.ResourceUtils;
+import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 import com.zqzqq.bootkits.spring.MainApplicationContext;
 import com.zqzqq.bootkits.spring.SpringPluginHook;
 import com.zqzqq.bootkits.utils.MsgUtils;
@@ -84,7 +84,7 @@ public class PluginIsolationLauncher extends AbstractPluginLauncher {
     @Override
     protected SpringPluginHook launch(ClassLoader classLoader, String... args) throws Exception {
         SpringPluginHook springPluginHook = super.launch(classLoader, args);
-        ResourceUtils.release(classLoader);
+        PluginResourceUtils.release(classLoader);
         return springPluginHook;
     }
 

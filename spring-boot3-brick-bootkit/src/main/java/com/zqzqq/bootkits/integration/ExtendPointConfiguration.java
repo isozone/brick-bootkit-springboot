@@ -48,6 +48,7 @@ import com.zqzqq.bootkits.integration.operator.PluginOperator;
 import com.zqzqq.bootkits.integration.operator.PluginOperatorWrapper;
 import com.zqzqq.bootkits.integration.registry.ServiceRegistryLifecycleExtension;
 import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbe;
+import com.zqzqq.bootkits.integration.rollout.RolloutModeCanaryRoutingResolver;
 import com.zqzqq.bootkits.integration.security.PluginSecurityAdmissionCheck;
 import com.zqzqq.bootkits.integration.user.DefaultPluginUser;
 import com.zqzqq.bootkits.integration.user.PluginUser;
@@ -214,8 +215,10 @@ public class ExtendPointConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PluginServiceRegistry pluginServiceRegistry() {
-        return new DefaultPluginServiceRegistry();
+    public PluginServiceRegistry pluginServiceRegistry(IntegrationConfiguration integrationConfiguration) {
+        DefaultPluginServiceRegistry registry = new DefaultPluginServiceRegistry();
+        registry.setCanaryRoutingResolver(new RolloutModeCanaryRoutingResolver(integrationConfiguration));
+        return registry;
     }
 
     /**

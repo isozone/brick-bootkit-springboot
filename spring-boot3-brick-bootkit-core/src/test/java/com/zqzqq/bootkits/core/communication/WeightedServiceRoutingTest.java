@@ -19,6 +19,7 @@ package com.zqzqq.bootkits.core.communication;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.zqzqq.bootkits.core.communication.CanaryRoutingResolver;
 
 class WeightedServiceRoutingTest {
 
@@ -98,5 +99,35 @@ class WeightedServiceRoutingTest {
 
         SampleService s = registry.getService("plugin-b", SampleService.class);
         assertThat(s.name()).isEqualTo("B");
+    }
+
+    @Test
+    void canaryModeEnablesAutomaticWeightedSplit() {
+        DefaultPluginServiceRegistry registry = new DefaultPluginServiceRegistry();
+        registry.setCanaryRoutingResolver(new CanaryRoutingResolver() {
+            @Override
+            public boolean isCanaryEnabled() {
+                return true;
+            }
+        });
+        // 两个版本均未显式声明 WEIGHTED，仅优先级相同
+        ServiceMetadata aMeta = ServiceMetadata.builder().version("1.0").priority(1).build();
+        ServiceMetadata bMeta = ServiceMetadata.builder().version("2.0").priority(1).build();
+        registry.registerService("plugin-a", SampleService.class, new ImplA(), aMeta);
+        registry.registerService("plugin-b", SampleService.class, new ImplB(), bMeta);
+
+        int a = 0;
+        int b = 0;
+        for (int i = 0; i < 20000; i++) {
+            SampleService s = registry.getService(null, SampleService.class);
+            if ("A".equals(s.name())) {
+                a++;
+            } else {
+                b++;
+            }
+        }
+        // 灰度模式默认基线/金丝雀 90/10 分流
+        assertThat(a).isGreaterThan(b * 5);
+        assertThat(b).isGreaterThan(0);
     }
 }

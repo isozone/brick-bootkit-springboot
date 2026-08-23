@@ -43,6 +43,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
  * @version 1.0.0
  * @since 2024/01/01
  */
-public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
+public class DefaultPluginServiceRegistry implements PluginServiceRegistry, CanaryRoutingManageable {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultPluginServiceRegistry.class);
 
@@ -77,6 +78,13 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
 
     // proxy cache: serviceId → proxy
     private final Map<String, Object> proxyCache = new ConcurrentHashMap<>();
+
+    // 注册顺序（用于灰度模式下自动分配基线/金丝雀权重）
+    private final AtomicLong seqCounter = new AtomicLong(0);
+    private final Map<String, Long> registeredSeqById = new ConcurrentHashMap<>();
+
+    // 金丝雀/灰度路由策略解析器（默认不启用）
+    private CanaryRoutingResolver canaryRoutingResolver = new NoOpCanaryRoutingResolver();
 
     // ==================== Service Registration ====================
 
@@ -131,6 +139,7 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
                 serviceInterface, k -> new ConcurrentHashMap<>()
             ).put(pluginId, descriptor);
             servicesById.put(serviceId, descriptor);
+            registeredSeqById.put(serviceId, seqCounter.incrementAndGet());
 
             // Publish event
             publishEvent(new ServiceRegisteredEvent(descriptor));
@@ -169,6 +178,7 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
 
                 // Remove from ID map
                 servicesById.remove(descriptor.getServiceId());
+                registeredSeqById.remove(descriptor.getServiceId());
 
                 // Clear proxy cache
                 proxyCache.remove(descriptor.getServiceId());
@@ -206,6 +216,7 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
 
             // Remove from ID map
             servicesById.remove(descriptor.getServiceId());
+            registeredSeqById.remove(descriptor.getServiceId());
 
             // Clear proxy cache
             proxyCache.remove(descriptor.getServiceId());
@@ -428,11 +439,12 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
             return providers.get(pluginId);
         }
 
-        // 多实现场景：任一提供方声明 WEIGHTED 策略时，按权重灰度分流（调用级）
-        if (providers.size() > 1
-                && providers.values().stream()
-                    .anyMatch(d -> d.getMetadata().getLoadBalancing() == ServiceMetadata.LoadBalancingStrategy.WEIGHTED)) {
-            return weightedPick(providers.values());
+        // 多实现场景：显式 WEIGHTED 或灰度/金丝雀模式下，按权重分流（调用级）
+        boolean canary = canaryRoutingResolver.isCanaryEnabled();
+        boolean anyWeighted = providers.values().stream()
+                .anyMatch(d -> d.getMetadata().getLoadBalancing() == ServiceMetadata.LoadBalancingStrategy.WEIGHTED);
+        if (providers.size() > 1 && (anyWeighted || canary)) {
+            return weightedPick(providers.values(), canary && !anyWeighted);
         }
 
         // Find highest priority service
@@ -442,23 +454,97 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
     }
 
     /**
+     * 设置金丝雀/灰度路由策略解析器（由集成层注入，根据当前发布模式决定是否按权重分流）
+     */
+    public void setCanaryRoutingResolver(CanaryRoutingResolver resolver) {
+        if (resolver != null) {
+            this.canaryRoutingResolver = resolver;
+        }
+    }
+
+    @Override
+    public void setServiceWeight(String pluginId, Class<?> serviceInterface, int weight) {
+        Map<String, ServiceDescriptor> providers = interfaceServices.get(serviceInterface);
+        if (providers == null) {
+            return;
+        }
+        ServiceDescriptor descriptor = providers.get(pluginId);
+        if (descriptor == null) {
+            return;
+        }
+        descriptor.getMetadata().setWeight(Math.max(0, weight));
+        if (weight > 0) {
+            descriptor.getMetadata().setLoadBalancing(ServiceMetadata.LoadBalancingStrategy.WEIGHTED);
+        }
+    }
+
+    @Override
+    public List<ServiceRoutingGroup> describeRouting() {
+        List<ServiceRoutingGroup> groups = new ArrayList<>();
+        boolean canary = canaryRoutingResolver.isCanaryEnabled();
+        for (Map.Entry<Class<?>, Map<String, ServiceDescriptor>> entry : interfaceServices.entrySet()) {
+            Map<String, ServiceDescriptor> providers = entry.getValue();
+            if (providers == null || providers.size() < 2) {
+                continue;
+            }
+            ServiceRoutingGroup group = new ServiceRoutingGroup();
+            group.setInterfaceClass(entry.getKey().getName());
+            group.setInterfaceName(entry.getKey().getSimpleName());
+            List<ServiceRoutingProvider> providerViews = new ArrayList<>();
+            for (ServiceDescriptor d : providers.values()) {
+                ServiceRoutingProvider p = new ServiceRoutingProvider();
+                p.setPluginId(d.getPluginId());
+                p.setWeight(d.getMetadata().getWeight());
+                p.setLoadBalancing(d.getMetadata().getLoadBalancing().name());
+                p.setPriority(d.getPriority());
+                p.setCanaryEligible(d.getMetadata().getLoadBalancing() == ServiceMetadata.LoadBalancingStrategy.WEIGHTED || canary);
+                providerViews.add(p);
+            }
+            group.setProviders(providerViews);
+            groups.add(group);
+        }
+        return groups;
+    }
+
+    /**
      * 按权重随机选择服务实现，用于灰度/金丝雀流量按比例分流。
      * 权重 <= 0 视为 1，避免零权重导致永远选不中。
+     *
+     * @param autoCanary 是否为灰度模式自动分流（无显式 WEIGHTED 时按注册顺序分配基线/金丝雀权重）
      */
-    private ServiceDescriptor weightedPick(Collection<ServiceDescriptor> providers) {
+    private ServiceDescriptor weightedPick(Collection<ServiceDescriptor> providers, boolean autoCanary) {
+        List<ServiceDescriptor> ordered = new ArrayList<>(providers);
+        Map<ServiceDescriptor, Integer> effective = new HashMap<>();
+        if (autoCanary) {
+            ServiceDescriptor baseline = ordered.stream()
+                    .min(Comparator.comparingLong(d -> registeredSeqById.getOrDefault(d.getServiceId(), 0L)))
+                    .orElse(ordered.get(0));
+            for (ServiceDescriptor d : ordered) {
+                int w = canaryRoutingResolver.resolveWeight(d);
+                if (w <= 0) {
+                    w = d == baseline ? canaryRoutingResolver.baselineWeight()
+                            : canaryRoutingResolver.canaryWeight();
+                }
+                effective.put(d, Math.max(1, w));
+            }
+        } else {
+            for (ServiceDescriptor d : ordered) {
+                effective.put(d, Math.max(1, d.getMetadata().getWeight()));
+            }
+        }
         int total = 0;
-        for (ServiceDescriptor d : providers) {
-            total += Math.max(1, d.getMetadata().getWeight());
+        for (int w : effective.values()) {
+            total += w;
         }
         int r = ThreadLocalRandom.current().nextInt(total);
         int acc = 0;
-        for (ServiceDescriptor d : providers) {
-            acc += Math.max(1, d.getMetadata().getWeight());
+        for (ServiceDescriptor d : ordered) {
+            acc += effective.get(d);
             if (r < acc) {
                 return d;
             }
         }
-        return providers.iterator().next();
+        return ordered.get(ordered.size() - 1);
     }
 
     @SuppressWarnings("unchecked")
