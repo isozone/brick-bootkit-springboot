@@ -19,6 +19,7 @@ package com.zqzqq.bootkits.web.controller.api;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
 import com.zqzqq.bootkits.web.auth.PluginWebPermission;
 import com.zqzqq.bootkits.web.dto.ApiResult;
+import com.zqzqq.bootkits.web.dto.ClusterReleases;
 import com.zqzqq.bootkits.web.dto.ReleaseRecord;
 import com.zqzqq.bootkits.web.service.ReleaseWebService;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,5 +102,23 @@ class ReleaseControllerTest {
         ApiResult<List<ReleaseRecord>> result = offline.list(10);
 
         assertThat(result.isSuccess()).isFalse();
+    }
+
+    @Test
+    @DisplayName("集群聚合视图返回节点与发布")
+    void clusterShouldReturnAggregate() {
+        ClusterReleases aggregate = new ClusterReleases();
+        aggregate.setClusterEnabled(true);
+        aggregate.setCurrentNodeId("node-1");
+        aggregate.setNodes(Collections.emptyList());
+        aggregate.setReleases(Collections.emptyList());
+        when(releaseWebService.aggregateCluster()).thenReturn(aggregate);
+
+        ApiResult<ClusterReleases> result = controller.cluster();
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getData().getCurrentNodeId()).isEqualTo("node-1");
+        assertThat(result.getData().isClusterEnabled()).isTrue();
+        verify(authorizationService).check(PluginWebPermission.PLUGIN_HISTORY_READ, null);
     }
 }
