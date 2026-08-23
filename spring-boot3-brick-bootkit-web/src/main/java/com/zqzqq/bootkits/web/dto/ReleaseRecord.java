@@ -78,4 +78,7 @@ public class ReleaseRecord {
 
     /** 附加说明 */
     private String detail;
+
+    /** 所属节点 ID（集群聚合视图填充，本地发布默认当前节点） */
+    private String nodeId;
 }

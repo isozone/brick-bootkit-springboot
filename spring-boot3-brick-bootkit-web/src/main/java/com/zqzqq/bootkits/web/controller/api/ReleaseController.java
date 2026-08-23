@@ -19,6 +19,7 @@ package com.zqzqq.bootkits.web.controller.api;
 import com.zqzqq.bootkits.web.auth.PluginWebAuthorizationService;
 import com.zqzqq.bootkits.web.auth.PluginWebPermission;
 import com.zqzqq.bootkits.web.dto.ApiResult;
+import com.zqzqq.bootkits.web.dto.ClusterReleases;
 import com.zqzqq.bootkits.web.dto.ReleaseRecord;
 import com.zqzqq.bootkits.web.service.ReleaseWebService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,5 +100,16 @@ public class ReleaseController {
         }
         service.removeRelease(releaseId);
         return ApiResult.success();
+    }
+
+    @GetMapping("/cluster")
+    @Operation(summary = "集群发布聚合视图（本节点发布 + 在线节点清单）")
+    public ApiResult<ClusterReleases> cluster() {
+        authorize(PluginWebPermission.PLUGIN_HISTORY_READ);
+        ReleaseWebService service = releaseWebServiceProvider.getIfAvailable();
+        if (service == null) {
+            return ApiResult.error(500, "插件功能未启用");
+        }
+        return ApiResult.success(service.aggregateCluster());
     }
 }

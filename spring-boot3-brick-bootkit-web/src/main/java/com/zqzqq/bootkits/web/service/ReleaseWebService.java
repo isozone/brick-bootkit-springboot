@@ -16,24 +16,33 @@
 
 package com.zqzqq.bootkits.web.service;
 
+import com.zqzqq.bootkits.integration.cluster.ClusterNodeInfo;
+import com.zqzqq.bootkits.web.dto.ClusterReleases;
 import com.zqzqq.bootkits.web.dto.ReleaseRecord;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
- * 发布治理 Web 服务：对外提供发布记录的查询与删除能力。
+ * 发布治理 Web 服务：对外提供发布记录的查询、删除与集群聚合能力。
  *
  * @author brick-bootkit
  * @since 4.2.0
  */
+@Slf4j
 @Service
 public class ReleaseWebService {
 
     private final ReleaseService releaseService;
+    private final ObjectProvider<ClusterWebService> clusterWebServiceProvider;
 
-    public ReleaseWebService(ReleaseService releaseService) {
+    public ReleaseWebService(ReleaseService releaseService,
+                             ObjectProvider<ClusterWebService> clusterWebServiceProvider) {
         this.releaseService = releaseService;
+        this.clusterWebServiceProvider = clusterWebServiceProvider;
     }
 
     public List<ReleaseRecord> listReleases(int limit) {
@@ -50,5 +59,39 @@ public class ReleaseWebService {
 
     public void removeRelease(String releaseId) {
         releaseService.remove(releaseId);
+    }
+
+    /**
+     * 集群聚合视图：本节点发布记录（按当前节点 ID 标记）+ 在线节点清单。
+     * 由于集群节点注册信息不包含对端 Web 地址，无法直接拉取对端发布记录，
+     * 故以「本节点发布 + 在线节点列表」的形式提供多节点聚合视图。
+     */
+    public ClusterReleases aggregateCluster() {
+        ClusterReleases result = new ClusterReleases();
+        String currentNodeId = "unknown";
+        List<ClusterNodeInfo> nodes = Collections.emptyList();
+        boolean clusterEnabled = false;
+        ClusterWebService clusterWebService = clusterWebServiceProvider.getIfAvailable();
+        if (clusterWebService != null) {
+            clusterEnabled = true;
+            try {
+                ClusterNodeInfo currentNode = clusterWebService.getCurrentNode();
+                currentNodeId = currentNode != null ? currentNode.getNodeId() : "unknown";
+                nodes = clusterWebService.listNodes();
+            } catch (Exception e) {
+                log.warn("获取集群节点信息失败", e);
+            }
+        }
+        result.setClusterEnabled(clusterEnabled);
+        result.setCurrentNodeId(currentNodeId);
+        result.setNodes(nodes);
+        List<ReleaseRecord> local = releaseService.list(0);
+        for (ReleaseRecord record : local) {
+            if (record.getNodeId() == null) {
+                record.setNodeId(currentNodeId);
+            }
+        }
+        result.setReleases(local);
+        return result;
     }
 }
