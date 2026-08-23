@@ -96,6 +96,12 @@ export const MENU_CONFIG = {
       path: '/plugins-web/rollout'
     },
     {
+      key: 'release',
+      label: '发布治理',
+      icon: 'RocketOutline',
+      path: '/plugins-web/release'
+    },
+    {
       key: 'eventbus',
       label: '事件总线',
       icon: 'PulseOutline',
@@ -227,6 +233,9 @@ export const API_PATHS = {
   ROLLOUT_CONFIG: '/plugins-web/api/rollout/config',
   ROLLOUT_PROBES: '/plugins-web/api/rollout/probes',
   ROLLOUT_CHECK: '/plugins-web/api/rollout/check',
+
+  // === 发布治理相关接口 ===
+  RELEASES_LIST: '/plugins-web/api/releases',
 
   // === 事件总线相关接口 ===
   EVENTBUS_STATS: '/plugins-web/api/eventbus/stats',

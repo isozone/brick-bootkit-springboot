@@ -423,6 +423,19 @@ export const rolloutApi = {
   check: (pluginId) => service.post(`${API_PATHS.ROLLOUT_CHECK}/${pluginId}`)
 }
 
+// ==================== 发布治理相关 API ====================
+
+export const releaseApi = {
+  // 获取发布记录列表
+  list: (limit = 50) => service.get(API_PATHS.RELEASES_LIST, { params: { limit } }),
+
+  // 获取发布记录详情
+  get: (releaseId) => service.get(`${API_PATHS.RELEASES_LIST}/${releaseId}`),
+
+  // 删除发布记录
+  remove: (releaseId) => service.delete(`${API_PATHS.RELEASES_LIST}/${releaseId}`)
+}
+
 // ==================== 事件总线相关 API ====================
 
 export const eventbusApi = {

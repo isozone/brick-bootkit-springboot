@@ -90,6 +90,12 @@ const routes = [
     meta: { title: '灰度发布' }
   },
   {
+    path: '/plugins-web/release',
+    name: 'Release',
+    component: () => import('@/views/release/index.vue'),
+    meta: { title: '发布治理' }
+  },
+  {
     path: '/plugins-web/eventbus',
     name: 'EventBus',
     component: () => import('@/views/eventbus/index.vue'),
