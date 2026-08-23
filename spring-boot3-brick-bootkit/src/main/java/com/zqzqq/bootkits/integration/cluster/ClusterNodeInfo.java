@@ -30,12 +30,13 @@ public class ClusterNodeInfo {
     private long lastHeartbeat;
     private int pluginCount;
     private String status; // ONLINE / OFFLINE
+    private String webBaseUrl; // 可被其他节点访问的 Web 基址
 
     public ClusterNodeInfo() {
     }
 
     public ClusterNodeInfo(String nodeId, String host, long startedAt, long lastHeartbeat,
-                           int pluginCount, String status) {
+                            int pluginCount, String status) {
         this.nodeId = nodeId;
         this.host = host;
         this.startedAt = startedAt;
@@ -90,5 +91,13 @@ public class ClusterNodeInfo {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getWebBaseUrl() {
+        return webBaseUrl;
+    }
+
+    public void setWebBaseUrl(String webBaseUrl) {
+        this.webBaseUrl = webBaseUrl;
     }
 }

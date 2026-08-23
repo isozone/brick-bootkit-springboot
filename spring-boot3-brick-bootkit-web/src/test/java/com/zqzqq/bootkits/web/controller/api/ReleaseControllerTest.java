@@ -49,7 +49,7 @@ class ReleaseControllerTest {
         authorizationService = mock(PluginWebAuthorizationService.class);
         ObjectProvider<ReleaseWebService> provider = mock(ObjectProvider.class);
         when(provider.getIfAvailable()).thenReturn(releaseWebService);
-        controller = new ReleaseController(provider, authorizationService);
+        controller = new ReleaseController(provider, authorizationService, "");
     }
 
     @Test
@@ -97,7 +97,7 @@ class ReleaseControllerTest {
         @SuppressWarnings("unchecked")
         ObjectProvider<ReleaseWebService> empty = mock(ObjectProvider.class);
         when(empty.getIfAvailable()).thenReturn(null);
-        ReleaseController offline = new ReleaseController(empty, authorizationService);
+        ReleaseController offline = new ReleaseController(empty, authorizationService, "");
 
         ApiResult<List<ReleaseRecord>> result = offline.list(10);
 
@@ -120,5 +120,37 @@ class ReleaseControllerTest {
         assertThat(result.getData().getCurrentNodeId()).isEqualTo("node-1");
         assertThat(result.getData().isClusterEnabled()).isTrue();
         verify(authorizationService).check(PluginWebPermission.PLUGIN_HISTORY_READ, null);
+    }
+
+    @Test
+    @DisplayName("跨节点拉取缺少内部令牌时拒绝")
+    void peerWithoutTokenShouldReject() {
+        ReleaseWebService svc = mock(ReleaseWebService.class);
+        ObjectProvider<ReleaseWebService> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(svc);
+        ReleaseController secured = new ReleaseController(provider, authorizationService, "secret");
+
+        ApiResult<List<ReleaseRecord>> result = secured.peer(10, "wrong-token");
+
+        assertThat(result.isSuccess()).isFalse();
+        assertThat(result.getCode()).isEqualTo(401);
+    }
+
+    @Test
+    @DisplayName("跨节点拉取携带正确内部令牌时返回记录")
+    void peerWithTokenShouldReturnRecords() {
+        ReleaseRecord r = new ReleaseRecord();
+        r.setReleaseId("p1");
+        ReleaseWebService svc = mock(ReleaseWebService.class);
+        when(svc.listReleases(50)).thenReturn(Collections.singletonList(r));
+        ObjectProvider<ReleaseWebService> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(svc);
+        ReleaseController secured = new ReleaseController(provider, authorizationService, "secret");
+
+        ApiResult<List<ReleaseRecord>> result = secured.peer(50, "secret");
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getReleaseId()).isEqualTo("p1");
     }
 }

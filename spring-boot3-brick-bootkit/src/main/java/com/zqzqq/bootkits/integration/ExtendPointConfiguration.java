@@ -285,7 +285,7 @@ public class ExtendPointConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ClusterNodeRegistry clusterNodeRegistry() {
-        return new ClusterNodeRegistry(resolveClusterSharedRoot());
+        return new ClusterNodeRegistry(resolveClusterSharedRoot(), configuration.clusterWebBaseUrl());
     }
 
     @Bean

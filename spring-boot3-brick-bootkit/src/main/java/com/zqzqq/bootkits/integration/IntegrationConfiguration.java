@@ -220,6 +220,15 @@ public interface IntegrationConfiguration {
     }
 
     /**
+     * 当前节点可被其他节点访问的 Web 基址（如 http://host:port/context），
+     * 用于集群内发布记录的跨节点聚合拉取。未配置则为空。
+     * @return Web 基址
+     */
+    default String clusterWebBaseUrl() {
+        return null;
+    }
+
+    /**
      * 集群锁获取超时时间（毫秒）。
      * @return 超时时间
      */

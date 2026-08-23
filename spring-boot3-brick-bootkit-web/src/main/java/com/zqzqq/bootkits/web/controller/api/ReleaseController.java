@@ -26,9 +26,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,11 +52,14 @@ public class ReleaseController {
 
     private final ObjectProvider<ReleaseWebService> releaseWebServiceProvider;
     private final PluginWebAuthorizationService authorizationService;
+    private final String internalToken;
 
     public ReleaseController(ObjectProvider<ReleaseWebService> releaseWebServiceProvider,
-                             PluginWebAuthorizationService authorizationService) {
+                              PluginWebAuthorizationService authorizationService,
+                              @Value("${plugin.cluster.internal-token:}") String internalToken) {
         this.releaseWebServiceProvider = releaseWebServiceProvider;
         this.authorizationService = authorizationService;
+        this.internalToken = internalToken == null ? "" : internalToken;
     }
 
     private void authorize(PluginWebPermission permission) {
@@ -111,5 +117,19 @@ public class ReleaseController {
             return ApiResult.error(500, "插件功能未启用");
         }
         return ApiResult.success(service.aggregateCluster());
+    }
+
+    @GetMapping("/peer")
+    @Operation(summary = "集群内节点间发布记录拉取（需携带内部令牌，供聚合视图跨节点调用）")
+    public ApiResult<List<ReleaseRecord>> peer(@RequestParam(defaultValue = "200") int limit,
+                                                @RequestHeader(value = "X-Cluster-Token", required = false) String token) {
+        if (internalToken.isEmpty() || !internalToken.equals(token)) {
+            return ApiResult.error(401, "非法跨节点请求");
+        }
+        ReleaseWebService service = releaseWebServiceProvider.getIfAvailable();
+        if (service == null) {
+            return ApiResult.error(500, "插件功能未启用");
+        }
+        return ApiResult.success(service.listReleases(limit));
     }
 }

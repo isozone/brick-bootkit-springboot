@@ -21,8 +21,10 @@ import com.zqzqq.bootkits.web.dto.ClusterReleases;
 import com.zqzqq.bootkits.web.dto.ReleaseRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,11 +40,17 @@ public class ReleaseWebService {
 
     private final ReleaseService releaseService;
     private final ObjectProvider<ClusterWebService> clusterWebServiceProvider;
+    private final ObjectProvider<PeerReleaseFetcher> peerReleaseFetcherProvider;
+    private final String internalToken;
 
     public ReleaseWebService(ReleaseService releaseService,
-                             ObjectProvider<ClusterWebService> clusterWebServiceProvider) {
+                             ObjectProvider<ClusterWebService> clusterWebServiceProvider,
+                             ObjectProvider<PeerReleaseFetcher> peerReleaseFetcherProvider,
+                             @Value("${plugin.cluster.internal-token:}") String internalToken) {
         this.releaseService = releaseService;
         this.clusterWebServiceProvider = clusterWebServiceProvider;
+        this.peerReleaseFetcherProvider = peerReleaseFetcherProvider;
+        this.internalToken = internalToken == null ? "" : internalToken;
     }
 
     public List<ReleaseRecord> listReleases(int limit) {
@@ -62,21 +70,24 @@ public class ReleaseWebService {
     }
 
     /**
-     * 集群聚合视图：本节点发布记录（按当前节点 ID 标记）+ 在线节点清单。
-     * 由于集群节点注册信息不包含对端 Web 地址，无法直接拉取对端发布记录，
-     * 故以「本节点发布 + 在线节点列表」的形式提供多节点聚合视图。
+     * 集群聚合视图：合并本节点与所有在线对端节点的发布记录（按所属节点 ID 标记）。
+     * 仅当集群启用、配置了内部令牌且对端节点携带可访问的 Web 基址时才拉取对端记录；
+     * 任一节点拉取失败均降级跳过，保证聚合视图始终可用。
      */
     public ClusterReleases aggregateCluster() {
         ClusterReleases result = new ClusterReleases();
         String currentNodeId = "unknown";
         List<ClusterNodeInfo> nodes = Collections.emptyList();
         boolean clusterEnabled = false;
+        String currentWebBaseUrl = "";
         ClusterWebService clusterWebService = clusterWebServiceProvider.getIfAvailable();
         if (clusterWebService != null) {
             clusterEnabled = true;
             try {
                 ClusterNodeInfo currentNode = clusterWebService.getCurrentNode();
                 currentNodeId = currentNode != null ? currentNode.getNodeId() : "unknown";
+                currentWebBaseUrl = currentNode != null && currentNode.getWebBaseUrl() != null
+                        ? currentNode.getWebBaseUrl() : "";
                 nodes = clusterWebService.listNodes();
             } catch (Exception e) {
                 log.warn("获取集群节点信息失败", e);
@@ -85,13 +96,43 @@ public class ReleaseWebService {
         result.setClusterEnabled(clusterEnabled);
         result.setCurrentNodeId(currentNodeId);
         result.setNodes(nodes);
+
+        List<ReleaseRecord> all = new ArrayList<>();
         List<ReleaseRecord> local = releaseService.list(0);
         for (ReleaseRecord record : local) {
             if (record.getNodeId() == null) {
                 record.setNodeId(currentNodeId);
             }
+            all.add(record);
         }
-        result.setReleases(local);
+
+        boolean peerFetchEnabled = clusterEnabled
+                && peerReleaseFetcherProvider.getIfAvailable() != null
+                && !internalToken.isEmpty();
+        if (peerFetchEnabled) {
+            PeerReleaseFetcher fetcher = peerReleaseFetcherProvider.getIfAvailable();
+            for (ClusterNodeInfo node : nodes) {
+                if (node == null || currentNodeId.equals(node.getNodeId())) {
+                    continue;
+                }
+                String baseUrl = node.getWebBaseUrl();
+                if (baseUrl == null || baseUrl.isEmpty()) {
+                    continue;
+                }
+                try {
+                    List<ReleaseRecord> peerRecords = fetcher.fetch(baseUrl, 200, internalToken);
+                    for (ReleaseRecord record : peerRecords) {
+                        if (record.getNodeId() == null) {
+                            record.setNodeId(node.getNodeId());
+                        }
+                        all.add(record);
+                    }
+                } catch (Exception e) {
+                    log.warn("聚合节点 {} 的发布记录失败", node.getNodeId(), e);
+                }
+            }
+        }
+        result.setReleases(all);
         return result;
     }
 }

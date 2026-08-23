@@ -58,6 +58,7 @@ public class ClusterNodeRegistry {
     private final long startTime;
     private final long heartbeatIntervalSeconds;
     private final long nodeExpireSeconds;
+    private String currentNodeWebBaseUrl;
 
     private final ScheduledExecutorService heartbeatExecutor =
             Executors.newSingleThreadScheduledExecutor(r -> {
@@ -71,14 +72,33 @@ public class ClusterNodeRegistry {
     }
 
     public ClusterNodeRegistry(Path clusterSharedRoot,
-                               long heartbeatIntervalSeconds,
-                               long nodeExpireSeconds) {
+                                long heartbeatIntervalSeconds,
+                                long nodeExpireSeconds) {
+        this(clusterSharedRoot, heartbeatIntervalSeconds, nodeExpireSeconds, "");
+    }
+
+    public ClusterNodeRegistry(Path clusterSharedRoot, String currentNodeWebBaseUrl) {
+        this(clusterSharedRoot, DEFAULT_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_NODE_EXPIRE_SECONDS, currentNodeWebBaseUrl);
+    }
+
+    public ClusterNodeRegistry(Path clusterSharedRoot,
+                                long heartbeatIntervalSeconds,
+                                long nodeExpireSeconds,
+                                String currentNodeWebBaseUrl) {
         this.nodesDir = clusterSharedRoot.resolve(NODES_SUB_PATH);
         this.nodeId = UUID.randomUUID().toString().substring(0, 8);
         this.host = resolveHost();
         this.startTime = System.currentTimeMillis();
         this.heartbeatIntervalSeconds = heartbeatIntervalSeconds;
         this.nodeExpireSeconds = nodeExpireSeconds;
+        this.currentNodeWebBaseUrl = currentNodeWebBaseUrl == null ? "" : currentNodeWebBaseUrl;
+    }
+
+    /**
+     * 设置当前节点可被其他节点访问的 Web 基址（用于发布记录跨节点聚合拉取）
+     */
+    public void setCurrentNodeWebBaseUrl(String webBaseUrl) {
+        this.currentNodeWebBaseUrl = webBaseUrl == null ? "" : webBaseUrl;
     }
 
     private static String resolveHost() {
@@ -130,7 +150,9 @@ public class ClusterNodeRegistry {
      * 获取当前节点信息
      */
     public ClusterNodeInfo getCurrentNode() {
-        return new ClusterNodeInfo(nodeId, host, startTime, System.currentTimeMillis(), 0, "ONLINE");
+        ClusterNodeInfo info = new ClusterNodeInfo(nodeId, host, startTime, System.currentTimeMillis(), 0, "ONLINE");
+        info.setWebBaseUrl(currentNodeWebBaseUrl);
+        return info;
     }
 
     /**
@@ -195,6 +217,7 @@ public class ClusterNodeRegistry {
             props.setProperty("startTime", String.valueOf(startTime));
             props.setProperty("lastHeartbeat", String.valueOf(lastHeartbeat));
             props.setProperty("pluginCount", String.valueOf(pluginCount));
+            props.setProperty("webBaseUrl", currentNodeWebBaseUrl);
             Path nodeFile = nodesDir.resolve(nodeId + ".info");
             try (OutputStream out = Files.newOutputStream(nodeFile)) {
                 props.store(out, "brick-bootkit cluster node");
@@ -213,7 +236,7 @@ public class ClusterNodeRegistry {
             return null;
         }
         try {
-            return new ClusterNodeInfo(
+            ClusterNodeInfo info = new ClusterNodeInfo(
                     props.getProperty("nodeId"),
                     props.getProperty("host"),
                     Long.parseLong(props.getProperty("startTime", "0")),
@@ -221,6 +244,8 @@ public class ClusterNodeRegistry {
                     Integer.parseInt(props.getProperty("pluginCount", "0")),
                     "UNKNOWN"
             );
+            info.setWebBaseUrl(props.getProperty("webBaseUrl", ""));
+            return info;
         } catch (NumberFormatException e) {
             return null;
         }

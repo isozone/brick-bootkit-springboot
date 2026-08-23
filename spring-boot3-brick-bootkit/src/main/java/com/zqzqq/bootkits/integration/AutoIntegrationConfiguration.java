@@ -65,6 +65,7 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
 
     private Boolean clusterEnabled = false;
     private String clusterSharedPath = "";
+    private String clusterWebBaseUrl = "";
     private Long clusterLockTimeoutMs = 30000L;
     private String clusterLockProviderBeanName = "";
 
@@ -207,6 +208,14 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
             return super.clusterSharedPath();
         }
         return clusterSharedPath;
+    }
+
+    @Override
+    public String clusterWebBaseUrl() {
+        if (ObjectUtils.isEmpty(clusterWebBaseUrl)) {
+            return super.clusterWebBaseUrl();
+        }
+        return clusterWebBaseUrl;
     }
 
     @Override
