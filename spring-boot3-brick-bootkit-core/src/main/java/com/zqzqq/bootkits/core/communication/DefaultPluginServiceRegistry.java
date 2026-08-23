@@ -42,6 +42,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -427,10 +428,37 @@ public class DefaultPluginServiceRegistry implements PluginServiceRegistry {
             return providers.get(pluginId);
         }
 
+        // 多实现场景：任一提供方声明 WEIGHTED 策略时，按权重灰度分流（调用级）
+        if (providers.size() > 1
+                && providers.values().stream()
+                    .anyMatch(d -> d.getMetadata().getLoadBalancing() == ServiceMetadata.LoadBalancingStrategy.WEIGHTED)) {
+            return weightedPick(providers.values());
+        }
+
         // Find highest priority service
         return providers.values().stream()
             .max(Comparator.comparingInt(ServiceDescriptor::getPriority))
             .orElse(null);
+    }
+
+    /**
+     * 按权重随机选择服务实现，用于灰度/金丝雀流量按比例分流。
+     * 权重 <= 0 视为 1，避免零权重导致永远选不中。
+     */
+    private ServiceDescriptor weightedPick(Collection<ServiceDescriptor> providers) {
+        int total = 0;
+        for (ServiceDescriptor d : providers) {
+            total += Math.max(1, d.getMetadata().getWeight());
+        }
+        int r = ThreadLocalRandom.current().nextInt(total);
+        int acc = 0;
+        for (ServiceDescriptor d : providers) {
+            acc += Math.max(1, d.getMetadata().getWeight());
+            if (r < acc) {
+                return d;
+            }
+        }
+        return providers.iterator().next();
     }
 
     @SuppressWarnings("unchecked")

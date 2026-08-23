@@ -71,6 +71,12 @@ public class ServiceMetadata {
     private int priority = 0;
 
     /**
+     * Routing weight for weighted load balancing / canary traffic split.
+     * Effective only when {@link LoadBalancingStrategy#WEIGHTED} is used.
+     */
+    private int weight = 100;
+
+    /**
      * Whether this is a singleton service.
      */
     private boolean singleton = true;
@@ -151,6 +157,14 @@ public class ServiceMetadata {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
     }
 
     public boolean isSingleton() {
@@ -361,6 +375,11 @@ public class ServiceMetadata {
 
         public Builder priority(int priority) {
             metadata.setPriority(priority);
+            return this;
+        }
+
+        public Builder weight(int weight) {
+            metadata.setWeight(weight);
             return this;
         }
 
