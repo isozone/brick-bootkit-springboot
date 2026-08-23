@@ -124,7 +124,7 @@
           :show-icon="true"
           style="margin-bottom: 12px;"
         >
-          当前为单机模式（plugin.cluster.enabled=false），仅展示本节点发布记录。如需多节点聚合，请开启集群并配置节点注册。
+          当前为单机模式（plugin.cluster.enabled=false），仅展示本节点发布记录。如需跨节点聚合，请开启集群并配置 plugin.cluster.web-base-url 与 plugin.cluster.internal-token。
         </n-alert>
         <div v-else>
           <div class="cluster-meta">
@@ -143,6 +143,9 @@
               <span class="muted">（{{ n.host }}{{ n.pluginCount != null ? ' · ' + n.pluginCount + ' 插件' : '' }}）</span>
             </n-tag>
           </div>
+          <n-alert type="info" :show-icon="true" style="margin-top: 8px;">
+            跨节点发布记录聚合需各节点配置 plugin.cluster.web-base-url（可被对端访问的 Web 基址）与一致的 plugin.cluster.internal-token；未配置或不可达的节点将不会被聚合进本视图。
+          </n-alert>
         </div>
         <n-table :bordered="false" :single-line="false" size="small" style="margin-top: 12px;">
           <thead>
