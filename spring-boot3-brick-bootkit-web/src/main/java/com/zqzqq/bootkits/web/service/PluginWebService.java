@@ -23,7 +23,10 @@ import com.zqzqq.bootkits.core.PluginManager;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
 import com.zqzqq.bootkits.core.version.VersionUtils;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbe;
+import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbeResult;
 import com.zqzqq.bootkits.web.config.BrickWebProperties;
+import com.zqzqq.bootkits.web.dto.ReleaseRecord;
 import com.zqzqq.bootkits.web.dto.ApiResult;
 import com.zqzqq.bootkits.web.dto.ErrorCode;
 import com.zqzqq.bootkits.web.dto.PageResult;
@@ -47,7 +50,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -59,13 +65,23 @@ public class PluginWebService {
 
     private final ObjectProvider<PluginManager> pluginManagerProvider;
     private final PluginWebFileSupport fileSupport;
+    private final ReleaseService releaseService;
+    private final ObjectProvider<RolloutWebService> rolloutWebServiceProvider;
 
     @Autowired
     UploadHistoryService uploadHistoryService;
 
-    public PluginWebService(ObjectProvider<PluginManager> pluginManagerProvider, BrickWebProperties properties) {
+    @Autowired
+    private List<PluginRolloutProbe> rolloutProbes = new ArrayList<>();
+
+    public PluginWebService(ObjectProvider<PluginManager> pluginManagerProvider,
+                            BrickWebProperties properties,
+                            ReleaseService releaseService,
+                            ObjectProvider<RolloutWebService> rolloutWebServiceProvider) {
         this.pluginManagerProvider = pluginManagerProvider;
         this.fileSupport = new PluginWebFileSupport(properties);
+        this.releaseService = releaseService;
+        this.rolloutWebServiceProvider = rolloutWebServiceProvider;
     }
 
     private PluginManager getPluginManager() {
@@ -231,6 +247,7 @@ public class PluginWebService {
         Path backupPath = null;
         Path tempPath = null;
         String pluginId = null;
+        String releaseId = null;
 
         try {
             tempPath = fileSupport.createManagedTempUploadPath(originalFilename);
@@ -254,6 +271,22 @@ public class PluginWebService {
                 backupPath = backupExistingPlugin(pluginRootPath, existingPlugin);
             }
 
+            String oldVersion = existingPlugin != null && existingPlugin.getPluginDescriptor() != null
+                    ? existingPlugin.getPluginDescriptor().getPluginVersion() : null;
+            releaseId = UUID.randomUUID().toString();
+            ReleaseRecord release = new ReleaseRecord();
+            release.setReleaseId(releaseId);
+            release.setPluginId(pluginId);
+            release.setPluginName(uploadPluginInfo.getPluginDescriptor() != null
+                    ? uploadPluginInfo.getPluginDescriptor().getName() : pluginId);
+            release.setFromVersion(oldVersion);
+            release.setToVersion(newVersion);
+            release.setMode(currentRolloutMode());
+            release.setStatus("UPGRADING");
+            release.setStartTime(System.currentTimeMillis());
+            release.setOperator("web");
+            releaseService.create(release);
+
             String previousFilename = existingPlugin != null
                     ? Paths.get(existingPlugin.getPluginPath()).getFileName().toString()
                     : null;
@@ -269,20 +302,25 @@ public class PluginWebService {
             deletePreviousPluginFileIfRenamed(existingPlugin, previousFilename, originalFilename);
 
             pluginInfo = autoStartIfNeeded(pluginManager, pluginInfo, enableAfterUpload);
+            runReleaseGrayProbesIfNeeded(pluginId, pluginInfo, releaseId);
             recordSuccessHistory(pluginInfo, enableAfterUpload, backupPath);
+            markReleaseSuccess(releaseId, backupPath);
             return ApiResult.success(PluginDTO.from(pluginInfo));
         } catch (IOException e) {
             log.error("插件上传失败", e);
             cleanupTempUploadQuietly(tempPath);
             restoreBackupQuietly(backupPath, pluginId, enableAfterUpload);
             recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
+            markReleaseFailed(releaseId, e.getMessage());
             throw new PluginException("插件上传失败: " + e.getMessage(), e);
         } catch (PluginException e) {
             recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
+            markReleaseFailed(releaseId, e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("插件上传异常", e);
             recordFailedHistory(pluginId, originalFilename, e.getMessage(), tempPath, enableAfterUpload);
+            markReleaseFailed(releaseId, e.getMessage());
             throw new PluginException("插件上传异常: " + e.getMessage(), e);
         }
     }
@@ -461,6 +499,69 @@ public class PluginWebService {
         } catch (Exception e) {
             log.error("记录失败历史时发生错误", e);
         }
+    }
+
+    /**
+     * 灰度模式下，升级完成后对插件运行全部灰度探针；任一探针拒绝则抛出异常，
+     * 由上层 catch 触发备份回滚与发布失败记录（与 {@code DefaultPluginOperator} 行为一致）。
+     */
+    private void runReleaseGrayProbesIfNeeded(String pluginId, PluginInfo pluginInfo, String releaseId) {
+        if (!"GRAY".equalsIgnoreCase(currentRolloutMode())) {
+            return;
+        }
+        for (PluginRolloutProbe probe : rolloutProbes) {
+            PluginRolloutProbeResult result = probe.probe(pluginId, pluginInfo);
+            if (result != null && !result.isPassed()) {
+                throw new PluginException("Gray rollout probe rejected. probe=" + probe.getName()
+                        + ", plugin=" + pluginId + ", detail=" + result.getMessage());
+            }
+        }
+    }
+
+    private void markReleaseSuccess(String releaseId, Path backupPath) {
+        if (releaseId == null) {
+            return;
+        }
+        releaseService.update(releaseId, r -> {
+            r.setStatus("SUCCESS");
+            r.setEndTime(System.currentTimeMillis());
+            if (backupPath != null) {
+                r.setBackupPath(backupPath.toString());
+            }
+        });
+    }
+
+    private void markReleaseFailed(String releaseId, String errorMessage) {
+        if (releaseId == null) {
+            return;
+        }
+        releaseService.update(releaseId, r -> {
+            r.setStatus("FAILED");
+            r.setEndTime(System.currentTimeMillis());
+            r.setErrorMessage(errorMessage);
+        });
+    }
+
+    private String currentRolloutMode() {
+        RolloutWebService rws = rolloutWebServiceProvider.getIfAvailable();
+        if (rws == null) {
+            return "DIRECT";
+        }
+        try {
+            Map<String, Object> config = rws.getRolloutConfig();
+            if (config != null) {
+                Object mode = config.get("mode");
+                Object desc = config.get("modeDescription");
+                String raw = mode != null ? mode.toString()
+                        : (desc != null ? desc.toString() : "DIRECT");
+                if (raw.toUpperCase().contains("GRAY") || raw.contains("灰度")) {
+                    return "GRAY";
+                }
+            }
+        } catch (Exception ignored) {
+            // 取不到则按 DIRECT 处理
+        }
+        return "DIRECT";
     }
 
     private void deletePreviousPluginFileIfRenamed(PluginInfo existingPlugin,

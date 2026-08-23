@@ -95,6 +95,11 @@ class PluginWebServiceTest {
         ObjectProvider<PluginManager> provider = mock(ObjectProvider.class);
         when(provider.getIfAvailable()).thenReturn(pluginManager);
 
-        return new PluginWebService(provider, properties);
+        ReleaseService releaseService = mock(ReleaseService.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<RolloutWebService> rolloutProvider = mock(ObjectProvider.class);
+        when(rolloutProvider.getIfAvailable()).thenReturn(null);
+
+        return new PluginWebService(provider, properties, releaseService, rolloutProvider);
     }
 }
