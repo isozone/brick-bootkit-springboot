@@ -1,1 +1,2 @@
 com.zqzqq.bootkits.distributed.config.DistributedPluginAutoConfiguration
+com.zqzqq.bootkits.distributed.config.PluginFeignBridgeAutoConfiguration

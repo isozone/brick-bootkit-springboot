@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zqzqq.samples</groupId>
+        <artifactId>brick-distributed-quickstart</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>quickstart-api</artifactId>
+    <packaging>jar</packaging>
+    <name>com.zqzqq.samples:quickstart-api</name>
+    <description>共享契约模块：服务接口（*-contract）。Worker 实现它，Host 通过 Feign 引用它。</description>
+</project>

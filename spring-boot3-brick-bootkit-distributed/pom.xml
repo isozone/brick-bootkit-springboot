@@ -56,6 +56,16 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Nacos 服务目录（optional：registry-type=nacos 时由宿主提供 nacos-client，
+             通常随 spring-cloud-alibaba-nacos 引入；此处仅编译期可见，不强制传递） -->
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>${nacos.client.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- gRPC 通信 -->
         <dependency>
             <groupId>io.grpc</groupId>

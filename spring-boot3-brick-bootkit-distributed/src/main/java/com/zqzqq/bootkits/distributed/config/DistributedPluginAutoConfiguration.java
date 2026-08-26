@@ -25,8 +25,10 @@ import com.zqzqq.bootkits.distributed.metrics.DistributedMetrics;
 import com.zqzqq.bootkits.distributed.metrics.DistributedStatusProvider;
 import com.zqzqq.bootkits.distributed.proxy.RemoteServiceProxyFactory;
 import com.zqzqq.bootkits.distributed.registry.DistributedPluginServiceRegistry;
+import com.zqzqq.bootkits.distributed.registry.NacosServiceDirectory;
 import com.zqzqq.bootkits.distributed.registry.RedisServiceDirectory;
 import com.zqzqq.bootkits.distributed.registry.ServiceDirectory;
+import com.zqzqq.bootkits.distributed.lifecycle.HostPluginServiceAutoRegistration;
 import com.zqzqq.bootkits.distributed.registry.ServiceRegistrationScheduler;
 import com.zqzqq.bootkits.distributed.rpc.GrpcClientProvider;
 import com.zqzqq.bootkits.distributed.rpc.GrpcServerBootstrap;
@@ -72,7 +74,6 @@ import java.io.IOException;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(DistributedPluginProperties.class)
 @ConditionalOnProperty(prefix = "plugin.distributed", name = "enabled", havingValue = "true")
-@ConditionalOnBean(StringRedisTemplate.class)
 @AutoConfigureAfter(name = "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration")
 @AutoConfigureBefore(name = "com.zqzqq.bootkits.integration.SpringBootPluginStarter")
 public class DistributedPluginAutoConfiguration {
@@ -97,16 +98,84 @@ public class DistributedPluginAutoConfiguration {
 
     @Bean
     public ServiceDirectory distributedServiceDirectory(
-            StringRedisTemplate redis,
+            ObjectProvider<StringRedisTemplate> redisProvider,
             ObjectProvider<ObjectMapper> mapperProvider,
             DistributedPluginProperties properties,
-            DistributedMetrics metrics) {
+            DistributedMetrics metrics,
+            org.springframework.core.env.Environment environment) {
         ObjectMapper mapper = mapperProvider.getIfAvailable(ObjectMapper::new);
+        String registryType = properties.getRegistryType();
+        if ("nacos".equalsIgnoreCase(registryType)) {
+            com.alibaba.nacos.api.naming.NamingService namingService = resolveNamingService(properties, environment);
+            return new NacosServiceDirectory(namingService,
+                    properties.getRegistryPrefix(),
+                    properties.getNacos().getGroup(),
+                    properties.getHeartbeatTtlSeconds(),
+                    metrics, mapper);
+        }
+        // 默认 redis 后端：必须存在 StringRedisTemplate，否则给出明确提示而非静默不装载。
+        StringRedisTemplate redis = redisProvider.getIfAvailable();
+        if (redis == null) {
+            throw new IllegalStateException(
+                    "plugin.distributed.registry-type=redis 需要 StringRedisTemplate，请引入 "
+                            + "spring-boot-starter-data-redis；若使用 Nacos 请设置 plugin.distributed.registry-type=nacos");
+        }
         return new RedisServiceDirectory(redis, mapper,
                 properties.getRegistryPrefix(),
                 properties.getHeartbeatTtlSeconds(),
                 properties.getRegistryCacheTtlMillis(),
                 metrics);
+    }
+
+    /**
+     * 解析 Nacos {@link com.alibaba.nacos.api.naming.NamingService}。
+     * <p>
+     * 优先复用 {@code spring.cloud.nacos.discovery.server-addr}（Spring Cloud Alibaba 已配置时零额外配置），
+     * 否则取 {@code plugin.distributed.nacos.server-addr}。按需拼装 namespace / 鉴权参数后通过
+     * {@link com.alibaba.nacos.api.NacosFactory} 自建客户端（与业务侧 Nacos 客户端独立，互不干扰）。
+     */
+    private com.alibaba.nacos.api.naming.NamingService resolveNamingService(
+            DistributedPluginProperties properties,
+            org.springframework.core.env.Environment environment) {
+        DistributedPluginProperties.Nacos nacos = properties.getNacos();
+        String serverAddr = firstNonEmpty(nacos.getServerAddr(),
+                environment.getProperty("spring.cloud.nacos.discovery.server-addr"));
+        if (serverAddr == null || serverAddr.isEmpty()) {
+            throw new IllegalStateException(
+                    "使用 Nacos 服务目录需配置 plugin.distributed.nacos.server-addr "
+                            + "或 spring.cloud.nacos.discovery.server-addr");
+        }
+        java.util.Properties props = new java.util.Properties();
+        props.setProperty("serverAddr", serverAddr);
+        String namespace = firstNonEmpty(nacos.getNamespace(),
+                environment.getProperty("spring.cloud.nacos.discovery.namespace"));
+        if (namespace != null && !namespace.isEmpty()) {
+            props.setProperty("namespace", namespace);
+        }
+        applyIfNonEmpty(props, "username", nacos.getUsername());
+        applyIfNonEmpty(props, "password", nacos.getPassword());
+        applyIfNonEmpty(props, "accessKey", nacos.getAccessKey());
+        applyIfNonEmpty(props, "secretKey", nacos.getSecretKey());
+        try {
+            return com.alibaba.nacos.api.NacosFactory.createNamingService(props);
+        } catch (com.alibaba.nacos.api.exception.NacosException e) {
+            throw new IllegalStateException("创建 Nacos NamingService 失败: " + serverAddr, e);
+        }
+    }
+
+    private static String firstNonEmpty(String... values) {
+        for (String v : values) {
+            if (v != null && !v.isEmpty()) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private static void applyIfNonEmpty(java.util.Properties props, String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            props.setProperty(key, value);
+        }
     }
 
     // ==================== 调用方（宿主/HOST 与 WORKER 共用） ====================
@@ -207,6 +276,25 @@ public class DistributedPluginAutoConfiguration {
     @Bean
     public DistributedServiceLocator distributedServiceLocator() {
         return new DistributedServiceLocator();
+    }
+
+    // ==================== 宿主级服务自动注册（分离容器拓扑） ====================
+    // 扫描宿主主上下文里标注 @PluginService / @BrickService 的 @Service bean，注册进本地
+    // 注册中心；当本节点 role=WORKER 时，ServiceRegistrationScheduler 会将其作为远端能力发布。
+    // 与插件上下文的 ServiceRegistryLifecycleExtension 作用域互补、互不重复。
+
+    @Bean
+    @ConditionalOnProperty(prefix = "plugin.distributed", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "plugin.distributed", name = "hostServiceAutoRegister",
+            havingValue = "true", matchIfMissing = true)
+    public HostPluginServiceAutoRegistration hostPluginServiceAutoRegistration(
+            ApplicationContext applicationContext,
+            PluginServiceRegistry registry,
+            DistributedPluginProperties properties) {
+        String pluginId = (properties.getHostServicePluginId() != null
+                && !properties.getHostServicePluginId().isEmpty())
+                ? properties.getHostServicePluginId() : "host";
+        return new HostPluginServiceAutoRegistration(applicationContext, registry, pluginId);
     }
 
     // ==================== 执行节点（仅 WORKER） ====================

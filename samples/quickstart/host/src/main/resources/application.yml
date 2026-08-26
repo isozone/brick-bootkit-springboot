@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: host
+
+# ===== brick 分布式（分离容器拓扑）=====
+plugin:
+  distributed:
+    enabled: true
+    # 宿主节点：消费远端能力（也可兼作提供方，视需要设为 WORKER）
+    role: HOST
+    registry-type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+    # Feign → 插件服务桥接（默认开启）：@FeignClient 接口命中插件能力时走 LOCATOR/gRPC
+    feign-bridge-enabled: true
+
+server:
+  port: 8080

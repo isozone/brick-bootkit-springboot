@@ -18,6 +18,7 @@
 
 package com.zqzqq.bootkits.plugin.pack;
 
+import com.zqzqq.bootkits.plugin.pack.filter.ContractScopeFilter;
 import com.zqzqq.bootkits.plugin.pack.filter.Exclude;
 import com.zqzqq.bootkits.plugin.pack.filter.ExcludeFilter;
 import com.zqzqq.bootkits.plugin.pack.filter.Include;
@@ -57,6 +58,20 @@ public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
     @Parameter(property = "spring-boot3-brick-bootkit-packager.excludes")
     private List<Exclude> excludes;
 
+    /**
+     * 是否把 {@code provided} 作用域依赖从插件 jar 中剔除。
+     * <p>契约模块（{@code *-contract}）、宿主已提供的框架（mybatis-plus 等）应以 provided 引入，
+     * 由宿主 classpath 提供，避免重复打包。默认 true。
+     */
+    @Parameter(property = "spring-boot3-brick-bootkit-packager.excludeProvided", defaultValue = "true")
+    private Boolean excludeProvided;
+
+    /**
+     * 是否把 {@code optional} 依赖从插件 jar 中剔除。默认 true。
+     */
+    @Parameter(property = "spring-boot3-brick-bootkit-packager.excludeOptional", defaultValue = "true")
+    private Boolean excludeOptional;
+
 
     protected final Set<Artifact> filterDependencies(Set<Artifact> dependencies, FilterArtifacts filters)
             throws MojoExecutionException {
@@ -85,6 +100,10 @@ public abstract class AbstractDependencyFilterMojo extends AbstractMojo {
         addPluginFrameworkExclude();
         // 添加spring web 环境排除
         addSpringWebEnvExclude();
+        // 剔除契约/宿主提供的 provided / optional 依赖，避免重复打包
+        filters.addFilter(new ContractScopeFilter(
+                excludeProvided == null || excludeProvided,
+                excludeOptional == null || excludeOptional));
         filters.addFilter(new ExcludeFilter(this.excludes));
         return filters;
     }

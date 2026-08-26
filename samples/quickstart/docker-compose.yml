@@ -1,0 +1,39 @@
+# 分离容器拓扑 quickstart
+#
+# 前置（本机需先构建框架与样例 jar）：
+#   1) 在框架根目录： mvn -pl spring-boot3-brick-bootkit-distributed -am install -DskipTests
+#   2) 在 samples/quickstart： mvn package -DskipTests
+#   3) docker compose up --build
+#
+# 验证： curl http://localhost:8080/user/1  →  "worker-User-1"
+#       （Host 的 @FeignClient 经 brick 桥跨容器落到 Worker 的 @PluginService 实现）
+
+services:
+  nacos:
+    image: nacos/nacos-server:v2.4.2
+    environment:
+      MODE: standalone
+      JVM_XMX: 512m
+    ports:
+      - "8848:8848"
+
+  worker:
+    build: ./worker
+    environment:
+      NACOS_ADDR: nacos:8848
+      POD_IP: worker
+    depends_on:
+      - nacos
+    ports:
+      - "8081:8081"   # 业务 HTTP（可选）
+      - "9090:9090"   # gRPC 执行节点
+
+  host:
+    build: ./host
+    environment:
+      NACOS_ADDR: nacos:8848
+    depends_on:
+      - nacos
+      - worker
+    ports:
+      - "8080:8080"

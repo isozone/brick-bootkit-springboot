@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: worker
+
+# ===== brick 分布式（分离容器拓扑）=====
+plugin:
+  distributed:
+    enabled: true
+    # 执行节点：承载业务并向目录注册、对外提供 gRPC
+    role: WORKER
+    # 服务目录后端：nacos（复用 Spring Cloud Alibaba 的 Nacos）或默认 redis
+    registry-type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+    # gRPC 监听/注册地址；多网卡请显式指定业务网段 IP（POD_IP）
+    host: ${POD_IP:127.0.0.1}
+    port: 9090
+    heartbeat-interval-seconds: 10
+
+server:
+  port: 8081

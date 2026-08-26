@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.zqzqq.samples</groupId>
+    <artifactId>brick-distributed-quickstart</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>com.zqzqq.samples:brick-distributed-quickstart</name>
+    <description>
+        分离容器拓扑 quickstart：Worker 把业务 @Service 加 @PluginService 即发布为分布式能力；
+        Host 对 @FeignClient 接口零改动，经 brick 的 Feign 桥透明路由到跨容器 gRPC。
+    </description>
+
+    <modules>
+        <module>api</module>
+        <module>worker</module>
+        <module>host</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- 本机需先 mvn install 该框架，再构建本样例 -->
+        <brick.version>4.0.11</brick.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

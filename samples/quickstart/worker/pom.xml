@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zqzqq.samples</groupId>
+        <artifactId>brick-distributed-quickstart</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>quickstart-worker</artifactId>
+    <packaging>jar</packaging>
+    <name>com.zqzqq.samples:quickstart-worker</name>
+    <description>WORKER 容器：承载业务，经 @PluginService 发布为跨容器能力。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- brick 分布式模块：自带 Nacos/Redis 目录、gRPC 执行节点、宿主级 @PluginService 自动注册 -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-distributed</artifactId>
+            <version>${brick.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zqzqq.samples</groupId>
+            <artifactId>quickstart-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

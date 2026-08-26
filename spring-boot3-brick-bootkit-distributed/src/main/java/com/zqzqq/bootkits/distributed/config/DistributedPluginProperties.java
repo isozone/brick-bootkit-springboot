@@ -31,9 +31,43 @@ import java.util.Map;
 public class DistributedPluginProperties {
 
     /**
-     * 是否启用分布式插件模块。默认关闭，宿主显式开启。
+     * 是否启用分布式插件模块。默认关闭时整个分布式模块不装载。
      */
     private boolean enabled = false;
+
+    /**
+     * 服务目录后端类型：{@code redis}（默认，沿用既有 Redis 目录）或 {@code nacos}
+     * （复用 Spring Cloud Alibaba 的 Nacos 注册中心，使插件能力发现与微服务发现共用同一真相源）。
+     */
+    private String registryType = "redis";
+
+    /**
+     * Nacos 服务目录配置（{@code registry-type=nacos} 时生效）。
+     */
+    private final Nacos nacos = new Nacos();
+
+    /**
+     * 是否启用 Feign → 插件服务桥接：把「既是 @FeignClient、又被注册为插件能力」的接口，
+     * 自动改为走 {@code PluginServiceRegistry}（本地优先 / 远端 gRPC），调用方零改动；
+     * 非插件服务自动回落到原 Feign HTTP。默认开启。
+     */
+    private boolean feignBridgeEnabled = true;
+
+    /**
+     * 是否启用「宿主级 {@code @PluginService} / {@code @BrickService} 自动注册」：
+     * 在宿主（主应用）Spring 上下文就绪后，自动扫描并注册标注了服务注解的 {@code @Service}
+     * bean，使其可作为分布式能力被其它容器（经 LOCATOR/gRPC）跨容器调用。
+     * <p>
+     * 面向「分离容器」拓扑——提供方微服务无需改造为 brick 插件、也无需引入插件打包流程，
+     * 只需给业务实现加一个注解即可发布能力。默认开启。
+     */
+    private boolean hostServiceAutoRegister = true;
+
+    /**
+     * 宿主级自动注册使用的 pluginId。多个容器默认共用 {@code "host"}，目录以
+     * {@code pluginId@nodeId} 区分不同节点；如需显式指定（如按业务域命名）可在此覆盖。
+     */
+    private String hostServicePluginId = "host";
 
     /**
      * 当前节点的角色：HOST（宿主/只消费远端服务）或 WORKER（执行节点/提供插件服务）。
@@ -184,6 +218,42 @@ public class DistributedPluginProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getRegistryType() {
+        return registryType;
+    }
+
+    public void setRegistryType(String registryType) {
+        this.registryType = registryType;
+    }
+
+    public Nacos getNacos() {
+        return nacos;
+    }
+
+    public boolean isFeignBridgeEnabled() {
+        return feignBridgeEnabled;
+    }
+
+    public void setFeignBridgeEnabled(boolean feignBridgeEnabled) {
+        this.feignBridgeEnabled = feignBridgeEnabled;
+    }
+
+    public boolean isHostServiceAutoRegister() {
+        return hostServiceAutoRegister;
+    }
+
+    public void setHostServiceAutoRegister(boolean hostServiceAutoRegister) {
+        this.hostServiceAutoRegister = hostServiceAutoRegister;
+    }
+
+    public String getHostServicePluginId() {
+        return hostServicePluginId;
+    }
+
+    public void setHostServicePluginId(String hostServicePluginId) {
+        this.hostServicePluginId = hostServicePluginId;
     }
 
     public NodeRole getRole() {
@@ -360,6 +430,91 @@ public class DistributedPluginProperties {
 
     public void setPermitKeepAliveTimeMillis(long permitKeepAliveTimeMillis) {
         this.permitKeepAliveTimeMillis = permitKeepAliveTimeMillis;
+    }
+
+    /**
+     * Nacos 服务目录配置。
+     * <p>
+     * 未显式配置 {@code server-addr} 时，自动复用 {@code spring.cloud.nacos.discovery.server-addr}
+     * （即 Spring Cloud Alibaba 的 Nacos 地址），实现零额外配置接入。
+     */
+    public static class Nacos {
+        /**
+         * Nacos 服务器地址（IP:PORT，逗号分隔多地址）。
+         * 留空时取 {@code spring.cloud.nacos.discovery.server-addr}。
+         */
+        private String serverAddr = "";
+
+        /**
+         * Nacos 命名空间 ID。留空时使用默认命名空间（public）。
+         */
+        private String namespace = "";
+
+        /**
+         * Nacos 分组。插件能力目录独立分组，避免污染业务服务列表。
+         */
+        private String group = "BRICK_BOOTKIT_DISTRIBUTED";
+
+        private String username = "";
+        private String password = "";
+        private String accessKey = "";
+        private String secretKey = "";
+
+        public String getServerAddr() {
+            return serverAddr;
+        }
+
+        public void setServerAddr(String serverAddr) {
+            this.serverAddr = serverAddr;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getGroup() {
+            return group;
+        }
+
+        public void setGroup(String group) {
+            this.group = group;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getAccessKey() {
+            return accessKey;
+        }
+
+        public void setAccessKey(String accessKey) {
+            this.accessKey = accessKey;
+        }
+
+        public String getSecretKey() {
+            return secretKey;
+        }
+
+        public void setSecretKey(String secretKey) {
+            this.secretKey = secretKey;
+        }
     }
 
     /**

@@ -117,6 +117,7 @@
         <!-- 分布式插件模块（gRPC + Redis 服务目录） -->
         <grpc.version>1.66.0</grpc.version>
         <protobuf.version>3.25.5</protobuf.version>
+        <nacos.client.version>2.4.2</nacos.client.version>
     </properties>
 
     <dependencyManagement>
