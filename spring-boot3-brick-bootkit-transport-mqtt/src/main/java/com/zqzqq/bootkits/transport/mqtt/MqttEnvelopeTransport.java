@@ -117,8 +117,7 @@ public class MqttEnvelopeTransport implements EnvelopeTransport, MqttCallback {
             message.setQos(mqttQos);
             message.setRetained(false);
 
-            IMqttDeliveryToken token = mqttClient.publish(topic, message);
-            token.waitFor();
+            mqttClient.publish(topic, message);
             log.debug("MQTT publish: topic={}, qos={}, messageId={}", topic, mqttQos, envelope.getMessageId());
         } catch (Exception e) {
             log.error("MQTT publish 失败: messageId={}", envelope.getMessageId(), e);
@@ -154,9 +153,6 @@ public class MqttEnvelopeTransport implements EnvelopeTransport, MqttCallback {
     // ==================== 内部方法 ====================
 
     private static int mapQos(QosLevel qos) {
-        if (qos == QosLevel.AT_LEAST_ONCE) {
-            return 1;
-        }
-        return 0;
+        return qos == null ? 0 : qos.getCode();
     }
 }
