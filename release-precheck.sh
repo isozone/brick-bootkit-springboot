@@ -86,7 +86,8 @@ for path in \
   "doc/3.兼容与支持矩阵.md" \
   "doc/4.发布与验收清单.md" \
   "doc/5.API清单.md" \
-  "doc/updates/4.0.6.md"; do
+  "doc/updates/4.0.6.md" \
+  "doc/updates/4.0.11.md"; do
   if [[ ! -f "$path" ]]; then
     fail "Missing required documentation file: $path"
   fi

@@ -9,6 +9,9 @@
 - 最小宿主 / 插件模板
 - 故障示例模板
 - doctor 自检
+- preflight 离线体检器（`tools/preflight`）
+- 渐进式接入级别 L0 / L1 / L2
+- 业务切片分析器（`tools/slicer`）
 - 首页 checklist
 - 上传分步向导
 - 错误码与排障文档锚点联动

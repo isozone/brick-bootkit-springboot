@@ -2,8 +2,8 @@
 
 export const siteMeta = {
   product: 'Brick BootKit SpringBoot',
-  version: '4.0.6',
-  checkedAt: '2026-03-26',
+  version: '4.0.11',
+  checkedAt: '2026-09-10',
   repo: 'https://github.com/v18268185209/brick-bootkit-springboot',
   docs: 'http://brickbootkit.aius.autos/',
   sourceBase: 'https://github.com/v18268185209/brick-bootkit-springboot/blob/HEAD'
@@ -34,13 +34,13 @@ export const docPages = [
     path: '/',
     title: '源码驱动的文档站',
     lead: '这版 docs-website 以仓库源码为唯一事实来源，先保证“真”，再追求“好看”。',
-    badges: ['Version 4.0.6', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-03-26'],
+    badges: ['Version 4.0.11', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-09-10'],
     sections: [
       {
         id: 'facts',
         title: '事实快照',
         paragraphs: [
-          '父工程版本在 `pom.xml` 中定义为 `4.0.6`，并包含 8 个核心模块。',
+          '父工程版本在 `pom.xml` 中定义为 `4.0.11`，并包含 8 个核心模块。',
           '默认 Java 版本为 17，`spring-boot.version` 在父工程中固定为 `3.5.5`。',
           '文档中涉及的配置项来自 `AutoIntegrationConfiguration` 与 Web 模块配置类，不使用猜测字段。'
         ],
@@ -143,14 +143,14 @@ export const docPages = [
           content: String.raw`<dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit</artifactId>
-  <version>4.0.6</version>
+  <version>4.0.11</version>
 </dependency>
 
 <!-- 可选：Web 管理控制台 -->
 <dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-  <version>4.0.6</version>
+  <version>4.0.11</version>
 </dependency>`
         },
         sources: ['spring-boot3-brick-bootkit/pom.xml', 'spring-boot3-brick-bootkit-web/pom.xml']
@@ -239,7 +239,7 @@ public class Application {
         bullets: [
           '父工程 artifactId: `spring-boot3-brick-bootkit-parent`',
           'groupId: `com.zqzqq`',
-          'version: `4.0.6`'
+          'version: `4.0.11`'
         ],
         sources: ['pom.xml']
       },
@@ -844,7 +844,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
           content: String.raw`<plugin>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-  <version>4.0.6</version>
+  <version>4.0.11</version>
   <configuration>
     <mode>prod</mode>
     <pluginInfo>
@@ -1503,21 +1503,22 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
     lead: '这里只记录在仓库中有明确代码落点的变化。',
     sections: [
       {
-        id: 'v406-highlights',
-        title: '4.0.6 可见变更',
+        id: 'v4011-highlights',
+        title: '4.0.11 可见变更',
         bullets: [
-          '标准 Spring Boot 宿主会优先自动推断 `plugin.mainPackage`。',
-          '新增 doctor 自检与文本 / JSON 导出能力。',
-          'Web 首屏增加 doctor 摘要、首次接入 checklist 和统一错误面板。',
-          '仓库新增最小模板与故障示例模板。',
-          '错误码、排障文档锚点与 Web 返回结构打通。'
+          '修复 `NoClassDefFoundError: org/slf4j/LoggerFactory` 引导期类加载问题。',
+          'Loader 模块引导类改用 `System.Logger`（JDK 9+），消除对 SLF4J 的引导期依赖。',
+          '新增 `BootstrapUtils` 工具类，替代对 common 模块工具类的引导期依赖。',
+          '内联 `ObjectUtils`/`CompareClassTypeUtils`/`FilesUtils`，确保引导链路零外部依赖。',
+          '工具类去重：`CompareClassTypeUtils`/`ObjectUtils`/`FilesUtils`/`SpringBeanUtils` 收敛到 common 模块。',
+          '补全 `common`/`sdk`/`spring-boot-starter` 单元测试，全量 13 模块 BUILD SUCCESS。'
         ],
         sources: [
-          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/ExtendPointConfiguration.java',
-          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/doctor/PluginDoctorService.java',
-          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/controller/api/DoctorController.java',
-          'spring-boot3-brick-bootkit-web/src/main/java/com/zqzqq/bootkits/web/exception/GlobalExceptionHandler.java',
-          'templates/README.md'
+          'spring-boot3-brick-bootkit-loader/pom.xml',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/utils/BootstrapUtils.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/launcher/SpringMainBootstrap.java',
+          'spring-boot3-brick-bootkit-loader/src/main/java/com/zqzqq/bootkits/loader/classloader/GenericClassLoader.java',
+          'doc/updates/4.0.11.md'
         ]
       }
     ]
