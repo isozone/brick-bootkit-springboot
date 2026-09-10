@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zqzqq</groupId>
+        <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
+        <version>4.0.11</version>
+    </parent>
+
+    <artifactId>spring-boot3-brick-bootkit-transport-mqtt</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>
+        MQTT 跨进程传输参考实现：基于 Eclipse Paho 的 MQTT 3.1.1 传输层，
+        将 BrickProtocol 信封序列化后通过 MQTT broker 在进程间转发。
+    </description>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!-- Brick Protocol (EnvelopeTransport SPI + EnvelopeSerializer) -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Eclipse Paho MQTT Client -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Jackson for envelope serialization (runtime dependency) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

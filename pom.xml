@@ -79,6 +79,7 @@
         <module>spring-boot3-brick-bootkit-distributed</module>
         <module>spring-boot3-brick-bootkit-protocol</module>
         <module>spring-boot3-brick-bootkit-adapter-modbus</module>
+        <module>spring-boot3-brick-bootkit-transport-mqtt</module>
     </modules>
 
     <properties>
