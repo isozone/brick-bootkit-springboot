@@ -500,7 +500,9 @@ public class Application {
             ['plugin.pluginSwaggerScan', 'true', '是否扫描插件 Swagger 接口'],
             ['plugin.pluginFollowProfile', 'false', '插件 profile 是否跟随主程序'],
             ['plugin.pluginFollowLog', 'false', '插件日志是否跟随主程序'],
-            ['plugin.lifecycleExtensionsEnabled', 'true', '是否启用生命周期扩展管理器']
+            ['plugin.lifecycleExtensionsEnabled', 'true', '是否启用生命周期扩展管理器'],
+            ['plugin.autoLoadPlugins', 'true', '启动时是否扫描并加载插件目录（false 进入影子模式 SHADOW，仅装配不读插件目录）'],
+            ['plugin.autoStartPlugins', 'true', '加载完成后是否自动启动插件（false 进入观察模式 OBSERVE，只解析校验不启动）']
           ]
         },
         sources: [
@@ -560,6 +562,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
           rows: [
             ['plugin.clusterEnabled', 'false', '是否启用跨实例集群锁协同'],
             ['plugin.clusterSharedPath', '空字符串', '集群共享目录'],
+            ['plugin.clusterWebBaseUrl', '空字符串', '当前节点可被其他节点访问的 Web 基址，用于集群发布记录跨节点聚合拉取'],
             ['plugin.clusterLockTimeoutMs', '30000', '获取集群锁超时（毫秒）'],
             ['plugin.clusterLockProviderBeanName', '空字符串', '自定义集群锁 Bean 名称'],
             ['plugin.admissionMode', 'warn', '准入模式：off / warn / enforce'],
@@ -630,6 +633,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
             ['plugin.web.uploadTempPath', '由 IntegrationConfiguration 注入', '上传临时目录（通常无需手动设置）'],
             ['plugin.web.backupPath', '由 IntegrationConfiguration 注入', '备份目录（通常无需手动设置）'],
             ['plugin.web.pluginRestPathPrefix', '由 IntegrationConfiguration 注入', '插件 REST 前缀（通常无需手动设置）'],
+            ['plugin.web.marketplaceIndexUrl', '空（回退 classpath marketplace/index.json）', '插件市场索引 URL（JSON 数组，描述可下载插件）'],
             ['plugin.web.cors.enabled', 'false', '是否开启跨域配置']
           ]
         },

@@ -1,5 +1,5 @@
 const generatedConfigKeys = {
-  "keyCount": 92,
+  "keyCount": 96,
   "keys": [
     {
       "key": "PLUGIN_DEVELOPMENT_MODE",
@@ -11,6 +11,14 @@ const generatedConfigKeys = {
     },
     {
       "key": "plugin.admissionMode",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.autoLoadPlugins",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.autoStartPlugins",
       "group": "plugin"
     },
     {
@@ -31,6 +39,10 @@ const generatedConfigKeys = {
     },
     {
       "key": "plugin.clusterSharedPath",
+      "group": "plugin"
+    },
+    {
+      "key": "plugin.clusterWebBaseUrl",
       "group": "plugin"
     },
     {
@@ -346,6 +358,10 @@ const generatedConfigKeys = {
       "group": "plugin.web"
     },
     {
+      "key": "plugin.web.marketplaceIndexUrl",
+      "group": "plugin.web"
+    },
+    {
       "key": "plugin.web.monitorRefreshInterval",
       "group": "plugin.web"
     },
@@ -372,7 +388,7 @@ const generatedConfigKeys = {
   ],
   "groups": {
     "other": 3,
-    "plugin": 28,
+    "plugin": 31,
     "plugin.configuration": 13,
     "plugin.decrypt": 3,
     "plugin.decrypt.plugins": 3,
@@ -381,7 +397,7 @@ const generatedConfigKeys = {
     "plugin.scripts.storage": 2,
     "plugin.scripts.storage.file": 4,
     "plugin.scripts.storage.jdbc": 3,
-    "plugin.web": 12
+    "plugin.web": 13
   }
 };
 
