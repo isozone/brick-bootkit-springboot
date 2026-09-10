@@ -39,6 +39,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Brick Protocol -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- SLF4J API -->
         <dependency>
             <groupId>org.slf4j</groupId>

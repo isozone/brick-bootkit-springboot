@@ -1,0 +1,44 @@
+{
+  "deviceType": "modbus-thermostat",
+  "transport": "modbus",
+  "defaultQos": 1,
+  "mappings": [
+    {
+      "capability": "temp",
+      "type": "point",
+      "access": "read",
+      "register": 40001,
+      "scale": 0.1
+    },
+    {
+      "capability": "humidity",
+      "type": "point",
+      "access": "read",
+      "register": 40002,
+      "scale": 0.1
+    },
+    {
+      "capability": "relay",
+      "type": "point",
+      "access": "read-write",
+      "register": 48001
+    },
+    {
+      "capability": "targetTemp",
+      "type": "point",
+      "access": "read-write",
+      "register": 40003,
+      "scale": 0.1
+    },
+    {
+      "capability": "reset",
+      "type": "command",
+      "register": 40011,
+      "writeValue": 1
+    },
+    {
+      "capability": "overheat",
+      "type": "event"
+    }
+  ]
+}
