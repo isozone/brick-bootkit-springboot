@@ -226,6 +226,31 @@ if grep -q '"cyclicPackages"' "$TMP/sl_json.out"; then pass "json has cyclicPack
 if grep -q '"projectPath"' "$TMP/sl_json.out"; then pass "json has projectPath"; else fail "json has projectPath"; fi
 if grep -q '"dependsOn"' "$TMP/sl_json.out"; then pass "json has dependsOn"; else fail "json has dependsOn"; fi
 
+# ------------------------------------------------------------------ scaffold
+
+SCAFFOLD="$ROOT/tools/scaffold/scaffold.sh"
+
+echo "[scaffold] generate from report package"
+set +e
+"$SCAFFOLD" "$TMP/monolith" com.fixture.report "$TMP/gen-plugin" --force > "$TMP/sc_out.out" 2>&1
+code=$?
+set -e
+if [ "$code" -eq 0 ]; then pass "exit 0"; else fail "exit 0 (got $code)"; fi
+if [ -f "$TMP/gen-plugin/pom.xml" ]; then pass "pom.xml exists"; else fail "pom.xml exists"; fi
+if [ -f "$TMP/gen-plugin/src/main/java/com/fixture/report/plugin/ReportPluginBootstrap.java" ]; then pass "bootstrap exists"; else fail "bootstrap exists"; fi
+if [ -f "$TMP/gen-plugin/src/main/java/com/fixture/report/api/ReportService.java" ]; then pass "contract interface exists"; else fail "contract interface exists"; fi
+if grep -q 'String build()' "$TMP/gen-plugin/src/main/java/com/fixture/report/api/ReportService.java"; then pass "contract has build method"; else fail "contract has build method"; fi
+if [ -f "$TMP/gen-plugin/src/main/java/com/fixture/report/plugin/ReportServiceImpl.java" ]; then pass "impl stub exists"; else fail "impl stub exists"; fi
+if grep -q 'TODO: migrate business logic' "$TMP/gen-plugin/src/main/java/com/fixture/report/plugin/ReportServiceImpl.java"; then pass "impl has TODO"; else fail "impl has TODO"; fi
+if [ -f "$TMP/gen-plugin/src/main/resources/META-INF/spring.factories" ]; then pass "spring.factories exists"; else fail "spring.factories exists"; fi
+
+echo "[scaffold] missing package"
+set +e
+"$SCAFFOLD" "$TMP/monolith" com.nonexistent > "$TMP/sc_miss.out" 2>&1
+code=$?
+set -e
+if [ "$code" -eq 2 ]; then pass "exit 2 for missing package"; else fail "exit 2 for missing package (got $code)"; fi
+
 # ------------------------------------------------------------------ summary
 
 echo ""
