@@ -35,7 +35,8 @@ export default defineConfig({
   build: {
     outDir: '../src/main/resources/static/plugins-web',  // 输出到 Spring Boot static 目录
     assetsDir: 'assets',
-    sourcemap: false
+    sourcemap: false,
+    emptyOutDir: true  // outDir 在项目根之外，需显式开启构建前清空
   },
   test: {
     environment: 'jsdom',
