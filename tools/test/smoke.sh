@@ -251,6 +251,83 @@ code=$?
 set -e
 if [ "$code" -eq 2 ]; then pass "exit 2 for missing package"; else fail "exit 2 for missing package (got $code)"; fi
 
+# ------------------------------------------------------------------ migrate
+
+MIGRATE="$ROOT/tools/migrate/migrate.sh"
+
+echo "[migrate] full pipeline on compliant project"
+# 创建一个能通过 preflight 的项目
+mkdir -p "$TMP/okproj/src/main/java/com/demo"/{common,report,web}
+cat > "$TMP/okproj/pom.xml" <<POM
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.5</version>
+  </parent>
+  <groupId>com.demo</groupId>
+  <artifactId>okproj</artifactId>
+  <version>1.0</version>
+  <properties><java.version>17</java.version></properties>
+</project>
+POM
+cat > "$TMP/okproj/src/main/java/com/demo/common/Result.java" <<JAVA
+package com.demo.common;
+public class Result<T> { public static <T> Result<T> ok(T d) { return new Result<>(); } }
+JAVA
+cat > "$TMP/okproj/src/main/java/com/demo/report/ReportService.java" <<JAVA
+package com.demo.report;
+public interface ReportService { String build(); }
+JAVA
+cat > "$TMP/okproj/src/main/java/com/demo/report/ReportServiceImpl.java" <<JAVA
+package com.demo.report;
+public class ReportServiceImpl implements ReportService {
+  public String build() { return "ok"; }
+}
+JAVA
+cat > "$TMP/okproj/src/main/java/com/demo/report/ReportExporter.java" <<JAVA
+package com.demo.report;
+public class ReportExporter { }
+JAVA
+cat > "$TMP/okproj/src/main/java/com/demo/web/App.java" <<JAVA
+package com.demo.web;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+@SpringBootApplication
+public class App { public static void main(String[] args) {} }
+JAVA
+cat > "$TMP/okproj/src/main/java/com/demo/web/ReportController.java" <<JAVA
+package com.demo.web;
+import com.demo.report.ReportService;
+import com.demo.common.Result;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+public class ReportController {
+  private final ReportService reportService;
+  public ReportController(ReportService r) { this.reportService = r; }
+  public Result<String> list() { return Result.ok(reportService.build()); }
+}
+JAVA
+
+set +e
+"$MIGRATE" "$TMP/okproj" --auto --force > "$TMP/migrate.out" 2>&1
+code=$?
+set -e
+if [ "$code" -eq 0 ]; then pass "migrate exit 0"; else fail "migrate exit 0 (got $code)"; fi
+if grep -q '体检通过' "$TMP/migrate.out"; then pass "migrate preflight passed"; else fail "migrate preflight passed"; fi
+if grep -q '候选切片' "$TMP/migrate.out"; then pass "migrate slicer ran"; else fail "migrate slicer ran"; fi
+if grep -q '插件骨架已生成' "$TMP/migrate.out"; then pass "migrate scaffold ran"; else fail "migrate scaffold ran"; fi
+if grep -q 'report-plugin' "$TMP/migrate.out"; then pass "migrate selected report"; else fail "migrate selected report"; fi
+
+echo "[migrate] blocked project should stop early"
+set +e
+"$MIGRATE" "$TMP/blocked" --auto > "$TMP/migrate_blk.out" 2>&1
+code=$?
+set -e
+if [ "$code" -eq 1 ]; then pass "migrate stops on blocks"; else fail "migrate stops on blocks (got $code)"; fi
+if grep -q '体检未通过' "$TMP/migrate_blk.out"; then pass "migrate reports blocked"; else fail "migrate reports blocked"; fi
+
 # ------------------------------------------------------------------ summary
 
 echo ""
