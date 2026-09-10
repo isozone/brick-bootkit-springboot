@@ -150,6 +150,9 @@ public class PluginEvent {
         PLUGIN_RECOVERED,
         
         /** 自定义业务事件 */
-        CUSTOM
+        CUSTOM,
+
+        /** 设备语义协议事件（由 EnvelopeBus 桥接而来） */
+        DEVICE_EVENT
     }
 }

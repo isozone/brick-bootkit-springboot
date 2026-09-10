@@ -19,6 +19,8 @@ package com.zqzqq.bootkits.integration.device;
 
 import com.zqzqq.bootkits.core.device.DeviceRegistry;
 import com.zqzqq.bootkits.core.device.DeviceRegistryManager;
+import com.zqzqq.bootkits.core.eventbus.EnvelopeBusBridge;
+import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
 import com.zqzqq.bootkits.protocol.bus.EnvelopeBus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,7 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 设备注册表自动配置。
+ * 设备注册表 + EventBus 桥接自动配置。
  * <p>
  * 当 classpath 上存在 {@link DeviceRegistry} 和 {@link EnvelopeBus} 时自动装配。
  *
@@ -53,5 +55,13 @@ public class DeviceRegistryAutoConfiguration {
     @ConditionalOnMissingBean
     public DeviceRegistryManager deviceRegistryManager(DeviceRegistry deviceRegistry) {
         return new DeviceRegistryManager(deviceRegistry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public EnvelopeBusBridge envelopeBusBridge(EnvelopeBus envelopeBus, PluginEventBus pluginEventBus) {
+        EnvelopeBusBridge bridge = new EnvelopeBusBridge(envelopeBus, pluginEventBus);
+        bridge.start();
+        return bridge;
     }
 }
