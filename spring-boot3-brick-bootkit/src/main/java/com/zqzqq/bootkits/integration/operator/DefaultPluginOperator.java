@@ -29,6 +29,7 @@ import com.zqzqq.bootkits.core.exception.PluginDisabledException;
 import com.zqzqq.bootkits.core.exception.PluginException;
 import com.zqzqq.bootkits.core.lock.ClusterLockProvider;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
+import com.zqzqq.bootkits.integration.AdoptionLevel;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.listener.PluginInitializerListener;
 import com.zqzqq.bootkits.integration.listener.PluginInitializerListenerFactory;
@@ -129,9 +130,26 @@ public class DefaultPluginOperator implements PluginOperator {
                 log.info("Plugin function disabled");
                 return false;
             }
+            if (!configuration.autoLoadPlugins()) {
+                log.info("插件框架处于{}（plugin.autoLoadPlugins=false）：已跳过插件目录扫描与加载。"
+                                + "框架 Bean 与 doctor 自检可正常使用，插件不会介入当前业务运行。"
+                                + "确认依赖兼容性后，将配置改为 true 或改为观察模式再继续。",
+                        AdoptionLevel.SHADOW.getDescription());
+                IS_INIT.set(true);
+                return true;
+            }
             List<PluginInfo> pluginInfos = pluginManager.loadPlugins();
             if (ObjectUtils.isEmpty(pluginInfos)) {
                 return false;
+            }
+            if (!configuration.autoStartPlugins()) {
+                log.info("插件框架处于{}（plugin.autoStartPlugins=false）：已解析 {} 个插件，"
+                                + "完成格式、依赖与准入校验，但按配置不自动启动。"
+                                + "可在 Web 控制台核对插件信息后手动启动，"
+                                + "确认无误再将配置改为 true 进入全量模式。",
+                        AdoptionLevel.OBSERVE.getDescription(), pluginInfos.size());
+                IS_INIT.set(true);
+                return true;
             }
             pluginInitializerListenerFactory.before();
             boolean foundException = false;

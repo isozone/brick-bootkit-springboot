@@ -36,7 +36,7 @@ package com.zqzqq.bootkits.loader.jar;
 
 
 import com.zqzqq.bootkits.loader.utils.IOUtils;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,7 +154,7 @@ public class JarFileWrapper extends JarFile {
         // Modified Added close logic
         if(canClosed.get()){
             for (List<InputStream> inputStreams : inputStreamCache.values()) {
-                if(ObjectUtils.isEmpty(inputStreams)){
+                if(BootstrapUtils.isEmpty(inputStreams)){
                     continue;
                 }
                 for (InputStream inputStream : inputStreams) {

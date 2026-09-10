@@ -17,7 +17,6 @@
 package com.zqzqq.bootkits.integration.rollout;
 
 import com.zqzqq.bootkits.core.communication.CanaryRoutingResolver;
-import com.zqzqq.bootkits.core.communication.ServiceDescriptor;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 
 /**

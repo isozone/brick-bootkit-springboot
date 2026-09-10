@@ -19,7 +19,7 @@
 package com.zqzqq.bootkits.loader.classloader.resource.storage;
 
 import com.zqzqq.bootkits.loader.classloader.resource.Resource;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 
 import java.io.InputStream;
 import java.util.*;
@@ -48,7 +48,7 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
 
     @Override
     public boolean exist(String name) {
-        if(ObjectUtils.isEmpty(name)){
+        if(BootstrapUtils.isEmpty(name)){
             return false;
         }
         name = formatResourceName(name);
@@ -57,12 +57,12 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
 
     @Override
     public Resource getFirst(String name) {
-        if(ObjectUtils.isEmpty(name)){
+        if(BootstrapUtils.isEmpty(name)){
             return null;
         }
         name = formatResourceName(name);
         List<Resource> resources = resourceStorage.get(name);
-        if(ObjectUtils.isEmpty(resources)){
+        if(BootstrapUtils.isEmpty(resources)){
             return null;
         }
         return resources.get(0);
@@ -70,12 +70,12 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
 
     @Override
     public Enumeration<Resource> get(String name) {
-        if(ObjectUtils.isEmpty(name)){
+        if(BootstrapUtils.isEmpty(name)){
             return Collections.emptyEnumeration();
         }
         name = formatResourceName(name);
         List<Resource> resources = resourceStorage.get(name);
-        if(ObjectUtils.isEmpty(resources)){
+        if(BootstrapUtils.isEmpty(resources)){
             return Collections.emptyEnumeration();
         }
         return Collections.enumeration(resources);
@@ -90,7 +90,7 @@ public class CachePerpetualResourceStorage extends AbstractResourceStorage {
     @Override
     public Enumeration<InputStream> getInputStream(String name) {
         Enumeration<Resource> resources = get(name);
-        if(ObjectUtils.isEmpty(resources)){
+        if(BootstrapUtils.isEmpty(resources)){
             return Collections.emptyEnumeration();
         }
         return openStream(resources);

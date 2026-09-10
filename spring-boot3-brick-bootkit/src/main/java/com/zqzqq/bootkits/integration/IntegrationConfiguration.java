@@ -292,5 +292,46 @@ public interface IntegrationConfiguration {
         return true;
     }
 
+    /**
+     * 宿主启动时是否扫描并加载插件目录。
+     *
+     * <p>返回 false 时框架仍然完成全部 Bean 装配，只是不去读取插件目录，
+     * 对应 {@link AdoptionLevel#SHADOW}。存量系统可据此在零业务影响的前提下
+     * 先验证依赖兼容性与启动链路。手动安装、启动插件不受此开关限制。
+     *
+     * @return true 表示启动即加载，false 表示启动时不加载
+     */
+    default boolean autoLoadPlugins() {
+        return true;
+    }
+
+    /**
+     * 插件加载完成后是否自动启动。
+     *
+     * <p>返回 false 时插件包仍会被解析、校验并出现在插件列表中，但不会启动，
+     * 对应 {@link AdoptionLevel#OBSERVE}。可据此验证插件包格式、依赖与准入检查，
+     * 确认无误后再放开自动启动。
+     *
+     * @return true 表示加载后自动启动，false 表示只加载不启动
+     */
+    default boolean autoStartPlugins() {
+        return true;
+    }
+
+    /**
+     * 当前渐进式接入级别，由 {@link #autoLoadPlugins()} 与 {@link #autoStartPlugins()} 推导。
+     *
+     * @return 接入级别，不会为 null
+     */
+    default AdoptionLevel adoptionLevel() {
+        if (!autoLoadPlugins()) {
+            return AdoptionLevel.SHADOW;
+        }
+        if (!autoStartPlugins()) {
+            return AdoptionLevel.OBSERVE;
+        }
+        return AdoptionLevel.ACTIVE;
+    }
+
 }
 

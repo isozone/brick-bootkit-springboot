@@ -17,7 +17,7 @@
 
 
 package com.zqzqq.bootkits.loader.utils;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 
 
 import java.io.File;
@@ -112,7 +112,7 @@ public class PluginResourceUtils {
      * @return 标准资源名称
      */
     public static String formatStandardName(String name){
-        if(ObjectUtils.isEmpty(name)) {
+        if(BootstrapUtils.isEmpty(name)) {
             return PACKAGE_SPLIT;
         }
         String[] split = name.split(PACKAGE_SPLIT);
@@ -196,7 +196,7 @@ public class PluginResourceUtils {
     public static URL getExistUrl(URL baseUrl, String name){
         URL url;
         try {
-            if(ObjectUtils.isEmpty(name)){
+            if(BootstrapUtils.isEmpty(name)){
                 url = baseUrl;
             } else {
                 url = new URL(baseUrl, name);
@@ -225,7 +225,7 @@ public class PluginResourceUtils {
     }
 
     public static boolean isClass(String path){
-        if(ObjectUtils.isEmpty(path)){
+        if(BootstrapUtils.isEmpty(path)){
             return false;
         }
         return path.toLowerCase().endsWith(CLASS_FILE_EXTENSION);

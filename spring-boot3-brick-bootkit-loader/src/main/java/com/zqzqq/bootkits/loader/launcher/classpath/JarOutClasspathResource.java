@@ -21,7 +21,7 @@ package com.zqzqq.bootkits.loader.launcher.classpath;
 import com.zqzqq.bootkits.loader.archive.Archive;
 import com.zqzqq.bootkits.loader.archive.ExplodedArchive;
 import com.zqzqq.bootkits.loader.archive.JarFileArchive;
-import com.zqzqq.bootkits.utils.FilesUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.File;
@@ -95,7 +95,7 @@ public class JarOutClasspathResource implements ClasspathResource{
         Manifest manifest = archive.getManifest();
         String libDir = manifest.getMainAttributes().getValue(MAIN_LIB_DIR);
         String relativePath = rootJarFile.isDirectory() ? rootJarFile.getPath() : rootJarFile.getParent();
-        libDir = FilesUtils.resolveRelativePath(relativePath, libDir);
+        libDir = BootstrapUtils.resolveRelativePath(relativePath, libDir);
         File libJarDir = new File(libDir);
         if(!libJarDir.exists()){
             throw new IllegalStateException("主程序依赖目录不存在: " + libDir);

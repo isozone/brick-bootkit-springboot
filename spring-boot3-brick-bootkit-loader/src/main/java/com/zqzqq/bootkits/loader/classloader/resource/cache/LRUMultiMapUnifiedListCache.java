@@ -18,7 +18,7 @@
 
 package com.zqzqq.bootkits.loader.classloader.resource.cache;
 
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,7 +59,7 @@ public class LRUMultiMapUnifiedListCache<K, V> implements MultiCache<K, V>{
 
     @Override
     public void put(K key, Collection<V> value) {
-        if(ObjectUtils.isEmpty(value)){
+        if(BootstrapUtils.isEmpty(value)){
             return;
         }
         long stamp = lock.writeLock();
@@ -77,13 +77,13 @@ public class LRUMultiMapUnifiedListCache<K, V> implements MultiCache<K, V>{
     @SuppressWarnings("unchecked")
     @Override
     public void putSingle(K key, V value) {
-        put(key, ObjectUtils.<V>toList(value));
+        put(key, BootstrapUtils.<V>toList(value));
     }
 
     @Override
     public V getFirst(K key) {
         Collection<V> collection = get(key);
-        return ObjectUtils.getFirst(collection);
+        return BootstrapUtils.getFirst(collection);
     }
 
     @Override
@@ -131,11 +131,11 @@ public class LRUMultiMapUnifiedListCache<K, V> implements MultiCache<K, V>{
     @Override
     public Collection<V> getOrDefault(K key, Supplier<Collection<V>> supplier, boolean defaultAdded) {
         Collection<V> collection = get(key);
-        if(!ObjectUtils.isEmpty(collection)){
+        if(!BootstrapUtils.isEmpty(collection)){
             return collection;
         }
         Collection<V> addCollection = supplier.get();
-        if(ObjectUtils.isEmpty(addCollection)){
+        if(BootstrapUtils.isEmpty(addCollection)){
             return null;
         }
         if(defaultAdded){
@@ -260,7 +260,7 @@ public class LRUMultiMapUnifiedListCache<K, V> implements MultiCache<K, V>{
         }
 
         public synchronized void add(Collection<V> list){
-            if(ObjectUtils.isEmpty(list)){
+            if(BootstrapUtils.isEmpty(list)){
                 return;
             }
             getValue().addAll(list);
@@ -269,7 +269,7 @@ public class LRUMultiMapUnifiedListCache<K, V> implements MultiCache<K, V>{
 
         public synchronized V getFirst(){
             List<V> list = getValue();
-            if(ObjectUtils.isEmpty(list)){
+            if(BootstrapUtils.isEmpty(list)){
                 return null;
             }
             return list.get(0);

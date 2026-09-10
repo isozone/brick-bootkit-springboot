@@ -17,7 +17,7 @@
 
 
 package com.zqzqq.bootkits.loader.utils;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 
 
 import java.util.function.Supplier;
@@ -72,14 +72,14 @@ public abstract class Assert {
     }
 
     public static <T> T isNotEmpty(T t, String message) {
-        if (ObjectUtils.isEmpty(t)) {
+        if (BootstrapUtils.isEmpty(t)) {
             throw new IllegalArgumentException(message);
         }
         return t;
     }
 
     public static <T> T isNotEmpty(T t, Supplier<String> messageSupplier) {
-        if (ObjectUtils.isEmpty(t)) {
+        if (BootstrapUtils.isEmpty(t)) {
             throw new IllegalArgumentException(nullSafeGet(messageSupplier));
         }
         return t;

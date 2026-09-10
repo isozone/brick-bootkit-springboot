@@ -26,6 +26,7 @@ import com.zqzqq.bootkits.core.eventbus.PluginEventBus;
 import com.zqzqq.bootkits.core.performance.PluginPerformanceAnalyzer;
 import com.zqzqq.bootkits.core.security.PluginSecurityManager;
 import com.zqzqq.bootkits.core.state.EnhancedPluginState;
+import com.zqzqq.bootkits.integration.AdoptionLevel;
 import com.zqzqq.bootkits.integration.IntegrationConfiguration;
 import com.zqzqq.bootkits.integration.cluster.ClusterNodeRegistry;
 import com.zqzqq.bootkits.integration.rollout.PluginRolloutProbe;
@@ -101,6 +102,19 @@ public class PluginDoctorService {
                     "如果你期望加载插件，请设置 plugin.enable=true",
                     "/quickstart",
                     "yaml"));
+            warningCount++;
+        }
+
+        AdoptionLevel adoptionLevel = configuration.adoptionLevel();
+        if (adoptionLevel != null && adoptionLevel != AdoptionLevel.ACTIVE) {
+            String nextStep = adoptionLevel == AdoptionLevel.SHADOW
+                    ? "当前不会读取插件目录，验证依赖兼容性后设置 plugin.autoLoadPlugins=true 进入观察模式"
+                    : "当前只解析不启动插件，核对插件信息后设置 plugin.autoStartPlugins=true 进入全量模式";
+            items.add(item("ADOPTION_LEVEL_" + adoptionLevel.name(), 0, STATUS_WARN,
+                    "当前接入级别为" + adoptionLevel.getDescription() + "，插件能力未完全启用",
+                    nextStep,
+                    "/quickstart",
+                    "adoption"));
             warningCount++;
         }
 

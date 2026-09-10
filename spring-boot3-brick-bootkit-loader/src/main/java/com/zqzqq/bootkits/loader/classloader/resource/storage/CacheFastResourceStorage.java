@@ -23,7 +23,7 @@ import com.zqzqq.bootkits.loader.classloader.resource.cache.CacheExpirationTrigg
 import com.zqzqq.bootkits.loader.classloader.resource.cache.DefaultCacheExpirationTrigger;
 import com.zqzqq.bootkits.loader.classloader.resource.cache.LRUMultiMapUnifiedListCache;
 import com.zqzqq.bootkits.loader.classloader.resource.cache.MultiCache;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.InputStream;
@@ -82,7 +82,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
         if(!release){
             return cacheResourceStorage.getFirst(name);
         }
-        if(ObjectUtils.isEmpty(name)){
+        if(BootstrapUtils.isEmpty(name)){
             return null;
         }
         name = formatResourceName(name);
@@ -98,12 +98,12 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
         if(!release){
             return cacheResourceStorage.get(name);
         }
-        if(ObjectUtils.isEmpty(name)){
+        if(BootstrapUtils.isEmpty(name)){
             return Collections.emptyEnumeration();
         }
         name = formatResourceName(name);
         Collection<Resource> resources = resourceStorage.get(name);
-        if(!ObjectUtils.isEmpty(resources)){
+        if(!BootstrapUtils.isEmpty(resources)){
             return Collections.enumeration(resources);
         }
         return searchResources(name);
@@ -121,7 +121,7 @@ public class CacheFastResourceStorage extends AbstractResourceStorage {
             return cacheResourceStorage.getInputStream(name);
         }
         Enumeration<Resource> resources = get(name);
-        if(!ObjectUtils.isEmpty(resources)){
+        if(!BootstrapUtils.isEmpty(resources)){
             return openStream(resources);
         }
         Enumeration<Resource> searchResources = searchResources(name);

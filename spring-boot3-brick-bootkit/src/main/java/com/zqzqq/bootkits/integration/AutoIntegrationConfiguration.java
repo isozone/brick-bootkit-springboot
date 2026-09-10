@@ -79,6 +79,9 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
     private Boolean rolloutAutoStart = true;
     private Boolean rolloutRollbackOnFailure = true;
 
+    private Boolean autoLoadPlugins = true;
+    private Boolean autoStartPlugins = true;
+
     @Override
     public Boolean enable() {
         if (enable == null) {
@@ -282,5 +285,21 @@ public class AutoIntegrationConfiguration extends DefaultIntegrationConfiguratio
             return super.pluginRolloutRollbackOnFailure();
         }
         return rolloutRollbackOnFailure;
+    }
+
+    @Override
+    public boolean autoLoadPlugins() {
+        if (autoLoadPlugins == null) {
+            return super.autoLoadPlugins();
+        }
+        return autoLoadPlugins;
+    }
+
+    @Override
+    public boolean autoStartPlugins() {
+        if (autoStartPlugins == null) {
+            return super.autoStartPlugins();
+        }
+        return autoStartPlugins;
     }
 }

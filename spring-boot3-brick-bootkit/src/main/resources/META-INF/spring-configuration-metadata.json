@@ -161,6 +161,20 @@
       "type": "java.util.List",
       "sourceType": "com.zqzqq.bootkits.integration.decrypt.DecryptConfiguration",
       "description": "指定可生效的插件。如果不配置，则默认对全部插件生效"
+    },
+    {
+      "name": "plugin.autoLoadPlugins",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.zqzqq.bootkits.integration.AutoIntegrationConfiguration",
+      "description": "宿主启动时是否扫描并加载插件目录。false 为影子模式：框架完成装配但完全不触碰插件目录，可用于在零业务影响下验证依赖兼容性",
+      "defaultValue": true
+    },
+    {
+      "name": "plugin.autoStartPlugins",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.zqzqq.bootkits.integration.AutoIntegrationConfiguration",
+      "description": "插件加载后是否自动启动。false 为观察模式：插件会被解析并完成格式、依赖与准入校验，但不启动，可在控制台核对后手动启动",
+      "defaultValue": true
     }
   ]
 }

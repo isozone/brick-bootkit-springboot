@@ -21,7 +21,7 @@ package com.zqzqq.bootkits.loader.classloader.resource.storage;
 import com.zqzqq.bootkits.loader.classloader.resource.Resource;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResource;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
-import com.zqzqq.bootkits.utils.ObjectUtils;
+import com.zqzqq.bootkits.loader.utils.BootstrapUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
 
 import java.io.IOException;
@@ -126,7 +126,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
     }
 
     protected final void closeResources(List<Resource> resources){
-        if(ObjectUtils.isEmpty(resources)){
+        if(BootstrapUtils.isEmpty(resources)){
             return;
         }
         for (Resource resource : resources) {
