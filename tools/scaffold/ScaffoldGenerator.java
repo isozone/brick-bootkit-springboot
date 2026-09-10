@@ -39,10 +39,9 @@ public class ScaffoldGenerator {
             Pattern.compile("(?m)^[ \\t]*public[ \\t]+(?:abstract[ \\t]+)?(?:final[ \\t]+)?"
                     + "(?!class|interface|enum|static)[ \\t]*"
                     + "([\\w<>,\\[\\]\\s.]+?)[ \\t]+(\\w+)[ \\t]*\\(([^)]*)\\)[ \\t]*(?:\\{|;|throws)");
-    /** 接口中的方法可能不写 public 关键字。 */
+    /** 接口中的方法可能不写 public 关键字，也可能和 interface 声明在同一行。 */
     private static final Pattern INTERFACE_METHOD =
-            Pattern.compile("(?m)^[ \\t]*"
-                    + "([\\w<>,\\[\\]\\s.]+?)[ \\t]+(\\w+)[ \\t]*\\(([^)]*)\\)[ \\t]*;");
+            Pattern.compile("(?<![\\w.])([\\w<>,\\[\\]\\s.]+?)[ \\t]+(\\w+)[ \\t]*\\(([^)]*)\\)[ \\t]*;");
     private static final Pattern PACKAGE_PATTERN =
             Pattern.compile("(?m)^[ \\t]*package[ \\t]+([\\w.]+)[ \\t]*;");
     private static final Pattern IMPORT_PATTERN =
@@ -454,10 +453,6 @@ public class ScaffoldGenerator {
         writeFile(javaRoot.resolve("plugin/" + pluginClassName + ".java"),
                 buildBootstrap(basePackage, pluginClassName));
 
-        // 3. PluginInfo
-        writeFile(javaRoot.resolve("plugin/" + capitalize(pluginSuffix) + "PluginInfo.java"),
-                buildPluginInfo(basePackage, pluginSuffix, candidate));
-
         // 4. 契约接口
         Set<String> contractClasses = candidate.contractClasses();
         if (!contractClasses.isEmpty()) {
@@ -500,30 +495,18 @@ public class ScaffoldGenerator {
                                    String basePackage, PomInfo parent, JsonNode candidate) {
         String groupId = parent.groupId != null ? parent.groupId : "com.generated";
         String artifactId = suffix + "-plugin";
-        String javaVersion = parent.javaVersion != null ? parent.javaVersion : "17";
+        String javaVersion = normalizeJavaVersion(parent.javaVersion);
 
         StringBuilder deps = new StringBuilder();
-        // 原始依赖（从 candidate.externalGroups 推断）
-        Set<String> ext = candidate.externalGroups();
-        if (ext.contains("org.springframework.boot")) {
-            deps.append("        <dependency>\n");
-            deps.append("            <groupId>org.springframework.boot</groupId>\n");
-            deps.append("            <artifactId>spring-boot-starter-web</artifactId>\n");
-            deps.append("        </dependency>\n");
-        }
-        if (ext.contains("javax.persistence") || ext.contains("jakarta.persistence")) {
-            deps.append("        <dependency>\n");
-            deps.append("            <groupId>jakarta.persistence</groupId>\n");
-            deps.append("            <artifactId>jakarta.persistence-api</artifactId>\n");
-            deps.append("        </dependency>\n");
-        }
-        if (ext.contains("org.apache.ibatis")) {
-            deps.append("        <dependency>\n");
-            deps.append("            <groupId>org.mybatis.spring.boot</groupId>\n");
-            deps.append("            <artifactId>mybatis-spring-boot-starter</artifactId>\n");
-            deps.append("            <version>3.0.3</version>\n");
-            deps.append("        </dependency>\n");
-        }
+        deps.append("        <dependency>\n");
+        deps.append("            <groupId>org.springframework.boot</groupId>\n");
+        deps.append("            <artifactId>spring-boot-starter-web</artifactId>\n");
+        deps.append("        </dependency>\n");
+        deps.append("\n");
+        deps.append("        <dependency>\n");
+        deps.append("            <groupId>org.aspectj</groupId>\n");
+        deps.append("            <artifactId>aspectjweaver</artifactId>\n");
+        deps.append("        </dependency>\n");
 
         StringBuilder sb = new StringBuilder();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -722,6 +705,26 @@ public class ScaffoldGenerator {
     }
 
     // ---------------------------------------------------------------- 工具方法
+
+    /** 插件模块至少需要 JDK 17（brick-bootkit 基线）。 */
+    private static String normalizeJavaVersion(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return "17";
+        }
+        try {
+            int v;
+            if (raw.contains(".")) {
+                // 1.8 -> 8, 1.17 -> 17
+                String[] parts = raw.split("\\.");
+                v = Integer.parseInt(parts[parts.length - 1]);
+            } else {
+                v = Integer.parseInt(raw.replaceAll("[^0-9]", ""));
+            }
+            return v >= 17 ? String.valueOf(v) : "17";
+        } catch (NumberFormatException e) {
+            return "17";
+        }
+    }
 
     private static String defaultReturn(String type) {
         String t = type.trim();
