@@ -1,0 +1,7 @@
+{
+  "deviceType": "test-device",
+  "transport": "test",
+  "mappings": [
+    {"capability": "val", "type": "point", "access": "read", "register": 100}
+  ]
+}

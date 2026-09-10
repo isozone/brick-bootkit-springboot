@@ -17,6 +17,8 @@
 
 package com.zqzqq.bootkits.protocol.adapter;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,6 +95,18 @@ public class AdapterMapping implements Serializable {
 
     public void setOptions(Map<String, Object> options) {
         this.options = options != null ? options : new LinkedHashMap<>();
+    }
+
+    /**
+     * Jackson 反序列化时，未知字段自动进入 options Map。
+     * 这使得 register、scale、writeValue 等传输专属字段被正确捕获。
+     */
+    @JsonAnySetter
+    public void setOption(String key, Object value) {
+        if (options == null) {
+            options = new LinkedHashMap<>();
+        }
+        options.put(key, value);
     }
 
     /**
