@@ -175,10 +175,13 @@ public class PluginDoctorService {
                     .filter(plugin -> plugin.getPluginState() == EnhancedPluginState.STARTED)
                     .count();
             if (pluginCount == 0) {
-                items.add(item(PluginIssueDefinition.NO_PLUGINS_FOUND,
-                        "当前未发现任何插件",
-                        "请检查 plugin.pluginPath 是否指向正确目录，并确认插件包已放入该目录"));
-                warningCount++;
+                PluginDoctorReport.Item noPluginItem = buildNoPluginItem(adoptionLevel, pluginRoots);
+                items.add(noPluginItem);
+                if (STATUS_WARN.equals(noPluginItem.getSeverity())) {
+                    warningCount++;
+                } else if (STATUS_ERROR.equals(noPluginItem.getSeverity())) {
+                    errorCount++;
+                }
             } else {
                 items.add(item("PLUGIN_SCAN_READY", 0, STATUS_OK,
                         "已发现插件数量: " + pluginCount + "，其中已启动: " + startedPluginCount,
@@ -356,6 +359,53 @@ public class PluginDoctorService {
             resolvedRoots.add(resolved != null ? resolved.toString() : root);
         }
         return resolvedRoots;
+    }
+
+    private PluginDoctorReport.Item buildNoPluginItem(AdoptionLevel level, List<String> pluginRoots) {
+        if (level == AdoptionLevel.SHADOW) {
+            return item("NO_PLUGINS_SHADOW", 0, STATUS_OK,
+                    "当前处于影子模式，未读取插件目录（符合预期）",
+                    "验证依赖兼容性后设置 plugin.autoLoadPlugins=true 进入观察模式",
+                    "/quickstart",
+                    "adoption");
+        }
+        // L1 or L2: check if plugin files exist in directory
+        int pluginFileCount = countPluginFiles(pluginRoots);
+        if (pluginFileCount > 0) {
+            // Files exist but none loaded -> parse/validation failure
+            return item(PluginIssueDefinition.NO_PLUGINS_FOUND,
+                    "插件目录中发现 " + pluginFileCount + " 个文件，但均未成功加载",
+                    "插件包可能格式错误、依赖缺失或准入检查被拦截，请查看启动日志中的具体错误");
+        }
+        if (level == AdoptionLevel.OBSERVE) {
+            return item("NO_PLUGINS_OBSERVE", 0, STATUS_OK,
+                    "当前处于观察模式，插件目录为空（尚未放入插件包）",
+                    "将插件包放入 plugin.pluginPath 指定的目录后框架会自动解析",
+                    "/quickstart",
+                    "adoption");
+        }
+        // L2 active with empty directory
+        return item(PluginIssueDefinition.NO_PLUGINS_FOUND,
+                "当前未发现任何插件",
+                "请检查 plugin.pluginPath 是否指向正确目录，并确认插件包已放入该目录");
+    }
+
+    private int countPluginFiles(List<String> pluginRoots) {
+        int count = 0;
+        for (String root : pluginRoots) {
+            Path path = resolvePath(root);
+            if (path == null || !Files.isDirectory(path)) {
+                continue;
+            }
+            try (var stream = Files.list(path)) {
+                count += stream.filter(p -> {
+                    String name = p.getFileName().toString();
+                    return name.endsWith(".jar") || name.endsWith(".zip");
+                }).count();
+            } catch (IOException ignored) {
+            }
+        }
+        return count;
     }
 
     private Path resolvePath(String path) {
