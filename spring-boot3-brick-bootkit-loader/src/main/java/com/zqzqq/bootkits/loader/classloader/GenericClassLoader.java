@@ -24,8 +24,6 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFacto
 import com.zqzqq.bootkits.loader.utils.Assert;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GenericClassLoader extends URLClassLoader implements ResourceLoaderFactory{
 
-    private static final Logger log = LoggerFactory.getLogger(GenericClassLoader.class);
+    private static final System.Logger log = System.getLogger(GenericClassLoader.class.getName());
     private final String name;
     private final ClassLoader parent;
 
@@ -69,7 +67,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
         this.classLoaderTranslator = new ClassLoaderTranslator(this);
         
         // 确保类加载器能够访问Java基础类
-        log.debug("创建 GenericClassLoader '{}'，父类加载器: {}", name, getSystemClassLoaderWithJavaBase(parent));
+        log.log(System.Logger.Level.DEBUG, "创建 GenericClassLoader '" + name + "'，父类加载器: " + getSystemClassLoaderWithJavaBase(parent));
     }
 
     /**
@@ -99,7 +97,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
                 return bootstrapClassLoader;
             }
         } catch (Exception e) {
-            log.warn("无法获取Bootstrap类加载器: {}", e.getMessage());
+            log.log(System.Logger.Level.WARNING, "无法获取Bootstrap类加载器: " + e.getMessage());
         }
         
         // 如果无法获取Bootstrap类加载器，使用系统类加载器
@@ -304,7 +302,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
                 try {
                     resourceLoaderFactory.close();
                 } catch (Exception e) {
-                    log.warn("Failed to close resource loader factory", e);
+                    log.log(System.Logger.Level.WARNING, "Failed to close resource loader factory", e);
                 }
             }
             
@@ -326,7 +324,7 @@ public class GenericClassLoader extends URLClassLoader implements ResourceLoader
             // 释放资源加载工厂
             PluginResourceUtils.release(resourceLoaderFactory);
         } catch (Exception e) {
-            log.warn("Failed to release resources", e);
+            log.log(System.Logger.Level.WARNING, "Failed to release resources", e);
         }
     }
 
@@ -495,7 +493,7 @@ protected Class<?> findClassFromLocal(String name) {
         try {
             return IOUtils.read(inputStream);
         } catch (Exception e){
-            log.error("Failed to read class bytes for: {}", formatClassName, e);
+            log.log(System.Logger.Level.ERROR, "Failed to read class bytes for: " + formatClassName, e);
             return null;
         } finally {
             IOUtils.closeQuietly(inputStream);

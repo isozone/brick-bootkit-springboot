@@ -24,7 +24,6 @@ import com.zqzqq.bootkits.loader.launcher.coexist.CoexistJarOuterLauncher;
 import com.zqzqq.bootkits.loader.launcher.isolation.IsolationFastJarLauncher;
 import com.zqzqq.bootkits.loader.launcher.isolation.IsolationJarOuterLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
-import com.zqzqq.bootkits.utils.ObjectUtils;
 
 import java.io.File;
 import java.net.URI;
@@ -62,7 +61,7 @@ public class ProdLauncher implements Launcher<ClassLoader>{
             }
             Attributes mainAttributes = manifest.getMainAttributes();
             startClass = mainAttributes.getValue(START_CLASS);
-            if (ObjectUtils.isEmpty(startClass)) {
+            if (startClass == null || startClass.isEmpty()) {
                 throw exception;
             }
             mainPackageType = mainAttributes.getValue(MAIN_PACKAGE_TYPE);
@@ -84,11 +83,11 @@ public class ProdLauncher implements Launcher<ClassLoader>{
     }
 
     static String resolveDevelopmentMode(String manifestDevelopmentMode) {
-        if (!ObjectUtils.isEmpty(manifestDevelopmentMode)) {
+        if (manifestDevelopmentMode != null && !manifestDevelopmentMode.isEmpty()) {
             return manifestDevelopmentMode;
         }
         String modeFromProperties = DevelopmentModeSetting.resolveDevelopmentModeFromProperties();
-        if (!ObjectUtils.isEmpty(modeFromProperties)) {
+        if (modeFromProperties != null && !modeFromProperties.isEmpty()) {
             return modeFromProperties;
         }
         throw new RuntimeException("Missing developmentMode configuration. Configure manifest " +

@@ -22,10 +22,7 @@ import com.zqzqq.bootkits.loader.classloader.GenericClassLoader;
 import com.zqzqq.bootkits.loader.classloader.resource.loader.ResourceLoaderFactory;
 import com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
-import com.zqzqq.bootkits.utils.ObjectUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
@@ -44,7 +41,7 @@ import java.util.Set;
  */
 public class IsolationBaseLauncher extends AbstractMainLauncher {
 
-    private static final Logger log = LoggerFactory.getLogger(IsolationBaseLauncher.class);
+    private static final System.Logger log = System.getLogger(IsolationBaseLauncher.class.getName());
     
     private final MethodRunner methodRunner;
 
@@ -100,7 +97,7 @@ public class IsolationBaseLauncher extends AbstractMainLauncher {
         }
         
         // 记录调试信息
-        log.debug("隔离模式父类加载器: {}", classLoader);
+        log.log(System.Logger.Level.DEBUG, "隔离模式父类加载器: " + classLoader);
         
         return classLoader;
     }
@@ -108,7 +105,7 @@ public class IsolationBaseLauncher extends AbstractMainLauncher {
     protected Set<URL> getBaseResource() {
         Set<URL> urls = new HashSet<>();
         String classPath = ManagementFactory.getRuntimeMXBean().getClassPath();
-        if(!ObjectUtils.isEmpty(classPath)){
+        if(classPath != null && !classPath.isEmpty()){
             String[] classPathStr = classPath.split(";");
             for (String path : classPathStr) {
                 try {

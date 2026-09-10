@@ -23,8 +23,6 @@ import com.zqzqq.bootkits.loader.classloader.resource.loader.DefaultResource;
 import com.zqzqq.bootkits.loader.utils.IOUtils;
 import com.zqzqq.bootkits.utils.ObjectUtils;
 import com.zqzqq.bootkits.loader.utils.PluginResourceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +39,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public abstract class AbstractResourceStorage implements ResourceStorage {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractResourceStorage.class);
+    private static final System.Logger log = System.getLogger(AbstractResourceStorage.class.getName());
     private final Set<URL> baseUrls = new HashSet<>();
     private final ArrayDeque<URL> hotUrls = new ArrayDeque<>();
     private final List<InputStream> inputStreams = new CopyOnWriteArrayList<>();
@@ -104,7 +102,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
             inputStreams.add(inputStream);
             return inputStream;
         } catch (IOException e) {
-            log.error("Failed to open stream for resource: {}", resource.getName(), e);
+            log.log(System.Logger.Level.ERROR, "Failed to open stream for resource: " + resource.getName(), e);
             return null;
         }
     }
@@ -225,7 +223,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
             addResource(resource);
             return resource;
         } catch (Exception e) {
-            log.warn("Failed to add resource to storage: {}", name, e);
+            log.log(System.Logger.Level.WARNING, "Failed to add resource to storage: " + name, e);
             return null;
         }
     }
@@ -296,7 +294,7 @@ public abstract class AbstractResourceStorage implements ResourceStorage {
         try {
             addResource(resource);
         } catch (Exception e){
-            log.warn("Failed to add resource wrapper: {}", resource.getName(), e);
+            log.log(System.Logger.Level.WARNING, "Failed to add resource wrapper: " + resource.getName(), e);
         }
     }
 }

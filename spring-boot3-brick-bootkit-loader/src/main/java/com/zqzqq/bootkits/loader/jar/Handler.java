@@ -35,8 +35,6 @@
 package com.zqzqq.bootkits.loader.jar;
 
 import com.zqzqq.bootkits.loader.PluginResourceStorage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public class Handler extends URLStreamHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(Handler.class);
+    private static final System.Logger log = System.getLogger(Handler.class.getName());
     // NOTE: in order to be found as a URL protocol handler, this class must be public,
     // must be named Handler and must be in a package ending '.jar'
 
@@ -221,7 +219,7 @@ public class Handler extends URLStreamHandler {
             System.getLogger(getClass().getName()).log(level, "Unable to open fallback handler", cause);
         } catch (Exception ex) {
             if (warning) {
-                Handler.log.warn("WARNING: Unable to open fallback handler");
+                Handler.log.log(System.Logger.Level.WARNING, "WARNING: Unable to open fallback handler");
             }
         }
     }

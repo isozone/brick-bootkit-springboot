@@ -352,13 +352,6 @@
 
 
         
-        <!-- SLF4J 依赖 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
         <!-- JUnit 5 测试依赖 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -21,8 +21,6 @@ package com.zqzqq.bootkits.loader.launcher.coexist;
 import com.zqzqq.bootkits.loader.classloader.GeneralUrlClassLoader;
 import com.zqzqq.bootkits.loader.launcher.AbstractMainLauncher;
 import com.zqzqq.bootkits.loader.launcher.runner.MethodRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,7 +35,7 @@ import java.net.URLClassLoader;
  */
 public class CoexistBaseLauncher extends AbstractMainLauncher {
 
-    private static final Logger log = LoggerFactory.getLogger(CoexistBaseLauncher.class);
+    private static final System.Logger log = System.getLogger(CoexistBaseLauncher.class.getName());
     private final MethodRunner methodRunner;
 
     public CoexistBaseLauncher(MethodRunner methodRunner) {
@@ -74,10 +72,10 @@ public class CoexistBaseLauncher extends AbstractMainLauncher {
                 // 方法2：调用GeneralUrlClassLoader的mergeResources方法
                 classLoader.mergeResources(tempLoader);
                 
-                log.info("Added resource to shared mode classloader: {}", url);
+                log.log(System.Logger.Level.INFO, "Added resource to shared mode classloader: " + url);
             }
         } catch (Exception e) {
-            log.error("Failed to add resources to shared mode classloader: {}", e.getMessage(), e);
+            log.log(System.Logger.Level.ERROR, "Failed to add resources to shared mode classloader: " + e.getMessage(), e);
             // 方法3：最终回退方案
             System.setProperty("java.system.class.loader", 
                 "com.zqzqq.bootkits.loader.classloader.GeneralUrlClassLoader");

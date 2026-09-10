@@ -18,9 +18,6 @@
 
 package com.zqzqq.bootkits.loader.launcher.runner;
 
-import com.zqzqq.bootkits.utils.CompareClassTypeUtils;
-import com.zqzqq.bootkits.utils.ObjectUtils;
-
 import java.lang.reflect.Method;
 import java.util.Objects;
 
@@ -76,7 +73,7 @@ public class MethodRunner {
     }
 
     private String checkEmpty(String value, String msg){
-        if(ObjectUtils.isEmpty(value)){
+        if(value == null || value.isEmpty()){
             throw new IllegalArgumentException(msg);
         }
         return value;
@@ -108,12 +105,38 @@ public class MethodRunner {
         for (int i = 0; i < paramTypes.length; i++) {
             Class<?> paramType = paramTypes[i];
             Class<?> methodParamType = parameterTypes[i];
-            if(CompareClassTypeUtils.compare(methodParamType, paramType)){
+            if(compareClassType(methodParamType, paramType)){
                 return true;
             }
         }
         return false;
     }
+
+    private static boolean compareClassType(Class<?> class1, Class<?> class2) {
+        if (class1.isAssignableFrom(class2)) {
+            return true;
+        }
+        if (isBooleanType(class1) && isBooleanType(class2)) return true;
+        if (isCharType(class1) && isCharType(class2)) return true;
+        if (isByteType(class1) && isByteType(class2)) return true;
+        if (isShortType(class1) && isShortType(class2)) return true;
+        if (isIntType(class1) && isIntType(class2)) return true;
+        if (isLongType(class1) && isLongType(class2)) return true;
+        if (isFloatType(class1) && isFloatType(class2)) return true;
+        if (isDoubleType(class1) && isDoubleType(class2)) return true;
+        if (isVoidType(class1) && isVoidType(class2)) return true;
+        return false;
+    }
+
+    private static boolean isBooleanType(Class<?> c) { return c.isAssignableFrom(Boolean.class) || c.isAssignableFrom(boolean.class); }
+    private static boolean isCharType(Class<?> c)    { return c.isAssignableFrom(Character.class) || c.isAssignableFrom(char.class); }
+    private static boolean isByteType(Class<?> c)    { return c.isAssignableFrom(Byte.class) || c.isAssignableFrom(byte.class); }
+    private static boolean isShortType(Class<?> c)   { return c.isAssignableFrom(Short.class) || c.isAssignableFrom(short.class); }
+    private static boolean isIntType(Class<?> c)     { return c.isAssignableFrom(Integer.class) || c.isAssignableFrom(int.class); }
+    private static boolean isLongType(Class<?> c)    { return c.isAssignableFrom(Long.class) || c.isAssignableFrom(long.class); }
+    private static boolean isFloatType(Class<?> c)   { return c.isAssignableFrom(Float.class) || c.isAssignableFrom(float.class); }
+    private static boolean isDoubleType(Class<?> c)  { return c.isAssignableFrom(Double.class) || c.isAssignableFrom(double.class); }
+    private static boolean isVoidType(Class<?> c)    { return c.isAssignableFrom(Void.class) || c.isAssignableFrom(void.class); }
 
     /**
      * 获取主类名
