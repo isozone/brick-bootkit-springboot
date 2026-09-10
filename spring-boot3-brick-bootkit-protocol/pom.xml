@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zqzqq</groupId>
+        <artifactId>spring-boot3-brick-bootkit-parent</artifactId>
+        <version>4.0.11</version>
+    </parent>
+
+    <artifactId>spring-boot3-brick-bootkit-protocol</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>
+        Brick BootKit 语义协议模块：定义设备/服务接入的统一语义协议（Brick Protocol）。
+        本模块只定义协议规范本体（消息信封、能力模型、生命周期语义），零外部运行时依赖，
+        不依赖 core，可被任何其他框架/语言移植复用。具体传输协议（Modbus/MQTT/BLE/gRPC）
+        由 adapter 承担，永不进入本模块。
+    </description>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!-- 协议规范本体零运行时依赖。序列化实现（Jackson）为 optional，
+             由宿主自行决定是否引入，保证 protocol 可独立移植。 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
