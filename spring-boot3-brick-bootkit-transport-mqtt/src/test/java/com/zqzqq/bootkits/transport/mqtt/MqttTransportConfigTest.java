@@ -72,6 +72,6 @@ class MqttTransportConfigTest {
         assertTrue(config.isAutomaticReconnect());
         assertEquals(10, config.getConnectionTimeout());
         assertEquals(30, config.getKeepAliveInterval());
-        assertEquals(QosLevel.AT_MOST_ONCE, config.getDefaultQos());
+        assertEquals(QosLevel.FIRE_FORGET, config.getDefaultQos());
     }
 }

@@ -3,6 +3,7 @@ package com.zqzqq.bootkits.transport.mqtt;
 import com.zqzqq.bootkits.protocol.bus.EnvelopeBus;
 import com.zqzqq.bootkits.protocol.message.BrickEnvelope;
 import com.zqzqq.bootkits.protocol.message.BrickMessages;
+import com.zqzqq.bootkits.protocol.message.QosLevel;
 import com.zqzqq.bootkits.protocol.serialization.JacksonEnvelopeSerializer;
 import com.zqzqq.bootkits.protocol.transport.EnvelopeTransport;
 import com.zqzqq.bootkits.protocol.transport.RemoteEnvelopeBus;
@@ -72,7 +73,7 @@ class MqttTransportIntegrationTest {
 
     @Test
     void shouldRoundTripQosLevel() {
-        BrickEnvelope atMost = BrickMessages.request("s1", "temp", null, QosLevel.AT_MOST_ONCE);
+        BrickEnvelope atMost = BrickMessages.request("s1", "temp", null, QosLevel.FIRE_FORGET);
         BrickEnvelope atLeast = BrickMessages.request("s1", "temp", null, QosLevel.AT_LEAST_ONCE);
 
         assertEquals(0, serializer.deserialize(serializer.serialize(atMost)).getQos().ordinal());

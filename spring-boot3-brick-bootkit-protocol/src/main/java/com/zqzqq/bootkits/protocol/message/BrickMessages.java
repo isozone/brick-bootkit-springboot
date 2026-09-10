@@ -130,4 +130,8 @@ public final class BrickMessages {
                 .deviceId(deviceId)
                 .capabilityId(capabilityId);
     }
+
+    public static Object reply(String s1, String temp, double v, Object o) {
+        return null;
+    }
 }

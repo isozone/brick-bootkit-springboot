@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *   <li>订阅：{@code brick/#}（全局）或 {@code brick/{deviceId}/+}（单设备）</li>
  * </ul>
  * <p>
- * QoS 映射：Brick AT_MOST_ONCE → MQTT QoS 0，Brick AT_LEAST_ONCE → MQTT QoS 1。
+ * QoS 映射：Brick FIRE_FORGET → MQTT QoS 0，Brick AT_LEAST_ONCE → MQTT QoS 1。
  *
  * @author brick-bootkit
  * @since 4.1.0
