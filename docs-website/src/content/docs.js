@@ -2,8 +2,8 @@
 
 export const siteMeta = {
   product: 'Brick BootKit SpringBoot',
-  version: '4.0.11',
-  checkedAt: '2026-09-10',
+  version: '4.0.12',
+  checkedAt: '2026-09-11',
   repo: 'https://github.com/v18268185209/brick-bootkit-springboot',
   docs: 'http://brickbootkit.aius.autos/',
   sourceBase: 'https://github.com/v18268185209/brick-bootkit-springboot/blob/HEAD'
@@ -34,13 +34,13 @@ export const docPages = [
     path: '/',
     title: '源码驱动的文档站',
     lead: '这版 docs-website 以仓库源码为唯一事实来源，先保证“真”，再追求“好看”。',
-    badges: ['Version 4.0.11', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-09-10'],
+    badges: ['Version 4.0.12', 'Java 17+', 'Spring Boot 3.5.5', 'Checked 2026-09-11'],
     sections: [
       {
         id: 'facts',
         title: '事实快照',
         paragraphs: [
-          '父工程版本在 `pom.xml` 中定义为 `4.0.11`，并包含 8 个核心模块。',
+          '父工程版本在 `pom.xml` 中定义为 `4.0.12`，并包含 16 个模块（含 Brick Protocol 协议与传输扩展）。',
           '默认 Java 版本为 17，`spring-boot.version` 在父工程中固定为 `3.5.5`。',
           '文档中涉及的配置项来自 `AutoIntegrationConfiguration` 与 Web 模块配置类，不使用猜测字段。'
         ],
@@ -143,14 +143,14 @@ export const docPages = [
           content: String.raw`<dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit</artifactId>
-  <version>4.0.11</version>
+  <version>4.0.12</version>
 </dependency>
 
 <!-- 可选：Web 管理控制台 -->
 <dependency>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-  <version>4.0.11</version>
+  <version>4.0.12</version>
 </dependency>`
         },
         sources: ['spring-boot3-brick-bootkit/pom.xml', 'spring-boot3-brick-bootkit-web/pom.xml']
@@ -239,7 +239,7 @@ public class Application {
         bullets: [
           '父工程 artifactId: `spring-boot3-brick-bootkit-parent`',
           'groupId: `com.zqzqq`',
-          'version: `4.0.11`'
+          'version: `4.0.12`'
         ],
         sources: ['pom.xml']
       },
@@ -848,7 +848,7 @@ export PLUGIN_DEVELOPMENT_MODE=coexist`
           content: String.raw`<plugin>
   <groupId>com.zqzqq</groupId>
   <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-  <version>4.0.11</version>
+  <version>4.0.12</version>
   <configuration>
     <mode>prod</mode>
     <pluginInfo>
@@ -1506,6 +1506,27 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
     title: '版本变化（源码可验证）',
     lead: '这里只记录在仓库中有明确代码落点的变化。',
     sections: [
+      {
+        id: 'v4012-highlights',
+        title: '4.0.12 可见变更',
+        bullets: [
+          'Brick Protocol 运行闭环：`DeviceRegistry` 热插拔（ReentrantLock 并发安全 + 健康检查 + 自动重连）。',
+          '`EnvelopeBusBridge`：EnvelopeBus ↔ PluginEventBus 双向桥接，防环传播。',
+          '跨进程传输 SPI：`EnvelopeTransport`（protocol 模块，零依赖）+ `RemoteEnvelopeBus` 双管道。',
+          '新增 `spring-boot3-brick-bootkit-transport-mqtt`：Eclipse Paho MQTT 3.1.1 参考实现，信封 JSON 上云。',
+          '自动配置 `RemoteEnvelopeBusAutoConfiguration`：`brick.transport.mqtt.*` 属性启用。',
+          '全量 16 模块 BUILD SUCCESS，协议 109 + mqtt 16 + core 新增 16 测试全部通过。'
+        ],
+        sources: [
+          'spring-boot3-brick-bootkit-protocol/src/main/java/com/zqzqq/bootkits/protocol/transport/EnvelopeTransport.java',
+          'spring-boot3-brick-bootkit-protocol/src/main/java/com/zqzqq/bootkits/protocol/transport/RemoteEnvelopeBus.java',
+          'spring-boot3-brick-bootkit-core/src/main/java/com/zqzqq/bootkits/core/eventbus/EnvelopeBusBridge.java',
+          'spring-boot3-brick-bootkit-core/src/main/java/com/zqzqq/bootkits/core/device/DeviceRegistry.java',
+          'spring-boot3-brick-bootkit-transport-mqtt/src/main/java/com/zqzqq/bootkits/transport/mqtt/MqttEnvelopeTransport.java',
+          'spring-boot3-brick-bootkit/src/main/java/com/zqzqq/bootkits/integration/transport/RemoteEnvelopeBusAutoConfiguration.java',
+          'doc/updates/4.0.12.md'
+        ]
+      },
       {
         id: 'v4011-highlights',
         title: '4.0.11 可见变更',

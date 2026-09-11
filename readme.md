@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-green.svg)](https://spring.io/projects/spring-boot)
 [![JDK](https://img.shields.io/badge/JDK-17+-orange.svg)](https://openjdk.org/)
-[![Version](https://img.shields.io/badge/4.0.11-4.0.11-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
+[![Version](https://img.shields.io/badge/4.0.12-4.0.12-brightgreen.svg)](https://github.com/v18268185209/brick-bootkit-springboot)
 [![Java](https://img.shields.io/badge/Java-17-yellow.svg)](https://openjdk.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.6+-red.svg)](https://maven.apache.org/)
 
@@ -130,7 +130,7 @@
 
 ## 📊 功能成熟度
 
-> 基于 4.0.11 源码核查的功能落地状态。核心插件能力均已就绪；涉及外部中间件的高级特性代码已实装，建议在生产环境启用前完成充分验证。
+> 基于 4.0.12 源码核查的功能落地状态。核心插件能力均已就绪；涉及外部中间件的高级特性代码已实装，建议在生产环境启用前完成充分验证。
 
 ### ✅ 已就绪（生产可用）
 - 类加载隔离（隔离 / 共享两种模式）
@@ -681,7 +681,7 @@ GET /plugins-web/api/doctor
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.11</version>
+            <version>4.0.12</version>
             <configuration>
                 <mode>prod</mode>
                 <pluginInfo>
@@ -738,7 +738,7 @@ GET /plugins-web/api/doctor
 <dependency>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-    <version>4.0.11</version>
+    <version>4.0.12</version>
 </dependency>
 ```
 
@@ -981,14 +981,14 @@ pluginRegistry.subscribe(UserService.class, new ServiceChangeListenerImpl());
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit</artifactId>
-        <version>4.0.11</version>
+        <version>4.0.12</version>
     </dependency>
     
     <!-- Web 管理控制台（可选） -->
     <dependency>
         <groupId>com.zqzqq</groupId>
         <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-        <version>4.0.11</version>
+        <version>4.0.12</version>
     </dependency>
 </dependencies>
 ```
@@ -1041,7 +1041,7 @@ plugin:
         <plugin>
             <groupId>com.zqzqq</groupId>
             <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-            <version>4.0.11</version>
+            <version>4.0.12</version>
             <configuration>
                 <mode>prod</mode>
                 <pluginInfo>
@@ -1244,7 +1244,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <plugin>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-    <version>4.0.11</version>
+    <version>4.0.12</version>
     <configuration>
         <mode>prod</mode>
         <pluginInfo>
@@ -1273,7 +1273,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit</artifactId>
-<version>4.0.11</version>
+<version>4.0.12</version>
 </dependency>
 
 ```
@@ -1284,7 +1284,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <dependency>
 <groupId>com.zqzqq</groupId>
 <artifactId>spring-boot3-brick-bootkit-web</artifactId>
-<version>4.0.11</version>
+<version>4.0.12</version>
 </dependency>
 
 ```
@@ -1295,7 +1295,7 @@ public class DemoPluginBootstrap extends SpringPluginBootstrap {
 <plugin>
     <groupId>com.zqzqq</groupId>
     <artifactId>spring-boot3-brick-bootkit-maven-packager</artifactId>
-    <version>4.0.11</version>
+    <version>4.0.12</version>
     <configuration>
         <mode>prod</mode>
         <pluginInfo>
@@ -1467,7 +1467,7 @@ logging:
 5. 开启 Pull Request
 
 ### 更新
-- [4.0.11](./doc/updates/4.0.11.md) - 最新版本
+- [4.0.12](./doc/updates/4.0.12.md) - 最新版本
 - [4.0.9](./doc/updates/4.0.9.md)
 - [4.0.1](./doc/updates/4.0.1.md)
 
