@@ -38,6 +38,15 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- MQTT 跨进程传输（可选）。引入 transport-mqtt 后自动启用 RemoteEnvelopeBus。 -->
+        <dependency>
+            <groupId>com.zqzqq</groupId>
+            <artifactId>spring-boot3-brick-bootkit-transport-mqtt</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

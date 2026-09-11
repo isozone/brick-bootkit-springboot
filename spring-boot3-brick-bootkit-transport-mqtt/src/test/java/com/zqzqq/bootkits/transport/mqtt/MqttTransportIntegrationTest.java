@@ -38,7 +38,7 @@ class MqttTransportIntegrationTest {
         String json = new String(payload, StandardCharsets.UTF_8);
         assertTrue(json.contains("sensor-01"));
         assertTrue(json.contains("temp"));
-        assertTrue(json.contains("EVENT"));
+        assertTrue(json.contains("\"type\":\"event\""));
     }
 
     @Test
@@ -54,9 +54,10 @@ class MqttTransportIntegrationTest {
 
     @Test
     void shouldRoundTripAllMessageTypes() {
+        BrickEnvelope req = BrickMessages.request("s1", "temp", null);
         List<BrickEnvelope> originals = List.of(
-                BrickMessages.request("s1", "temp", null),
-                BrickMessages.reply("s1", "temp", 25.5, null),
+                req,
+                BrickMessages.reply(req, 25.5),
                 BrickMessages.event("s1", "temp", 25.5),
                 BrickMessages.command("s1", "relay", true),
                 BrickMessages.lifecycle("s1", com.zqzqq.bootkits.protocol.lifecycle.DeviceLifecycle.ONLINE)
